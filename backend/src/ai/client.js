@@ -1,13 +1,13 @@
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-export async function chatCompletion(model, messages, { jsonMode = true } = {}) {
+export async function chatCompletion(model, messages, { jsonMode = true, temperature = 0.7 } = {}) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not set');
 
   const body = {
     model,
     messages,
-    temperature: 0.7,
+    temperature,
     max_tokens: 16384,
   };
 

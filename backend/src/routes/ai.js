@@ -3,26 +3,52 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../db/database.js';
 import { chatCompletion } from '../ai/client.js';
 import { availableModels } from '../ai/models.js';
-import { GENERATE_SYSTEM_PROMPT, ARRANGE_SYSTEM_PROMPT } from '../ai/prompts.js';
+import { GENERATE_SYSTEM_PROMPT, EDIT_SYSTEM_PROMPT, ARRANGE_SYSTEM_PROMPT } from '../ai/prompts.js';
 
 const router = Router();
+
+function buildCompactState(nodes, edges) {
+  const lines = ['EXISTING NODES:'];
+  for (const n of nodes) {
+    const d = n.data || {};
+    const desc = d.description ? d.description.slice(0, 100) : '';
+    lines.push(`  ${n.id} | ${n.type} | pos(${n.position.x},${n.position.y}) | "${d.title || ''}" | priority:${d.priority || '-'} | ${desc}`);
+  }
+  lines.push('');
+  lines.push('EXISTING EDGES:');
+  for (const e of edges) {
+    lines.push(`  ${e.id} | ${e.source} -> ${e.target} | type:${e.type || 'default'}`);
+  }
+  return lines.join('\n');
+}
 
 // List available models
 router.get('/models', (req, res) => {
   res.json(availableModels);
 });
 
-// Generate stories from prompt
+// Generate stories from prompt (or edit existing map)
 router.post('/generate', async (req, res) => {
   try {
-    const { prompt, model, projectId } = req.body;
+    const { prompt, model, projectId, existingNodes, existingEdges } = req.body;
     if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
     if (!model) return res.status(400).json({ error: 'Model is required' });
 
-    const result = await chatCompletion(model, [
-      { role: 'system', content: GENERATE_SYSTEM_PROMPT },
-      { role: 'user', content: prompt },
-    ]);
+    const isEditMode = Array.isArray(existingNodes) && existingNodes.length > 0;
+
+    let result;
+    if (isEditMode) {
+      const compactState = buildCompactState(existingNodes, existingEdges || []);
+      result = await chatCompletion(model, [
+        { role: 'system', content: EDIT_SYSTEM_PROMPT },
+        { role: 'user', content: `${compactState}\n\nUSER REQUEST: ${prompt}` },
+      ], { temperature: 0.4 });
+    } else {
+      result = await chatCompletion(model, [
+        { role: 'system', content: GENERATE_SYSTEM_PROMPT },
+        { role: 'user', content: prompt },
+      ]);
+    }
 
     // Save to history
     if (projectId) {
@@ -31,7 +57,11 @@ router.post('/generate', async (req, res) => {
       ).run(uuidv4(), projectId, prompt, JSON.stringify(result), model);
     }
 
-    res.json(result);
+    if (isEditMode) {
+      res.json({ mode: 'edit', operations: result.operations || [] });
+    } else {
+      res.json({ mode: 'generate', nodes: result.nodes || [], edges: result.edges || [] });
+    }
   } catch (err) {
     console.error('AI generate error:', err);
     res.status(500).json({ error: err.message });

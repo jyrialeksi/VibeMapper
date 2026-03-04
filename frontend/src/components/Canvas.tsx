@@ -45,7 +45,7 @@ interface CanvasProps {
 }
 
 export function Canvas({ projectId }: CanvasProps) {
-  const rfRef = useRef<ReactFlowInstance | null>(null);
+  const rfRef = useRef<ReactFlowInstance<Node<StoryCardData>> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const nodes = useMapStore((s) => s.nodes);

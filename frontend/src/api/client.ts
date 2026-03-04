@@ -1,4 +1,4 @@
-import type { Project, CanvasState, AIModel, VersionSummary, VersionDetail } from '../types';
+import type { Project, CanvasState, AIModel, VersionSummary, VersionDetail, AIGenerateResult } from '../types';
 
 const BASE = '/api';
 
@@ -63,10 +63,10 @@ export const api = {
 
   // AI
   getModels: () => request<AIModel[]>('/ai/models'),
-  generateStories: (prompt: string, model: string, projectId?: string) =>
-    request<{ nodes: unknown[]; edges: unknown[] }>('/ai/generate', {
+  generateStories: (prompt: string, model: string, projectId?: string, existingNodes?: unknown[], existingEdges?: unknown[]) =>
+    request<AIGenerateResult>('/ai/generate', {
       method: 'POST',
-      body: JSON.stringify({ prompt, model, projectId }),
+      body: JSON.stringify({ prompt, model, projectId, existingNodes, existingEdges }),
     }),
   arrangeNodes: (nodes: unknown[], edges: unknown[], model: string) =>
     request<{ nodes: { id: string; position: { x: number; y: number } }[] }>('/ai/arrange', {

@@ -10,7 +10,7 @@ import {
   applyEdgeChanges,
   addEdge,
 } from '@xyflow/react';
-import type { StoryCardData, ToolMode, CardType } from '../types';
+import type { StoryCardData, ToolMode, CardType, EditOperation } from '../types';
 
 interface Snapshot {
   nodes: Node<StoryCardData>[];
@@ -60,6 +60,7 @@ interface MapState {
   loadCanvas: (nodes: Node<StoryCardData>[], edges: Edge[], viewport: Viewport) => void;
   mergeNodes: (newNodes: Node<StoryCardData>[], newEdges: Edge[]) => void;
   applyArrangement: (positions: { id: string; position: { x: number; y: number } }[]) => void;
+  applyOperations: (operations: EditOperation[]) => void;
 
   // Undo/redo actions
   pushSnapshot: () => void;
@@ -187,6 +188,65 @@ export const useMapStore = create<MapState>((set, get) => ({
       }),
       isDirty: true,
     });
+  },
+
+  applyOperations: (operations) => {
+    get().pushSnapshot();
+    let { nodes, edges } = get();
+
+    for (const op of operations) {
+      switch (op.type) {
+        case 'add_node': {
+          if (!op.node) break;
+          if (nodes.some((n) => n.id === op.node!.id)) break;
+          nodes = [...nodes, op.node as Node<StoryCardData>];
+          break;
+        }
+        case 'remove_node': {
+          if (!op.id) break;
+          if (!nodes.some((n) => n.id === op.id)) break;
+          nodes = nodes.filter((n) => n.id !== op.id);
+          // Safety net: remove dangling edges
+          edges = edges.filter((e) => e.source !== op.id && e.target !== op.id);
+          break;
+        }
+        case 'update_node': {
+          if (!op.id || !op.changes) break;
+          const idx = nodes.findIndex((n) => n.id === op.id);
+          if (idx === -1) break;
+          const existing = nodes[idx];
+          const updated = {
+            ...existing,
+            data: op.changes.data ? { ...existing.data, ...op.changes.data } : existing.data,
+            position: op.changes.position ?? existing.position,
+          };
+          nodes = nodes.map((n) => (n.id === op.id ? updated : n));
+          break;
+        }
+        case 'move_node': {
+          if (!op.id || !op.position) break;
+          if (!nodes.some((n) => n.id === op.id)) break;
+          nodes = nodes.map((n) =>
+            n.id === op.id ? { ...n, position: op.position! } : n
+          );
+          break;
+        }
+        case 'add_edge': {
+          if (!op.edge) break;
+          if (edges.some((e) => e.id === op.edge!.id)) break;
+          if (!nodes.some((n) => n.id === op.edge!.source) || !nodes.some((n) => n.id === op.edge!.target)) break;
+          edges = [...edges, op.edge];
+          break;
+        }
+        case 'remove_edge': {
+          if (!op.id) break;
+          edges = edges.filter((e) => e.id !== op.id);
+          break;
+        }
+      }
+    }
+
+    set({ nodes, edges, isDirty: true });
   },
 
   // Undo/redo actions

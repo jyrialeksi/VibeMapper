@@ -15,6 +15,7 @@ export function useAI() {
   const edges = useMapStore((s) => s.edges);
   const mergeNodes = useMapStore((s) => s.mergeNodes);
   const applyArrangement = useMapStore((s) => s.applyArrangement);
+  const applyOperations = useMapStore((s) => s.applyOperations);
   const setPendingSaveLabel = useMapStore((s) => s.setPendingSaveLabel);
 
   useEffect(() => {
@@ -29,11 +30,28 @@ export function useAI() {
     setLoading(true);
     setError(null);
     try {
-      const result = await api.generateStories(prompt, selectedModel, projectId || undefined);
-      const newNodes = (result.nodes || []) as Node<StoryCardData>[];
-      const newEdges = (result.edges || []) as Edge[];
-      mergeNodes(newNodes, newEdges);
-      setPendingSaveLabel('AI Generation');
+      // Read fresh state to avoid stale closures
+      const currentNodes = useMapStore.getState().nodes;
+      const currentEdges = useMapStore.getState().edges;
+      const isEditMode = currentNodes.length > 0;
+
+      const result = await api.generateStories(
+        prompt,
+        selectedModel,
+        projectId || undefined,
+        isEditMode ? currentNodes : undefined,
+        isEditMode ? currentEdges : undefined,
+      );
+
+      if (result.mode === 'edit') {
+        applyOperations(result.operations);
+        setPendingSaveLabel('AI Edit');
+      } else {
+        const newNodes = (result.nodes || []) as Node<StoryCardData>[];
+        const newEdges = (result.edges || []) as Edge[];
+        mergeNodes(newNodes, newEdges);
+        setPendingSaveLabel('AI Generation');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'AI generation failed');
     } finally {

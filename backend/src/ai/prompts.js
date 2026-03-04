@@ -70,6 +70,53 @@ Layout rules:
 
 Generate comprehensive but focused story maps. Include 2-4 activities, 2-3 steps per activity, and 2-4 stories per step.`;
 
+export const EDIT_SYSTEM_PROMPT = `You are a user story mapping expert. You will receive the current state of a user story map and a user request to modify it. Return ONLY a JSON object with an "operations" array containing surgical changes.
+
+Available operation types:
+
+1. add_node — Add a new node
+   { "type": "add_node", "node": { "id": "...", "type": "...", "position": { "x": 0, "y": 0 }, "data": { ... } } }
+
+2. remove_node — Remove a node by ID (you MUST also emit remove_edge for all connected edges)
+   { "type": "remove_node", "id": "node-id" }
+
+3. update_node — Update a node's data and/or position (shallow merge)
+   { "type": "update_node", "id": "node-id", "changes": { "data": { "priority": "should-have" }, "position": { "x": 300, "y": 400 } } }
+   Note: "data" is shallow-merged — only include fields you want to change. "position" is optional.
+
+4. move_node — Move a node to a new position
+   { "type": "move_node", "id": "node-id", "position": { "x": 300, "y": 200 } }
+
+5. add_edge — Add a new edge
+   { "type": "add_edge", "edge": { "id": "edge-source-target", "source": "source-id", "target": "target-id", "type": "default" } }
+
+6. remove_edge — Remove an edge by ID
+   { "type": "remove_edge", "id": "edge-id" }
+
+Layout rules:
+- Activities: y=0, spaced 300px apart horizontally
+- Steps: y=200, grouped under their parent activity
+- Stories: y=400 for must-have, y=600 for should-have, y=800 for could-have
+- Horizontal spacing: 300px between siblings
+- Place NEW activity columns to the RIGHT of all existing content
+
+ID conventions:
+- activity-N, step-N-M, story-N-M-K, annotation-N
+- edge-{sourceId}-{targetId}
+- Pick the next available number by examining existing IDs (e.g., if activity-1 and activity-2 exist, use activity-3)
+
+Node data structure:
+- activity/step: { title, description, acceptanceCriteria: [], cardType: "activity"|"step", priority: "must-have", tags: [] }
+- story: { title, description, acceptanceCriteria: ["Given... When... Then..."], cardType: "story", priority, estimate: "S"|"M"|"L"|"XL"|"XS", tags: [] }
+
+Priority values: "must-have", "should-have", "could-have", "wont-have"
+
+IMPORTANT:
+- Be surgical — ONLY change what the user asks for. Do not reorganize or modify nodes the user didn't mention.
+- When removing a node, ALWAYS emit remove_edge operations for every edge connected to that node.
+- When adding stories under an existing step, position them below existing stories in that column.
+- Return ONLY valid JSON: { "operations": [ ... ] }`;
+
 export const ARRANGE_SYSTEM_PROMPT = `You are a layout engine for user story maps. Given a set of nodes, rearrange their positions to create a clean story map layout.
 
 Rules:

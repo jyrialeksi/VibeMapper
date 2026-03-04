@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useAI } from '../../hooks/useAI';
+import { useMapStore } from '../../store/useMapStore';
 
 export function AIPromptBox() {
   const [prompt, setPrompt] = useState('');
   const { models, selectedModel, setSelectedModel, loading, error, generate, arrange } = useAI();
+  const hasNodes = useMapStore((s) => s.nodes.length > 0);
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
@@ -36,7 +38,7 @@ export function AIPromptBox() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
-            placeholder="Describe your product or feature..."
+            placeholder={hasNodes ? "Describe changes to your story map..." : "Describe your product or feature..."}
             className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
             disabled={loading}
           />
@@ -45,7 +47,7 @@ export function AIPromptBox() {
             disabled={loading || !prompt.trim()}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            {loading ? 'Generating...' : 'Generate'}
+            {loading ? (hasNodes ? 'Editing...' : 'Generating...') : (hasNodes ? 'Edit Map' : 'Generate')}
           </button>
           <button
             onClick={arrange}

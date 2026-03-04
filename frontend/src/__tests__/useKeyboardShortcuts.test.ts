@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 
 // Test the keyboard shortcut logic by registering a handler on window
 // that mirrors useKeyboardShortcuts, then dispatching KeyboardEvents.
 
 describe('Keyboard shortcuts (Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y)', () => {
-  let undoSpy: ReturnType<typeof vi.fn>;
-  let redoSpy: ReturnType<typeof vi.fn>;
+  let undoSpy: Mock<() => void>;
+  let redoSpy: Mock<() => void>;
   let handler: (e: KeyboardEvent) => void;
 
   beforeEach(() => {
