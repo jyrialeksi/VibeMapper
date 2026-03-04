@@ -26,9 +26,10 @@ const cardTypeOptions: { type: CardType; label: string }[] = [
 interface ToolbarProps {
   onImport: () => void;
   onExport: () => void;
+  onExportMarkdown: () => void;
 }
 
-export function Toolbar({ onImport, onExport }: ToolbarProps) {
+export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) {
   const toolMode = useMapStore((s) => s.toolMode);
   const setToolMode = useMapStore((s) => s.setToolMode);
   const cardTypeToAdd = useMapStore((s) => s.cardTypeToAdd);
@@ -93,9 +94,16 @@ export function Toolbar({ onImport, onExport }: ToolbarProps) {
         </button>
         <button
           onClick={onExport}
-          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 border-r border-gray-200"
         >
           Export
+        </button>
+        <button
+          onClick={onExportMarkdown}
+          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+          title="Export visible map as Markdown"
+        >
+          Export MD
         </button>
       </div>
 

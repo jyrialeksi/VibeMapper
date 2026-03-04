@@ -20,6 +20,7 @@ import { VersionHistoryPanel } from './panels/VersionHistoryPanel';
 import { LayoutCorrector } from './LayoutCorrector';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import type { StoryCardData, CardType } from '../types';
+import { exportToMarkdown } from '../utils/exportToMarkdown';
 
 function getNodeTypeForCard(cardType: CardType): string {
   switch (cardType) {
@@ -174,6 +175,17 @@ export function Canvas({ projectId }: CanvasProps) {
     }
   }, [projectId]);
 
+  const handleExportMarkdown = useCallback(() => {
+    const md = exportToMarkdown(nodes, edges, hiddenPriorities);
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'story_map.md';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [nodes, edges, hiddenPriorities]);
+
   const handleImport = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
@@ -203,7 +215,7 @@ export function Canvas({ projectId }: CanvasProps) {
 
   return (
     <div className="w-full h-full relative">
-      <Toolbar onImport={handleImport} onExport={handleExport} />
+      <Toolbar onImport={handleImport} onExport={handleExport} onExportMarkdown={handleExportMarkdown} />
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
