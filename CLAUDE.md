@@ -18,7 +18,7 @@ npm run dev:backend                   # node --watch
 npm run start --workspace=backend
 ```
 
-No test framework is configured.
+Tests use Vitest: `npm test` runs all workspaces, or `npm run test --workspace=frontend` / `npm run test --workspace=backend` individually.
 
 ## Architecture
 
@@ -56,3 +56,4 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - Tailwind v4 imported via `@import "tailwindcss"` in `index.css` (no tailwind.config)
 - Node components use React Flow's `Handle` for connections and `NodeProps<Node<StoryCardData>>` typing
 - `mergeNodes()` in the store offsets AI-generated nodes if they overlap existing ones
+- **Git commits**: Always create a local git commit after completing each full task/feature. Use descriptive commit messages.
