@@ -38,6 +38,9 @@ interface MapState {
   canUndo: boolean;
   canRedo: boolean;
 
+  // Layout correction
+  needsLayoutCorrection: boolean;
+
   // Version state
   pendingSaveLabel: string | null;
   isVersionPanelOpen: boolean;
@@ -68,6 +71,9 @@ interface MapState {
   redo: () => void;
   clearHistory: () => void;
 
+  // Layout correction actions
+  setNeedsLayoutCorrection: (flag: boolean) => void;
+
   // Version actions
   setPendingSaveLabel: (label: string | null) => void;
   setVersionPanelOpen: (open: boolean) => void;
@@ -88,6 +94,9 @@ export const useMapStore = create<MapState>((set, get) => ({
   redoStack: [],
   canUndo: false,
   canRedo: false,
+
+  // Layout correction
+  needsLayoutCorrection: false,
 
   // Version state
   pendingSaveLabel: null,
@@ -176,6 +185,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       nodes: [...existing, ...offsetNodes],
       edges: [...existingEdges, ...newEdges],
       isDirty: true,
+      needsLayoutCorrection: true,
     });
   },
 
@@ -187,6 +197,7 @@ export const useMapStore = create<MapState>((set, get) => ({
         return pos ? { ...n, position: pos.position } : n;
       }),
       isDirty: true,
+      needsLayoutCorrection: true,
     });
   },
 
@@ -246,7 +257,10 @@ export const useMapStore = create<MapState>((set, get) => ({
       }
     }
 
-    set({ nodes, edges, isDirty: true });
+    const needsLayout = operations.some(
+      (op) => op.type === 'add_node' || op.type === 'move_node'
+    );
+    set({ nodes, edges, isDirty: true, ...(needsLayout && { needsLayoutCorrection: true }) });
   },
 
   // Undo/redo actions
@@ -305,6 +319,9 @@ export const useMapStore = create<MapState>((set, get) => ({
   clearHistory: () => {
     set({ undoStack: [], redoStack: [], canUndo: false, canRedo: false });
   },
+
+  // Layout correction actions
+  setNeedsLayoutCorrection: (flag) => set({ needsLayoutCorrection: flag }),
 
   // Version actions
   setPendingSaveLabel: (label) => set({ pendingSaveLabel: label }),

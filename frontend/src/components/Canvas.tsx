@@ -17,6 +17,7 @@ import { Toolbar } from './panels/Toolbar';
 import { CardEditor } from './panels/CardEditor';
 import { AIPromptBox } from './panels/AIPromptBox';
 import { VersionHistoryPanel } from './panels/VersionHistoryPanel';
+import { LayoutCorrector } from './LayoutCorrector';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import type { StoryCardData, CardType } from '../types';
 
@@ -209,6 +210,7 @@ export function Canvas({ projectId }: CanvasProps) {
           nodeStrokeWidth={3}
           className="!bg-white !border-gray-200"
         />
+        <LayoutCorrector />
       </ReactFlow>
       {selectedNodeId && !isVersionPanelOpen && <CardEditor />}
       <VersionHistoryPanel />
