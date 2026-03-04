@@ -114,6 +114,7 @@ function fullArrange(
   edges: Edge[],
   lookup: Map<string, InternalNode>,
 ) {
+  console.log('[fullArrange] start, nodes:', nodes.length, 'edges:', edges.length);
   if (nodes.length === 0) return;
 
   const getH = (id: string) => getMeasuredHeight(id, nodes, lookup);
@@ -128,6 +129,9 @@ function fullArrange(
   const activities = nodes.filter((n) => n.type === 'activity');
   const steps = nodes.filter((n) => n.type === 'step');
   const stories = nodes.filter((n) => n.type === 'storyCard');
+
+  console.log('[fullArrange] activities:', activities.length, 'steps:', steps.length, 'stories:', stories.length);
+  console.log('[fullArrange] childrenOf:', Object.fromEntries(childrenOf));
 
   activities.sort((a, b) => a.position.x - b.position.x);
 
@@ -258,11 +262,17 @@ function fullArrange(
     }
   }
 
+  console.log('[fullArrange] computed positions:');
+  for (const [id, pos] of positions) {
+    console.log(`  ${id} -> x:${pos.x} y:${pos.y}`);
+  }
+
   // Apply all positions (annotations untouched)
   const updatedNodes = nodes.map((n) => {
     const pos = positions.get(n.id);
     return pos ? { ...n, position: pos } : n;
   });
+  console.log('[fullArrange] applying', positions.size, 'position updates');
   useMapStore.setState({ nodes: updatedNodes, isDirty: true });
 }
 
@@ -274,19 +284,33 @@ export function LayoutCorrector() {
   const pendingLayout = useMapStore((s) => s.pendingLayout);
   const setPendingLayout = useMapStore((s) => s.setPendingLayout);
   const nodeLookup = useStore(nodeLookupSelector);
-  // Keep a ref so the timeout callback always reads the latest lookup
   const nodeLookupRef = useRef(nodeLookup);
   nodeLookupRef.current = nodeLookup;
+  const actionRef = useRef<string | null>(null);
+
+  // Capture the action in a ref, then clear the store flag
+  if (pendingLayout !== 'none' && actionRef.current === null) {
+    actionRef.current = pendingLayout;
+    console.log('[LayoutCorrector] captured action:', pendingLayout);
+    setPendingLayout('none');
+  }
 
   useEffect(() => {
-    if (pendingLayout === 'none') return;
-    const action = pendingLayout;
-    setPendingLayout('none');
+    const action = actionRef.current;
+    if (!action) return;
+    actionRef.current = null;
 
-    // Wait a frame + small delay so React Flow has measured any new nodes
+    console.log('[LayoutCorrector] scheduling', action, 'with 80ms timeout');
+
     const timer = setTimeout(() => {
       const lookup = nodeLookupRef.current;
       const { nodes, edges } = useMapStore.getState();
+      console.log('[LayoutCorrector] timeout fired for', action, '- nodes:', nodes.length, 'edges:', edges.length, 'lookup size:', lookup.size);
+
+      for (const node of nodes) {
+        const entry = lookup.get(node.id);
+        console.log(`  [node] ${node.id} (${node.type}) measured:`, entry?.measured?.width, 'x', entry?.measured?.height, 'pos:', node.position.x, node.position.y);
+      }
 
       if (action === 'fullArrange') {
         fullArrange(nodes, edges, lookup);
@@ -296,7 +320,7 @@ export function LayoutCorrector() {
     }, 80);
 
     return () => clearTimeout(timer);
-  }, [pendingLayout, setPendingLayout]);
+  });
 
   return null;
 }

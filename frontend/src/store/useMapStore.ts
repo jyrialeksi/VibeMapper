@@ -271,9 +271,12 @@ export const useMapStore = create<MapState>((set, get) => ({
   },
 
   arrangeLocal: () => {
-    if (get().nodes.length === 0) return;
+    const { nodes, pendingLayout } = get();
+    console.log('[arrangeLocal] called, nodes:', nodes.length, 'current pendingLayout:', pendingLayout);
+    if (nodes.length === 0) return;
     get().pushSnapshot();
     set({ pendingLayout: 'fullArrange' });
+    console.log('[arrangeLocal] set pendingLayout to fullArrange, new state:', get().pendingLayout);
   },
 
   // Undo/redo actions

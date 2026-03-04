@@ -51,7 +51,7 @@ export function AIPromptBox() {
             {loading ? (hasNodes ? 'Editing...' : 'Generating...') : (hasNodes ? 'Edit Map' : 'Generate')}
           </button>
           <button
-            onClick={arrangeLocal}
+            onClick={() => { console.log('[AIPromptBox] Auto-arrange clicked'); arrangeLocal(); }}
             disabled={loading || !hasNodes}
             className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-50 border border-gray-300 whitespace-nowrap"
           >
