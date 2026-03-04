@@ -1,0 +1,18 @@
+{
+  "name": "user-story-mapper-ai",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "test": "npm run test --workspaces"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
