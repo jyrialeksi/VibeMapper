@@ -10,7 +10,7 @@ import {
   applyEdgeChanges,
   addEdge,
 } from '@xyflow/react';
-import type { StoryCardData, ToolMode, CardType, EditOperation, Priority } from '../types';
+import type { StoryCardData, ToolMode, CardType, EditOperation } from '../types';
 
 interface Snapshot {
   nodes: Node<StoryCardData>[];
@@ -18,15 +18,8 @@ interface Snapshot {
 }
 
 const MAX_HISTORY = 50;
-const HORIZONTAL_SPACING = 300;
-const ACTIVITY_Y = 0;
-const STEP_Y = 200;
-const PRIORITY_BASE_Y: Record<Priority, number> = {
-  'must-have': 400,
-  'should-have': 600,
-  'could-have': 800,
-  'wont-have': 1000,
-};
+
+export type PendingLayout = 'none' | 'correctOverlap' | 'fullArrange';
 
 interface MapState {
   // Canvas state
@@ -48,7 +41,7 @@ interface MapState {
   canRedo: boolean;
 
   // Layout correction
-  needsLayoutCorrection: boolean;
+  pendingLayout: PendingLayout;
 
   // Version state
   pendingSaveLabel: string | null;
@@ -82,7 +75,7 @@ interface MapState {
   clearHistory: () => void;
 
   // Layout correction actions
-  setNeedsLayoutCorrection: (flag: boolean) => void;
+  setPendingLayout: (action: PendingLayout) => void;
 
   // Version actions
   setPendingSaveLabel: (label: string | null) => void;
@@ -106,7 +99,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   canRedo: false,
 
   // Layout correction
-  needsLayoutCorrection: false,
+  pendingLayout: 'none',
 
   // Version state
   pendingSaveLabel: null,
@@ -195,7 +188,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       nodes: [...existing, ...offsetNodes],
       edges: [...existingEdges, ...newEdges],
       isDirty: true,
-      needsLayoutCorrection: true,
+      pendingLayout: 'correctOverlap',
     });
   },
 
@@ -207,7 +200,7 @@ export const useMapStore = create<MapState>((set, get) => ({
         return pos ? { ...n, position: pos.position } : n;
       }),
       isDirty: true,
-      needsLayoutCorrection: true,
+      pendingLayout: 'correctOverlap',
     });
   },
 
@@ -227,7 +220,6 @@ export const useMapStore = create<MapState>((set, get) => ({
           if (!op.id) break;
           if (!nodes.some((n) => n.id === op.id)) break;
           nodes = nodes.filter((n) => n.id !== op.id);
-          // Safety net: remove dangling edges
           edges = edges.filter((e) => e.source !== op.id && e.target !== op.id);
           break;
         }
@@ -270,103 +262,18 @@ export const useMapStore = create<MapState>((set, get) => ({
     const needsLayout = operations.some(
       (op) => op.type === 'add_node' || op.type === 'move_node'
     );
-    set({ nodes, edges, isDirty: true, ...(needsLayout && { needsLayoutCorrection: true }) });
+    set({
+      nodes,
+      edges,
+      isDirty: true,
+      ...(needsLayout && { pendingLayout: 'correctOverlap' as PendingLayout }),
+    });
   },
 
   arrangeLocal: () => {
-    const { nodes, edges } = get();
-    if (nodes.length === 0) return;
+    if (get().nodes.length === 0) return;
     get().pushSnapshot();
-
-    // Build parent->children map from edges
-    const childrenOf = new Map<string, string[]>();
-    const hasParent = new Set<string>();
-    for (const edge of edges) {
-      if (!childrenOf.has(edge.source)) childrenOf.set(edge.source, []);
-      childrenOf.get(edge.source)!.push(edge.target);
-      hasParent.add(edge.target);
-    }
-
-    // Categorize nodes
-    const activities = nodes.filter((n) => n.type === 'activity');
-    const steps = nodes.filter((n) => n.type === 'step');
-    const stories = nodes.filter((n) => n.type === 'storyCard');
-
-    // Sort activities by current x to preserve user's order
-    activities.sort((a, b) => a.position.x - b.position.x);
-
-    const positions = new Map<string, { x: number; y: number }>();
-    const assignedSteps = new Set<string>();
-    const assignedStories = new Set<string>();
-    let currentColumn = 0;
-
-    for (const activity of activities) {
-      const actStepIds = (childrenOf.get(activity.id) || []).filter((id) =>
-        steps.some((s) => s.id === id)
-      );
-      const actSteps = actStepIds
-        .map((id) => steps.find((s) => s.id === id)!)
-        .sort((a, b) => a.position.x - b.position.x);
-
-      if (actSteps.length === 0) {
-        // Activity with no steps — give it one column
-        positions.set(activity.id, { x: currentColumn * HORIZONTAL_SPACING, y: ACTIVITY_Y });
-        currentColumn++;
-      } else {
-        const startCol = currentColumn;
-        for (const step of actSteps) {
-          assignedSteps.add(step.id);
-          positions.set(step.id, { x: currentColumn * HORIZONTAL_SPACING, y: STEP_Y });
-
-          // Place stories under this step at priority base y
-          const stepStoryIds = (childrenOf.get(step.id) || []).filter((id) =>
-            stories.some((s) => s.id === id)
-          );
-          for (const storyId of stepStoryIds) {
-            const story = stories.find((s) => s.id === storyId)!;
-            assignedStories.add(story.id);
-            const baseY = PRIORITY_BASE_Y[(story.data as StoryCardData).priority] ?? 400;
-            positions.set(story.id, { x: currentColumn * HORIZONTAL_SPACING, y: baseY });
-          }
-          currentColumn++;
-        }
-        // Center activity over its steps
-        const centerX = ((startCol + currentColumn - 1) / 2) * HORIZONTAL_SPACING;
-        positions.set(activity.id, { x: centerX, y: ACTIVITY_Y });
-      }
-    }
-
-    // Orphan steps (no parent activity)
-    for (const step of steps) {
-      if (assignedSteps.has(step.id)) continue;
-      positions.set(step.id, { x: currentColumn * HORIZONTAL_SPACING, y: STEP_Y });
-      const stepStoryIds = (childrenOf.get(step.id) || []).filter((id) =>
-        stories.some((s) => s.id === id)
-      );
-      for (const storyId of stepStoryIds) {
-        const story = stories.find((s) => s.id === storyId)!;
-        assignedStories.add(story.id);
-        const baseY = PRIORITY_BASE_Y[(story.data as StoryCardData).priority] ?? 400;
-        positions.set(story.id, { x: currentColumn * HORIZONTAL_SPACING, y: baseY });
-      }
-      currentColumn++;
-    }
-
-    // Orphan stories (no parent step)
-    for (const story of stories) {
-      if (assignedStories.has(story.id)) continue;
-      const baseY = PRIORITY_BASE_Y[(story.data as StoryCardData).priority] ?? 400;
-      positions.set(story.id, { x: currentColumn * HORIZONTAL_SPACING, y: baseY });
-      currentColumn++;
-    }
-
-    // Apply positions (annotations stay where they are)
-    const updatedNodes = nodes.map((n) => {
-      const pos = positions.get(n.id);
-      return pos ? { ...n, position: pos } : n;
-    });
-
-    set({ nodes: updatedNodes, isDirty: true, needsLayoutCorrection: true });
+    set({ pendingLayout: 'fullArrange' });
   },
 
   // Undo/redo actions
@@ -427,7 +334,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   },
 
   // Layout correction actions
-  setNeedsLayoutCorrection: (flag) => set({ needsLayoutCorrection: flag }),
+  setPendingLayout: (action) => set({ pendingLayout: action }),
 
   // Version actions
   setPendingSaveLabel: (label) => set({ pendingSaveLabel: label }),
