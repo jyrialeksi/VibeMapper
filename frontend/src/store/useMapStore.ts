@@ -10,7 +10,7 @@ import {
   applyEdgeChanges,
   addEdge,
 } from '@xyflow/react';
-import type { StoryCardData, ToolMode, CardType, EditOperation } from '../types';
+import type { StoryCardData, ToolMode, CardType, Priority, EditOperation } from '../types';
 
 interface Snapshot {
   nodes: Node<StoryCardData>[];
@@ -42,6 +42,9 @@ interface MapState {
 
   // Layout correction
   pendingLayout: PendingLayout;
+
+  // Priority filter state
+  hiddenPriorities: Set<Priority>;
 
   // Version state
   pendingSaveLabel: string | null;
@@ -77,6 +80,9 @@ interface MapState {
   // Layout correction actions
   setPendingLayout: (action: PendingLayout) => void;
 
+  // Priority filter actions
+  togglePriority: (priority: Priority) => void;
+
   // Version actions
   setPendingSaveLabel: (label: string | null) => void;
   setVersionPanelOpen: (open: boolean) => void;
@@ -100,6 +106,9 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Layout correction
   pendingLayout: 'none',
+
+  // Priority filter state
+  hiddenPriorities: new Set<Priority>(),
 
   // Version state
   pendingSaveLabel: null,
@@ -338,6 +347,18 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Layout correction actions
   setPendingLayout: (action) => set({ pendingLayout: action }),
+
+  // Priority filter actions
+  togglePriority: (priority) => {
+    const current = get().hiddenPriorities;
+    const next = new Set(current);
+    if (next.has(priority)) {
+      next.delete(priority);
+    } else {
+      next.add(priority);
+    }
+    set({ hiddenPriorities: next });
+  },
 
   // Version actions
   setPendingSaveLabel: (label) => set({ pendingSaveLabel: label }),

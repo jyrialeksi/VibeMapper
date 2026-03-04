@@ -1,11 +1,19 @@
 import { useMapStore } from '../../store/useMapStore';
-import type { ToolMode, CardType } from '../../types';
+import type { ToolMode, CardType, Priority } from '../../types';
+import { PRIORITY_COLORS } from '../../types';
 
 const tools: { mode: ToolMode; label: string; icon: string }[] = [
   { mode: 'select', label: 'Select', icon: '↖' },
   { mode: 'addCard', label: 'Add Card', icon: '＋' },
   { mode: 'line', label: 'Line', icon: '╱' },
   { mode: 'box', label: 'Box', icon: '▭' },
+];
+
+const priorityOptions: { priority: Priority; label: string }[] = [
+  { priority: 'must-have', label: 'Must' },
+  { priority: 'should-have', label: 'Should' },
+  { priority: 'could-have', label: 'Could' },
+  { priority: 'wont-have', label: "Won't" },
 ];
 
 const cardTypeOptions: { type: CardType; label: string }[] = [
@@ -32,6 +40,8 @@ export function Toolbar({ onImport, onExport }: ToolbarProps) {
   const redo = useMapStore((s) => s.redo);
   const isVersionPanelOpen = useMapStore((s) => s.isVersionPanelOpen);
   const setVersionPanelOpen = useMapStore((s) => s.setVersionPanelOpen);
+  const hiddenPriorities = useMapStore((s) => s.hiddenPriorities);
+  const togglePriority = useMapStore((s) => s.togglePriority);
 
   return (
     <div className="absolute top-3 left-3 z-50 flex items-center gap-2">
@@ -107,6 +117,31 @@ export function Toolbar({ onImport, onExport }: ToolbarProps) {
         >
           ↪
         </button>
+      </div>
+
+      {/* Priority filters */}
+      <div className="flex bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+        {priorityOptions.map((opt) => {
+          const isHidden = hiddenPriorities.has(opt.priority);
+          return (
+            <button
+              key={opt.priority}
+              onClick={() => togglePriority(opt.priority)}
+              className={`px-3 py-2 text-sm font-medium border-r border-gray-200 last:border-r-0 transition-colors ${
+                isHidden ? 'text-gray-400 bg-gray-50' : 'text-gray-700 hover:bg-gray-50'
+              }`}
+              title={`${isHidden ? 'Show' : 'Hide'} ${opt.label} Have stories`}
+            >
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 align-middle"
+                style={{
+                  backgroundColor: isHidden ? '#d1d5db' : PRIORITY_COLORS[opt.priority],
+                }}
+              />
+              {opt.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* History */}

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -64,6 +64,25 @@ export function Canvas({ projectId }: CanvasProps) {
   const setProjectId = useMapStore((s) => s.setProjectId);
   const pushSnapshot = useMapStore((s) => s.pushSnapshot);
   const isVersionPanelOpen = useMapStore((s) => s.isVersionPanelOpen);
+  const hiddenPriorities = useMapStore((s) => s.hiddenPriorities);
+
+  const visibleNodes = useMemo(() => {
+    if (hiddenPriorities.size === 0) return nodes;
+    return nodes.filter((n) => {
+      if (n.data.cardType !== 'story') return true;
+      return !hiddenPriorities.has(n.data.priority);
+    });
+  }, [nodes, hiddenPriorities]);
+
+  const visibleNodeIds = useMemo(() => {
+    if (hiddenPriorities.size === 0) return null;
+    return new Set(visibleNodes.map((n) => n.id));
+  }, [visibleNodes, hiddenPriorities]);
+
+  const visibleEdges = useMemo(() => {
+    if (!visibleNodeIds) return edges;
+    return edges.filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
+  }, [edges, visibleNodeIds]);
 
   useAutoSave();
   useKeyboardShortcuts();
@@ -186,8 +205,8 @@ export function Canvas({ projectId }: CanvasProps) {
     <div className="w-full h-full relative">
       <Toolbar onImport={handleImport} onExport={handleExport} />
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={visibleNodes}
+        edges={visibleEdges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
