@@ -4,8 +4,9 @@ import { useMapStore } from '../../store/useMapStore';
 
 export function AIPromptBox() {
   const [prompt, setPrompt] = useState('');
-  const { models, selectedModel, setSelectedModel, loading, error, generate, arrange } = useAI();
+  const { models, selectedModel, setSelectedModel, loading, error, generate } = useAI();
   const hasNodes = useMapStore((s) => s.nodes.length > 0);
+  const arrangeLocal = useMapStore((s) => s.arrangeLocal);
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
@@ -50,8 +51,8 @@ export function AIPromptBox() {
             {loading ? (hasNodes ? 'Editing...' : 'Generating...') : (hasNodes ? 'Edit Map' : 'Generate')}
           </button>
           <button
-            onClick={arrange}
-            disabled={loading}
+            onClick={arrangeLocal}
+            disabled={loading || !hasNodes}
             className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-50 border border-gray-300 whitespace-nowrap"
           >
             Auto-arrange
