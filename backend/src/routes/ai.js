@@ -36,18 +36,40 @@ router.post('/generate', async (req, res) => {
 
     const isEditMode = Array.isArray(existingNodes) && existingNodes.length > 0;
 
+    let messages;
     let result;
     if (isEditMode) {
       const compactState = buildCompactState(existingNodes, existingEdges || []);
-      result = await chatCompletion(model, [
+      messages = [
         { role: 'system', content: EDIT_SYSTEM_PROMPT },
         { role: 'user', content: `${compactState}\n\nUSER REQUEST: ${prompt}` },
-      ], { temperature: 0.4 });
+      ];
+      result = await chatCompletion(model, messages, { temperature: 0.4 });
     } else {
-      result = await chatCompletion(model, [
+      messages = [
         { role: 'system', content: GENERATE_SYSTEM_PROMPT },
         { role: 'user', content: prompt },
-      ]);
+      ];
+      result = await chatCompletion(model, messages);
+    }
+
+    // Shape validation — retry once with correction if wrong structure
+    if (isEditMode && !Array.isArray(result.operations)) {
+      console.warn('AI returned wrong shape (missing operations), retrying with correction...');
+      const correctionMessages = [
+        ...messages,
+        { role: 'assistant', content: JSON.stringify(result) },
+        { role: 'user', content: 'Your response must be a JSON object with an "operations" array. Example: { "operations": [{ "type": "add_node", ... }] }' },
+      ];
+      result = await chatCompletion(model, correctionMessages, { temperature: 0.4 });
+    } else if (!isEditMode && !Array.isArray(result.nodes)) {
+      console.warn('AI returned wrong shape (missing nodes), retrying with correction...');
+      const correctionMessages = [
+        ...messages,
+        { role: 'assistant', content: JSON.stringify(result) },
+        { role: 'user', content: 'Your response must be a JSON object with a "nodes" array and an "edges" array. Example: { "nodes": [...], "edges": [...] }' },
+      ];
+      result = await chatCompletion(model, correctionMessages);
     }
 
     // Save to history
