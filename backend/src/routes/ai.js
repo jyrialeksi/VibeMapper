@@ -58,9 +58,16 @@ router.post('/generate', async (req, res) => {
     }
 
     if (isEditMode) {
-      res.json({ mode: 'edit', operations: result.operations || [] });
+      const ops = result.operations;
+      if (!Array.isArray(ops)) {
+        return res.status(502).json({ error: 'AI returned an unexpected format. Try rephrasing your request or using a different model.' });
+      }
+      res.json({ mode: 'edit', operations: ops });
     } else {
-      res.json({ mode: 'generate', nodes: result.nodes || [], edges: result.edges || [] });
+      if (!Array.isArray(result.nodes)) {
+        return res.status(502).json({ error: 'AI returned an unexpected format. Try rephrasing your request or using a different model.' });
+      }
+      res.json({ mode: 'generate', nodes: result.nodes, edges: result.edges || [] });
     }
   } catch (err) {
     console.error('AI generate error:', err);

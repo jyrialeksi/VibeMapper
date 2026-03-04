@@ -39,7 +39,20 @@ export async function chatCompletion(model, messages, { jsonMode = true, tempera
   if (jsonMode) {
     // Strip markdown code fences that some models wrap around JSON
     const cleaned = content.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
-    return JSON.parse(cleaned);
+    try {
+      return JSON.parse(cleaned);
+    } catch {
+      // Some models return prose with embedded JSON — extract the first { ... } or [ ... ] block
+      const match = cleaned.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+      if (match) {
+        try {
+          return JSON.parse(match[1]);
+        } catch {
+          // fall through to error
+        }
+      }
+      throw new Error('AI returned invalid JSON. Try a different model or rephrase your prompt.');
+    }
   }
   return content;
 }
