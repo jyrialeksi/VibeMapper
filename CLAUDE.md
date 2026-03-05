@@ -24,17 +24,21 @@ Tests use Vitest: `npm test` runs all workspaces, or `npm run test --workspace=f
 
 Monorepo (npm workspaces) with two packages: `frontend/` and `backend/`.
 
-**Backend** — Express + better-sqlite3 (ESM, plain .js files). SQLite database auto-created at `backend/data/app.db` with WAL mode. Env file at `backend/.env` (`OPENROUTER_API_KEY`). Three route files: `projects.js` (CRUD), `canvas.js` (load/save/import/export), `ai.js` (generate/arrange via OpenRouter).
+**Backend** — Express + better-sqlite3 (ESM, plain .js files). SQLite database auto-created at `backend/data/app.db` with WAL mode. Env file at `backend/.env` (`OPENROUTER_API_KEY`). Three route files: `projects.js` (CRUD), `canvas.js` (load/save/import/export + versioning: snapshots, restore), `ai.js` (generate/edit via OpenRouter). AI has two modes: **generate** (create map from scratch) and **edit** (surgical operations on existing maps).
 
-**Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand. Vite proxies `/api` → `localhost:3001`.
+**Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand. Vite proxies `/api` → `localhost:3001`. Features include **undo/redo** (stack-based, max 50), **priority filtering** (hide/show cards by priority), **Markdown export**, and **LayoutCorrector** (measures DOM heights to fix overlapping nodes after AI generation or auto-arrange).
 
 **Data flow:** React Flow canvas state (nodes/edges/viewport) lives in Zustand (`useMapStore`). Auto-save debounces 2s then PUTs JSON to `/api/canvas/:projectId`. Backend stores nodes/edges/viewport as JSON text columns in SQLite.
+
+**AI robustness:** `backend/src/ai/client.js` includes JSON extraction fallback (regex for first `{...}` or `[...]` block), shape validation, and auto-retry with conversational correction when models return prose instead of JSON.
+
+**Local auto-arrange:** Auto-arrange is a local algorithm (not AI-based) — triggered via `arrangeLocal` in the store, with height-aware positioning by `LayoutCorrector.tsx`.
 
 ## Canvas Data Model
 
 Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: `default` (built-in bezier), `line` (custom straight). Node components in `frontend/src/components/nodes/`, edge components in `frontend/src/components/edges/`.
 
-**Layout grid** (y-axis): Activities at 0, Steps at 200, Must-have stories at 400, Should-have at 600, Could-have at 800. Horizontal spacing: 300px. Full spec in `docs/JSON_FORMAT.md`.
+**Layout grid** (y-axis): Activities at 0, Steps at 200, Must-have stories at 400, Should-have at 600, Could-have at 800, Won't-have at 1000. Horizontal spacing: 300px. Full spec in `docs/JSON_FORMAT.md`.
 
 **ID convention:** `activity-{N}`, `step-{actN}-{stepN}`, `story-{actN}-{stepN}-{storyN}`, `annotation-{N}`, `edge-{sourceId}-{targetId}`.
 
@@ -47,7 +51,12 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - `frontend/src/types/index.ts` — TypeScript interfaces, color constants (PRIORITY_COLORS, CARD_TYPE_COLORS)
 - `backend/src/ai/prompts.js` — System prompts that define JSON output format for AI
 - `backend/src/ai/models.js` — Available OpenRouter model list
-- `backend/src/db/migrations.js` — SQLite schema (projects, canvas_states, ai_history)
+- `backend/src/db/migrations.js` — SQLite schema (projects, canvas_states, ai_history, canvas_versions)
+- `backend/src/db/versions.js` — Canvas versioning queries (save/list/restore snapshots)
+- `backend/src/routes/canvas.js` — Canvas load/save/import/export + version management endpoints
+- `frontend/src/components/LayoutCorrector.tsx` — Measures DOM heights post-render, fixes overlapping nodes. Two modes: `fullArrange` and `correctOverlap`
+- `frontend/src/utils/exportToMarkdown.ts` — Structured Markdown export respecting priority filters
+- `frontend/src/components/panels/VersionHistoryPanel.tsx` — Version list, create/restore snapshots
 
 ## Conventions
 
@@ -57,3 +66,13 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - Node components use React Flow's `Handle` for connections and `NodeProps<Node<StoryCardData>>` typing
 - `mergeNodes()` in the store offsets AI-generated nodes if they overlap existing ones
 - **Git commits**: Always create a local git commit after completing each full task/feature. Use descriptive commit messages.
+- **CLAUDE.md maintenance**: As a final step before each git commit, review this file and update it if the completed work changes the app's architecture, features, key files, or conventions. Skip updates for insignificant changes (typos, minor refactors). Always add a bullet to the Learnings section if a meaningful lesson was discovered during development.
+
+## Learnings
+
+Lessons learned during development — add new entries as they arise.
+
+- **React effect cleanup race condition** (commit `2eb6928`): When a `useEffect` calls a state setter (e.g., `setPendingLayout('none')`) that triggers a re-render, the cleanup function runs and cancels any `setTimeout` set in the same effect. Fix: capture the pending action in a ref during render so the effect has no state dependency causing re-cleanup.
+- **AI models ignoring JSON format instructions** (commits `93427f5`, `15b708f`): Some OpenRouter models return prose instead of JSON even with `response_format: { type: "json_object" }`. Fix: fallback to regex extraction of first `{...}` or `[...]` block, then validate shape, then auto-retry once with conversational correction.
+- **Node overlap after AI generation** (commits `713e704`, `b171425`): AI generates nodes with fixed y-positions, but story cards have variable heights (acceptance criteria, tags expand them). Fix: `LayoutCorrector` component inside `<ReactFlow>` reads actual measured heights from `nodeLookup` and recomputes y-positions with proper spacing.
+- **Local auto-arrange vs AI arrange** (commit `9c72321`): AI-based auto-arrange was slow, cost tokens, and could fail. Replaced with instant local algorithm that rebuilds grid from edge hierarchy and triggers LayoutCorrector for height-aware positioning.
