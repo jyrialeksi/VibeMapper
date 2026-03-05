@@ -38,7 +38,6 @@ function createDefaultData(cardType: CardType): StoryCardData {
     acceptanceCriteria: [],
     cardType,
     priority: 'must-have',
-    tags: [],
   };
 }
 

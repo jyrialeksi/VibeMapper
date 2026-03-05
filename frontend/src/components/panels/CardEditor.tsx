@@ -150,24 +150,6 @@ export function CardEditor() {
           </>
         )}
 
-        {/* Tags */}
-        <label className="block text-xs font-medium text-gray-500 mb-1 mt-2">
-          Tags (comma-separated)
-        </label>
-        <input
-          type="text"
-          value={(data.tags || []).join(', ')}
-          onChange={(e) =>
-            updateNodeData(node.id, {
-              tags: e.target.value
-                .split(',')
-                .map((t) => t.trim())
-                .filter(Boolean),
-            })
-          }
-          className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm mb-4"
-        />
-
         {/* Delete */}
         <button
           onClick={() => {

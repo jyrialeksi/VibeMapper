@@ -179,10 +179,5 @@ function renderStory(lines: string[], story: Node<StoryCardData>) {
     }
   }
 
-  if (story.data.tags && story.data.tags.length > 0) {
-    lines.push('');
-    lines.push(`*Tags: ${story.data.tags.join(', ')}*`);
-  }
-
   lines.push('');
 }

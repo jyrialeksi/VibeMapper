@@ -63,15 +63,6 @@ export function StoryCardNode({ data, selected }: NodeProps<Node<StoryCardData>>
           </ul>
         </div>
       )}
-      {data.tags && data.tags.length > 0 && (
-        <div className="flex flex-wrap gap-0.5 mt-1.5">
-          {data.tags.map((tag) => (
-            <span key={tag} className="text-[8px] bg-emerald-100 text-emerald-700 px-1 py-0.5 rounded">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
       <div
         className="absolute top-0 left-0 w-1 h-full rounded-l-lg"
         style={{ backgroundColor: priorityColor }}

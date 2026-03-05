@@ -11,7 +11,6 @@ export interface StoryCardData {
   priority: Priority;
   estimate?: string;
   color?: string;
-  tags?: string[];
   width?: number;
   height?: number;
 }

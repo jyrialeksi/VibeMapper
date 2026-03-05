@@ -21,9 +21,6 @@ function estimateHeight(data: StoryCardData): number {
   if (data.acceptanceCriteria?.length) {
     h += 18 + data.acceptanceCriteria.length * 14;
   }
-  if (data.tags?.length) {
-    h += 20;
-  }
   return Math.max(h, 60);
 }
 

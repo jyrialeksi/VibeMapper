@@ -15,15 +15,6 @@ export function StepNode({ data, selected }: NodeProps<Node<StoryCardData>>) {
       {data.description && (
         <div className="text-[10px] text-gray-600 mt-1 leading-snug">{data.description}</div>
       )}
-      {data.tags && data.tags.length > 0 && (
-        <div className="flex flex-wrap gap-0.5 mt-1.5">
-          {data.tags.map((tag) => (
-            <span key={tag} className="text-[8px] bg-blue-100 text-blue-700 px-1 py-0.5 rounded">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
       <Handle type="target" position={Position.Top} className="!bg-blue-500 !w-3 !h-3" />
       <Handle type="source" position={Position.Bottom} className="!bg-blue-500 !w-3 !h-3" />
     </div>

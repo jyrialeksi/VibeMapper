@@ -17,8 +17,7 @@ Return JSON with this exact structure:
         "description": "Brief description",
         "acceptanceCriteria": [],
         "cardType": "activity",
-        "priority": "must-have",
-        "tags": []
+        "priority": "must-have"
       }
     },
     {
@@ -30,8 +29,7 @@ Return JSON with this exact structure:
         "description": "Brief description",
         "acceptanceCriteria": [],
         "cardType": "step",
-        "priority": "must-have",
-        "tags": []
+        "priority": "must-have"
       }
     },
     {
@@ -44,8 +42,7 @@ Return JSON with this exact structure:
         "acceptanceCriteria": ["Given... When... Then..."],
         "cardType": "story",
         "priority": "must-have",
-        "estimate": "S",
-        "tags": []
+        "estimate": "S"
       }
     }
   ],
@@ -106,8 +103,8 @@ ID conventions:
 - Pick the next available number by examining existing IDs (e.g., if activity-1 and activity-2 exist, use activity-3)
 
 Node data structure:
-- activity/step: { title, description, acceptanceCriteria: [], cardType: "activity"|"step", priority: "must-have", tags: [] }
-- story: { title, description, acceptanceCriteria: ["Given... When... Then..."], cardType: "story", priority, estimate: "S"|"M"|"L"|"XL"|"XS", tags: [] }
+- activity/step: { title, description, acceptanceCriteria: [], cardType: "activity"|"step", priority: "must-have" }
+- story: { title, description, acceptanceCriteria: ["Given... When... Then..."], cardType: "story", priority, estimate: "S"|"M"|"L"|"XL"|"XS" }
 
 Priority values: "must-have", "should-have", "could-have", "wont-have"
 

@@ -49,8 +49,7 @@ Top-level user goals or themes. Displayed in the first row.
     "description": "All auth-related functionality",
     "acceptanceCriteria": [],
     "cardType": "activity",
-    "priority": "must-have",
-    "tags": ["auth"]
+    "priority": "must-have"
   }
 }
 ```
@@ -69,8 +68,7 @@ Steps within an activity. Displayed in the second row.
     "description": "User login process",
     "acceptanceCriteria": [],
     "cardType": "step",
-    "priority": "must-have",
-    "tags": []
+    "priority": "must-have"
   }
 }
 ```
@@ -93,8 +91,7 @@ Individual user stories. Displayed in rows below steps, grouped by priority.
     ],
     "cardType": "story",
     "priority": "must-have",
-    "estimate": "M",
-    "tags": ["auth", "mvp"]
+    "estimate": "M"
   }
 }
 ```
@@ -114,7 +111,6 @@ Free-form notes or grouping boxes. Resizable.
     "acceptanceCriteria": [],
     "cardType": "annotation",
     "priority": "must-have",
-    "tags": [],
     "width": 600,
     "height": 400
   },
@@ -145,7 +141,6 @@ Edges connect nodes. Typically: Activity → Step → Story.
 | `cardType` | enum | Yes | `"activity"`, `"step"`, `"story"`, or `"annotation"` |
 | `priority` | enum | Yes | `"must-have"`, `"should-have"`, `"could-have"`, `"wont-have"` |
 | `estimate` | string | No | Size estimate: `"XS"`, `"S"`, `"M"`, `"L"`, `"XL"` |
-| `tags` | string[] | No | Arbitrary tags for grouping/filtering |
 | `color` | string | No | Custom hex color override |
 | `width` | number | No | Width in px (annotations only) |
 | `height` | number | No | Height in px (annotations only) |
@@ -192,8 +187,7 @@ The story map follows a grid layout:
           "description": "New user registration and setup",
           "acceptanceCriteria": [],
           "cardType": "activity",
-          "priority": "must-have",
-          "tags": ["onboarding"]
+          "priority": "must-have"
         }
       },
       {
@@ -205,8 +199,7 @@ The story map follows a grid layout:
           "description": "Account creation process",
           "acceptanceCriteria": [],
           "cardType": "step",
-          "priority": "must-have",
-          "tags": []
+          "priority": "must-have"
         }
       },
       {
@@ -222,8 +215,7 @@ The story map follows a grid layout:
           ],
           "cardType": "story",
           "priority": "must-have",
-          "estimate": "M",
-          "tags": ["auth", "mvp"]
+          "estimate": "M"
         }
       },
       {
@@ -238,8 +230,7 @@ The story map follows a grid layout:
           ],
           "cardType": "story",
           "priority": "should-have",
-          "estimate": "L",
-          "tags": ["auth", "sso"]
+          "estimate": "L"
         }
       }
     ],
