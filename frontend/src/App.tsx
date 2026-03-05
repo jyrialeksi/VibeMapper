@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Canvas } from './components/Canvas';
 import { api } from './api/client';
 import type { Project } from './types';
+import { X, ArrowLeft } from 'lucide-react';
 
 function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -102,9 +103,9 @@ function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
                 </div>
                 <button
                   onClick={(e) => handleDelete(project.id, e)}
-                  className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-lg px-2"
+                  className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity px-2"
                 >
-                  &times;
+                  <X size={16} />
                 </button>
               </div>
             ))}
@@ -128,9 +129,10 @@ function App() {
       <div className="h-10 bg-white border-b border-gray-200 flex items-center px-3 shrink-0 z-50">
         <button
           onClick={() => setProjectId(null)}
-          className="text-sm text-gray-500 hover:text-gray-700 mr-3"
+          className="text-sm text-gray-500 hover:text-gray-700 mr-3 flex items-center gap-1 transition-colors duration-150"
         >
-          &larr; Projects
+          <ArrowLeft size={14} />
+          Projects
         </button>
         <span className="text-sm font-medium text-gray-700">Story Map</span>
       </div>

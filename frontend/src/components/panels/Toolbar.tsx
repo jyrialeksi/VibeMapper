@@ -1,12 +1,21 @@
 import { useMapStore } from '../../store/useMapStore';
 import type { ToolMode, CardType, Priority } from '../../types';
 import { PRIORITY_COLORS } from '../../types';
+import {
+  MousePointer2,
+  Plus,
+  Undo2,
+  Redo2,
+  Upload,
+  Download,
+  FileText,
+  History,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
-const tools: { mode: ToolMode; label: string; icon: string }[] = [
-  { mode: 'select', label: 'Select', icon: '↖' },
-  { mode: 'addCard', label: 'Add Card', icon: '＋' },
-  { mode: 'line', label: 'Line', icon: '╱' },
-  { mode: 'box', label: 'Box', icon: '▭' },
+const tools: { mode: ToolMode; label: string; icon: LucideIcon }[] = [
+  { mode: 'select', label: 'Select', icon: MousePointer2 },
+  { mode: 'addCard', label: 'Add Card', icon: Plus },
 ];
 
 const priorityOptions: { priority: Priority; label: string }[] = [
@@ -47,35 +56,38 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
   return (
     <div className="absolute top-3 left-3 z-50 flex items-center gap-2">
       {/* Tool buttons */}
-      <div className="flex bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-        {tools.map((tool) => (
-          <button
-            key={tool.mode}
-            onClick={() => setToolMode(tool.mode)}
-            className={`px-3 py-2 text-sm font-medium border-r border-gray-200 last:border-r-0 transition-colors ${
-              toolMode === tool.mode
-                ? 'bg-blue-50 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-            title={tool.label}
-          >
-            <span className="mr-1">{tool.icon}</span>
-            {tool.label}
-          </button>
-        ))}
+      <div className="flex bg-white/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 overflow-hidden">
+        {tools.map((tool) => {
+          const Icon = tool.icon;
+          return (
+            <button
+              key={tool.mode}
+              onClick={() => setToolMode(tool.mode)}
+              className={`px-3 py-2 text-sm font-medium border-r border-gray-200/30 last:border-r-0 transition-colors duration-150 flex items-center gap-1.5 ${
+                toolMode === tool.mode
+                  ? 'bg-blue-50/80 text-blue-700'
+                  : 'text-gray-600 hover:bg-gray-50/80'
+              }`}
+              title={tool.label}
+            >
+              <Icon size={16} />
+              {tool.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Card type selector (shown when addCard tool active) */}
       {toolMode === 'addCard' && (
-        <div className="flex bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+        <div className="flex bg-white/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 overflow-hidden">
           {cardTypeOptions.map((opt) => (
             <button
               key={opt.type}
               onClick={() => setCardTypeToAdd(opt.type)}
-              className={`px-3 py-2 text-sm font-medium border-r border-gray-200 last:border-r-0 transition-colors ${
+              className={`px-3 py-2 text-sm font-medium border-r border-gray-200/30 last:border-r-0 transition-colors duration-150 ${
                 cardTypeToAdd === opt.type
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  ? 'bg-emerald-50/80 text-emerald-700'
+                  : 'text-gray-600 hover:bg-gray-50/80'
               }`}
             >
               {opt.label}
@@ -85,58 +97,63 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
       )}
 
       {/* Import/Export */}
-      <div className="flex bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+      <div className="flex bg-white/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 overflow-hidden">
         <button
           onClick={onImport}
-          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 border-r border-gray-200"
+          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50/80 border-r border-gray-200/30 transition-colors duration-150 flex items-center gap-1.5"
+          title="Import"
         >
+          <Upload size={15} />
           Import
         </button>
         <button
           onClick={onExport}
-          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 border-r border-gray-200"
+          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50/80 border-r border-gray-200/30 transition-colors duration-150 flex items-center gap-1.5"
+          title="Export"
         >
+          <Download size={15} />
           Export
         </button>
         <button
           onClick={onExportMarkdown}
-          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50/80 transition-colors duration-150 flex items-center gap-1.5"
           title="Export visible map as Markdown"
         >
-          Export MD
+          <FileText size={15} />
+          MD
         </button>
       </div>
 
       {/* Undo/Redo */}
-      <div className="flex bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+      <div className="flex bg-white/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 overflow-hidden">
         <button
           onClick={undo}
           disabled={!canUndo}
-          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 border-r border-gray-200 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-3 py-2 text-gray-600 hover:bg-gray-50/80 border-r border-gray-200/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
           title="Undo (Ctrl+Z)"
         >
-          ↩
+          <Undo2 size={16} />
         </button>
         <button
           onClick={redo}
           disabled={!canRedo}
-          className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-3 py-2 text-gray-600 hover:bg-gray-50/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
           title="Redo (Ctrl+Shift+Z)"
         >
-          ↪
+          <Redo2 size={16} />
         </button>
       </div>
 
       {/* Priority filters */}
-      <div className="flex bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+      <div className="flex bg-white/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 overflow-hidden">
         {priorityOptions.map((opt) => {
           const isHidden = hiddenPriorities.has(opt.priority);
           return (
             <button
               key={opt.priority}
               onClick={() => togglePriority(opt.priority)}
-              className={`px-3 py-2 text-sm font-medium border-r border-gray-200 last:border-r-0 transition-colors ${
-                isHidden ? 'text-gray-400 bg-gray-50' : 'text-gray-700 hover:bg-gray-50'
+              className={`px-3 py-2 text-sm font-medium border-r border-gray-200/30 last:border-r-0 transition-colors duration-150 ${
+                isHidden ? 'text-gray-400 bg-gray-50/50' : 'text-gray-700 hover:bg-gray-50/80'
               }`}
               title={`${isHidden ? 'Show' : 'Hide'} ${opt.label} Have stories`}
             >
@@ -155,17 +172,18 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
       {/* History */}
       <button
         onClick={() => setVersionPanelOpen(!isVersionPanelOpen)}
-        className={`px-3 py-2 text-sm font-medium bg-white rounded-lg shadow-md border border-gray-200 transition-colors ${
-          isVersionPanelOpen ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'
+        className={`px-3 py-2 text-sm font-medium bg-white/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 transition-colors duration-150 flex items-center gap-1.5 ${
+          isVersionPanelOpen ? 'bg-blue-50/80 text-blue-700' : 'text-gray-600 hover:bg-gray-50/80'
         }`}
         title="Version History"
       >
+        <History size={15} />
         History
       </button>
 
       {/* Save indicator */}
       {isDirty && (
-        <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
+        <span className="text-xs text-amber-600 bg-amber-50/80 backdrop-blur-xl px-2 py-1 rounded-lg border border-amber-200/50">
           Unsaved
         </span>
       )}
