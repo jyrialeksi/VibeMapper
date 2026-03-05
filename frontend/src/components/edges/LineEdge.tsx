@@ -17,7 +17,7 @@ export function LineEdge({
       d={edgePath}
       style={style}
       className={`react-flow__edge-path ${
-        selected ? 'stroke-blue-500' : 'stroke-gray-400'
+        selected ? 'stroke-blue-500' : 'stroke-gray-400 dark:stroke-gray-600'
       }`}
       strokeWidth={selected ? 2.5 : 1.5}
       fill="none"

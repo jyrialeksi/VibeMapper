@@ -10,6 +10,7 @@ import {
 } from '@xyflow/react';
 import { useMapStore } from '../store/useMapStore';
 import { useAutoSave } from '../hooks/useAutoSave';
+import { useTheme } from '../hooks/useTheme';
 import { api } from '../api/client';
 import { nodeTypes } from './nodes';
 import { edgeTypes } from './edges';
@@ -84,6 +85,8 @@ export function Canvas({ projectId }: CanvasProps) {
     if (!visibleNodeIds) return edges;
     return edges.filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
   }, [edges, visibleNodeIds]);
+
+  const { theme } = useTheme();
 
   useAutoSave();
   useKeyboardShortcuts();
@@ -231,15 +234,15 @@ export function Canvas({ projectId }: CanvasProps) {
         edgeTypes={edgeTypes}
         fitView
         connectionMode={toolMode === 'line' ? undefined : undefined}
-        className="bg-gray-50"
+        className="bg-gray-50 dark:bg-gray-950"
         deleteKeyCode="Delete"
         selectionKeyCode="Shift"
       >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#d1d5db" />
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme === 'dark' ? '#4b5563' : '#d1d5db'} />
         <Controls />
         <MiniMap
           nodeStrokeWidth={3}
-          className="!bg-white !border-gray-200"
+          className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700"
         />
         <LayoutCorrector />
         <HighlightClearer />

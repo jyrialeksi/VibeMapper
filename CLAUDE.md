@@ -26,7 +26,7 @@ Monorepo (npm workspaces) with two packages: `frontend/` and `backend/`.
 
 **Backend** — Express + better-sqlite3 (ESM, plain .js files). SQLite database auto-created at `backend/data/app.db` with WAL mode. Env file at `backend/.env` (`OPENROUTER_API_KEY`). Three route files: `projects.js` (CRUD), `canvas.js` (load/save/import/export + versioning: snapshots, restore), `ai.js` (generate/edit via OpenRouter). AI has two modes: **generate** (create map from scratch) and **edit** (surgical operations on existing maps).
 
-**Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand + **lucide-react** (icons). Vite proxies `/api` → `localhost:3001`. Features include **undo/redo** (stack-based, max 50), **priority filtering** (hide/show cards by priority), **Markdown export**, and **LayoutCorrector** (measures DOM heights to fix overlapping nodes after AI generation or auto-arrange). UI uses glass morphism styling (backdrop-blur, semi-transparent backgrounds) on floating panels.
+**Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand + **lucide-react** (icons). Vite proxies `/api` → `localhost:3001`. Features include **undo/redo** (stack-based, max 50), **priority filtering** (hide/show cards by priority), **Markdown export**, **dark mode** (class-based, persisted to localStorage, OS preference detection), and **LayoutCorrector** (measures DOM heights to fix overlapping nodes after AI generation or auto-arrange). UI uses glass morphism styling (backdrop-blur, semi-transparent backgrounds) on floating panels. Toolbar is responsive (`flex-wrap`) for narrow viewports.
 
 **Data flow:** React Flow canvas state (nodes/edges/viewport) lives in Zustand (`useMapStore`). Auto-save debounces 2s then PUTs JSON to `/api/canvas/:projectId`. Backend stores nodes/edges/viewport as JSON text columns in SQLite. **Node highlights:** After AI edit/merge, affected nodes get green (added) or amber (modified) outline+pulse via CSS classes driven by `highlightedNodes` Map in the store; auto-cleared after 5s by `HighlightClearer`.
 
@@ -59,6 +59,7 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - `frontend/src/components/panels/VersionHistoryPanel.tsx` — Version list, create/restore snapshots
 - `frontend/src/components/HighlightClearer.tsx` — Auto-clears node highlights after 5s timeout
 - `frontend/src/components/ui/AutoExpandTextarea.tsx` — Reusable auto-growing textarea (minRows→maxRows, then scrollable)
+- `frontend/src/hooks/useTheme.ts` — Dark mode hook (localStorage + OS preference + class toggle on `<html>`)
 
 ## Conventions
 
@@ -79,3 +80,4 @@ Lessons learned during development — add new entries as they arise.
 - **Node overlap after AI generation** (commits `713e704`, `b171425`): AI generates nodes with fixed y-positions, but story cards have variable heights (acceptance criteria expand them). Fix: `LayoutCorrector` component inside `<ReactFlow>` reads actual measured heights from `nodeLookup` and recomputes y-positions with proper spacing.
 - **Local auto-arrange vs AI arrange** (commit `9c72321`): AI-based auto-arrange was slow, cost tokens, and could fail. Replaced with instant local algorithm that rebuilds grid from edge hierarchy and triggers LayoutCorrector for height-aware positioning.
 - **Highlight state decoupled from node data**: Using a separate `highlightedNodes` Map (not `node.data` flags) keeps highlights independent of LayoutCorrector's `setState` for repositioning. CSS `outline` (not `border`) avoids box model changes that would affect height measurements.
+- **Dark mode with Tailwind v4**: Use `@custom-variant dark (&:where(.dark, .dark *));` in `index.css` to enable class-based dark mode. Flash of wrong theme prevented by inline `<script>` in `index.html` that adds `dark` class before Vite loads. React Flow controls need plain CSS overrides (not Tailwind) since they're outside React's rendering.

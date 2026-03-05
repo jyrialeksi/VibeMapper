@@ -25,9 +25,9 @@ export function AIPromptBox() {
 
   return (
     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl">
-      <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200/50 p-3">
+      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-3">
         {error && (
-          <div className="text-xs text-red-600 bg-red-50/80 px-2 py-1 rounded-lg mb-2">
+          <div className="text-xs text-red-600 dark:text-red-400 bg-red-50/80 dark:bg-red-900/40 px-2 py-1 rounded-lg mb-2">
             {error}
           </div>
         )}
@@ -35,7 +35,7 @@ export function AIPromptBox() {
           <select
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value)}
-            className="rounded-lg bg-white/50 border border-gray-200/50 px-2 py-2 text-sm min-w-[160px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150 self-end"
+            className="rounded-lg bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 px-2 py-2 text-sm dark:text-gray-100 min-w-[160px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150 self-end"
           >
             {models.map((m) => (
               <option key={m.id} value={m.id}>
@@ -50,7 +50,7 @@ export function AIPromptBox() {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={hasNodes ? "Describe changes to your story map..." : "Describe your product or feature..."}
-            className="flex-1 rounded-lg bg-white/50 border border-gray-200/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150 placeholder:text-gray-400"
+            className="flex-1 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 px-3 py-2 text-sm dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150 placeholder:text-gray-400"
             disabled={loading}
           />
           <button
@@ -78,7 +78,7 @@ export function AIPromptBox() {
           <button
             onClick={() => { console.log('[AIPromptBox] Auto-arrange clicked'); arrangeLocal(); }}
             disabled={loading || !hasNodes}
-            className="bg-white/50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100/80 disabled:opacity-50 border border-gray-200/50 whitespace-nowrap transition-colors duration-150 flex items-center gap-1.5 self-end"
+            className="bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100/80 dark:hover:bg-gray-700/80 disabled:opacity-50 border border-gray-200/50 dark:border-gray-700/50 whitespace-nowrap transition-colors duration-150 flex items-center gap-1.5 self-end"
           >
             <LayoutGrid size={15} />
             Auto-arrange

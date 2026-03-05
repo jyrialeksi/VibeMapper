@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 html, body, #root {
   height: 100%;
   margin: 0;
@@ -30,4 +32,23 @@ html, body, #root {
   outline-offset: 2px;
   border-radius: 8px;
   animation: highlight-pulse-modified 1.5s ease-in-out 2;
+}
+
+/* React Flow dark mode overrides */
+.dark .react-flow__controls-button {
+  background-color: rgb(31 41 55);
+  fill: rgb(209 213 219);
+  border-color: rgb(55 65 81);
+}
+.dark .react-flow__controls-button:hover {
+  background-color: rgb(55 65 81);
+}
+.dark .react-flow__edge-path {
+  stroke: rgb(107 114 128);
+}
+.dark .react-flow__attribution {
+  background-color: rgb(17 24 39 / 0.8);
+}
+.dark .react-flow__attribution a {
+  color: rgb(156 163 175);
 }
