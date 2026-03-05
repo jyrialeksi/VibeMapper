@@ -35,6 +35,9 @@ html, body, #root {
 }
 
 /* React Flow dark mode overrides */
+.dark .react-flow {
+  background-color: rgb(3 7 18);
+}
 .dark .react-flow__controls-button {
   background-color: rgb(31 41 55);
   fill: rgb(209 213 219);
