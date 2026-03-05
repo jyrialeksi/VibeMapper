@@ -4,17 +4,17 @@ import { PRIORITY_COLORS } from '../../types';
 import { useMapStore } from '../../store/useMapStore';
 
 const PRIORITY_BG: Record<Priority, string> = {
-  'must-have': 'bg-red-50 border-red-400',
-  'should-have': 'bg-amber-50 border-amber-400',
-  'could-have': 'bg-blue-50 border-blue-400',
-  'wont-have': 'bg-gray-50 border-gray-400',
+  'must-have': 'bg-red-200 border-red-500',
+  'should-have': 'bg-amber-200 border-amber-500',
+  'could-have': 'bg-sky-200 border-sky-500',
+  'wont-have': 'bg-gray-200 border-gray-500',
 };
 
 const PRIORITY_LABEL_STYLE: Record<Priority, string> = {
-  'must-have': 'bg-red-100 text-red-700',
-  'should-have': 'bg-amber-100 text-amber-700',
-  'could-have': 'bg-blue-100 text-blue-700',
-  'wont-have': 'bg-gray-100 text-gray-700',
+  'must-have': 'bg-red-300 text-red-800',
+  'should-have': 'bg-amber-300 text-amber-800',
+  'could-have': 'bg-sky-300 text-sky-800',
+  'wont-have': 'bg-gray-300 text-gray-700',
 };
 
 export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardData>>) {

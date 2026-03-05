@@ -8,8 +8,8 @@ export function StepNode({ id, data, selected }: NodeProps<Node<StoryCardData>>)
 
   return (
     <div
-      className={`px-3 py-2.5 rounded-lg shadow-md border-2 w-[260px] bg-blue-50 ${
-        selected ? 'border-blue-600 ring-2 ring-blue-300' : 'border-blue-400'
+      className={`px-3 py-2.5 rounded-lg shadow-md border-2 w-[260px] bg-blue-200 ${
+        selected ? 'border-blue-600 ring-2 ring-blue-300' : 'border-blue-500'
       } ${highlightClass}`}
     >
       <div className="text-[8px] font-bold uppercase tracking-wider text-blue-600 mb-1">
