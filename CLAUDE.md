@@ -26,7 +26,7 @@ Monorepo (npm workspaces) with two packages: `frontend/` and `backend/`.
 
 **Backend** — Express + better-sqlite3 (ESM, plain .js files). SQLite database auto-created at `backend/data/app.db` with WAL mode. Env file at `backend/.env` (`OPENROUTER_API_KEY`). Three route files: `projects.js` (CRUD), `canvas.js` (load/save/import/export + versioning: snapshots, restore), `ai.js` (generate/edit via OpenRouter). AI has two modes: **generate** (create map from scratch) and **edit** (surgical operations on existing maps).
 
-**Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand. Vite proxies `/api` → `localhost:3001`. Features include **undo/redo** (stack-based, max 50), **priority filtering** (hide/show cards by priority), **Markdown export**, and **LayoutCorrector** (measures DOM heights to fix overlapping nodes after AI generation or auto-arrange).
+**Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand + **lucide-react** (icons). Vite proxies `/api` → `localhost:3001`. Features include **undo/redo** (stack-based, max 50), **priority filtering** (hide/show cards by priority), **Markdown export**, and **LayoutCorrector** (measures DOM heights to fix overlapping nodes after AI generation or auto-arrange). UI uses glass morphism styling (backdrop-blur, semi-transparent backgrounds) on floating panels.
 
 **Data flow:** React Flow canvas state (nodes/edges/viewport) lives in Zustand (`useMapStore`). Auto-save debounces 2s then PUTs JSON to `/api/canvas/:projectId`. Backend stores nodes/edges/viewport as JSON text columns in SQLite. **Node highlights:** After AI edit/merge, affected nodes get green (added) or amber (modified) outline+pulse via CSS classes driven by `highlightedNodes` Map in the store; auto-cleared after 5s by `HighlightClearer`.
 
@@ -58,6 +58,7 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - `frontend/src/utils/exportToMarkdown.ts` — Structured Markdown export respecting priority filters
 - `frontend/src/components/panels/VersionHistoryPanel.tsx` — Version list, create/restore snapshots
 - `frontend/src/components/HighlightClearer.tsx` — Auto-clears node highlights after 5s timeout
+- `frontend/src/components/ui/AutoExpandTextarea.tsx` — Reusable auto-growing textarea (minRows→maxRows, then scrollable)
 
 ## Conventions
 
