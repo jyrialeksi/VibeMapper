@@ -4,17 +4,17 @@ import { PRIORITY_COLORS } from '../../types';
 import { useMapStore } from '../../store/useMapStore';
 
 const PRIORITY_BG: Record<Priority, string> = {
-  'must-have': 'bg-red-50 border-red-400 dark:bg-red-950 dark:border-red-500',
-  'should-have': 'bg-amber-50 border-amber-400 dark:bg-amber-950 dark:border-amber-500',
-  'could-have': 'bg-blue-50 border-blue-400 dark:bg-blue-950 dark:border-blue-500',
-  'wont-have': 'bg-gray-50 border-gray-400 dark:bg-gray-800 dark:border-gray-500',
+  'must-have': 'bg-red-50 border-red-400',
+  'should-have': 'bg-amber-50 border-amber-400',
+  'could-have': 'bg-blue-50 border-blue-400',
+  'wont-have': 'bg-gray-50 border-gray-400',
 };
 
 const PRIORITY_LABEL_STYLE: Record<Priority, string> = {
-  'must-have': 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300',
-  'should-have': 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
-  'could-have': 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
-  'wont-have': 'bg-gray-100 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300',
+  'must-have': 'bg-red-100 text-red-700',
+  'should-have': 'bg-amber-100 text-amber-700',
+  'could-have': 'bg-blue-100 text-blue-700',
+  'wont-have': 'bg-gray-100 text-gray-700',
 };
 
 export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardData>>) {
@@ -31,12 +31,12 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
       style={selected ? { borderColor: '#059669' } : undefined}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+        <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-600">
           Story
         </span>
         <div className="flex items-center gap-1">
           {data.estimate && (
-            <span className="text-[8px] bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-1 py-0.5 rounded font-medium">
+            <span className="text-[8px] bg-gray-200 text-gray-700 px-1 py-0.5 rounded font-medium">
               {data.estimate}
             </span>
           )}
@@ -47,19 +47,19 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
           </span>
         </div>
       </div>
-      <div className="font-semibold text-[11px] text-gray-900 dark:text-gray-100 leading-snug">{data.title}</div>
+      <div className="font-semibold text-[11px] text-gray-900 leading-snug">{data.title}</div>
       {data.description && (
-        <div className="text-[10px] text-gray-600 dark:text-gray-400 mt-1 leading-snug">{data.description}</div>
+        <div className="text-[10px] text-gray-600 mt-1 leading-snug">{data.description}</div>
       )}
       {data.acceptanceCriteria && data.acceptanceCriteria.length > 0 && (
-        <div className="mt-1.5 pt-1.5 border-t border-gray-200/60 dark:border-gray-600/60">
-          <div className="text-[8px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-0.5">
+        <div className="mt-1.5 pt-1.5 border-t border-gray-200/60">
+          <div className="text-[8px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5">
             Acceptance Criteria
           </div>
           <ul className="space-y-0.5">
             {data.acceptanceCriteria.map((ac, i) => (
-              <li key={i} className="text-[9px] text-gray-500 dark:text-gray-400 leading-snug flex gap-1">
-                <span className="text-gray-400 dark:text-gray-500 shrink-0">•</span>
+              <li key={i} className="text-[9px] text-gray-500 leading-snug flex gap-1">
+                <span className="text-gray-400 shrink-0">•</span>
                 <span>{ac}</span>
               </li>
             ))}
