@@ -10,7 +10,7 @@ import {
   applyEdgeChanges,
   addEdge,
 } from '@xyflow/react';
-import type { StoryCardData, ToolMode, CardType, Priority, EditOperation } from '../types';
+import type { StoryCardData, ToolMode, CardType, Priority, EditOperation, HighlightType } from '../types';
 
 interface Snapshot {
   nodes: Node<StoryCardData>[];
@@ -45,6 +45,9 @@ interface MapState {
 
   // Priority filter state
   hiddenPriorities: Set<Priority>;
+
+  // Highlight state
+  highlightedNodes: Map<string, HighlightType>;
 
   // Version state
   pendingSaveLabel: string | null;
@@ -83,6 +86,9 @@ interface MapState {
   // Priority filter actions
   togglePriority: (priority: Priority) => void;
 
+  // Highlight actions
+  clearHighlights: () => void;
+
   // Version actions
   setPendingSaveLabel: (label: string | null) => void;
   setVersionPanelOpen: (open: boolean) => void;
@@ -109,6 +115,9 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Priority filter state
   hiddenPriorities: new Set<Priority>(),
+
+  // Highlight state
+  highlightedNodes: new Map(),
 
   // Version state
   pendingSaveLabel: null,
@@ -171,7 +180,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   setDirty: (dirty) => set({ isDirty: dirty }),
 
   loadCanvas: (nodes, edges, viewport) => {
-    set({ nodes, edges, viewport, isDirty: false });
+    set({ nodes, edges, viewport, isDirty: false, highlightedNodes: new Map() });
     get().clearHistory();
   },
 
@@ -193,11 +202,17 @@ export const useMapStore = create<MapState>((set, get) => ({
       },
     }));
 
+    const highlights = new Map<string, HighlightType>();
+    for (const n of offsetNodes) {
+      highlights.set(n.id, 'added');
+    }
+
     set({
       nodes: [...existing, ...offsetNodes],
       edges: [...existingEdges, ...newEdges],
       isDirty: true,
       pendingLayout: 'correctOverlap',
+      highlightedNodes: highlights,
     });
   },
 
@@ -216,6 +231,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   applyOperations: (operations) => {
     get().pushSnapshot();
     let { nodes, edges } = get();
+    const highlights = new Map<string, HighlightType>();
 
     for (const op of operations) {
       switch (op.type) {
@@ -223,6 +239,7 @@ export const useMapStore = create<MapState>((set, get) => ({
           if (!op.node) break;
           if (nodes.some((n) => n.id === op.node!.id)) break;
           nodes = [...nodes, op.node as Node<StoryCardData>];
+          highlights.set(op.node.id, 'added');
           break;
         }
         case 'remove_node': {
@@ -243,6 +260,7 @@ export const useMapStore = create<MapState>((set, get) => ({
             position: op.changes.position ?? existing.position,
           };
           nodes = nodes.map((n) => (n.id === op.id ? updated : n));
+          highlights.set(op.id, 'modified');
           break;
         }
         case 'move_node': {
@@ -251,6 +269,7 @@ export const useMapStore = create<MapState>((set, get) => ({
           nodes = nodes.map((n) =>
             n.id === op.id ? { ...n, position: op.position! } : n
           );
+          highlights.set(op.id, 'modified');
           break;
         }
         case 'add_edge': {
@@ -275,6 +294,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       nodes,
       edges,
       isDirty: true,
+      highlightedNodes: highlights,
       ...(needsLayout && { pendingLayout: 'correctOverlap' as PendingLayout }),
     });
   },
@@ -317,6 +337,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       canUndo: newUndo.length > 0,
       canRedo: true,
       isDirty: true,
+      highlightedNodes: new Map(),
     });
   },
 
@@ -338,6 +359,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       canUndo: true,
       canRedo: newRedo.length > 0,
       isDirty: true,
+      highlightedNodes: new Map(),
     });
   },
 
@@ -359,6 +381,9 @@ export const useMapStore = create<MapState>((set, get) => ({
     }
     set({ hiddenPriorities: next });
   },
+
+  // Highlight actions
+  clearHighlights: () => set({ highlightedNodes: new Map() }),
 
   // Version actions
   setPendingSaveLabel: (label) => set({ pendingSaveLabel: label }),

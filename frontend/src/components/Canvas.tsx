@@ -18,6 +18,7 @@ import { CardEditor } from './panels/CardEditor';
 import { AIPromptBox } from './panels/AIPromptBox';
 import { VersionHistoryPanel } from './panels/VersionHistoryPanel';
 import { LayoutCorrector } from './LayoutCorrector';
+import { HighlightClearer } from './HighlightClearer';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import type { StoryCardData, CardType } from '../types';
 import { exportToMarkdown } from '../utils/exportToMarkdown';
@@ -241,6 +242,7 @@ export function Canvas({ projectId }: CanvasProps) {
           className="!bg-white !border-gray-200"
         />
         <LayoutCorrector />
+        <HighlightClearer />
       </ReactFlow>
       {selectedNodeId && !isVersionPanelOpen && <CardEditor />}
       <VersionHistoryPanel />

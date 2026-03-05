@@ -1,6 +1,7 @@
 export type CardType = 'activity' | 'step' | 'story' | 'annotation';
 export type Priority = 'must-have' | 'should-have' | 'could-have' | 'wont-have';
 export type ToolMode = 'select' | 'addCard' | 'line' | 'box';
+export type HighlightType = 'added' | 'modified';
 
 export interface StoryCardData {
   [key: string]: unknown;

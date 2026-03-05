@@ -36,6 +36,7 @@ describe('Undo/Redo in useMapStore', () => {
       projectId: null,
       pendingSaveLabel: null,
       isVersionPanelOpen: false,
+      highlightedNodes: new Map(),
     });
   });
 
@@ -204,5 +205,45 @@ describe('Undo/Redo in useMapStore', () => {
 
     useMapStore.getState().undo();
     expect(useMapStore.getState().isDirty).toBe(true);
+  });
+
+  it('applyOperations sets correct highlights', () => {
+    useMapStore.setState({ nodes: [makeNode('n1')], edges: [] });
+
+    useMapStore.getState().applyOperations([
+      { type: 'add_node', node: makeNode('n2', 100, 200) as import('@xyflow/react').Node<StoryCardData> },
+      { type: 'update_node', id: 'n1', changes: { data: { title: 'Updated' } } },
+    ]);
+
+    const highlights = useMapStore.getState().highlightedNodes;
+    expect(highlights.get('n2')).toBe('added');
+    expect(highlights.get('n1')).toBe('modified');
+    expect(highlights.size).toBe(2);
+  });
+
+  it('undo clears highlights', () => {
+    useMapStore.setState({ nodes: [makeNode('n1')], edges: [] });
+
+    useMapStore.getState().applyOperations([
+      { type: 'add_node', node: makeNode('n2', 100, 200) as import('@xyflow/react').Node<StoryCardData> },
+    ]);
+    expect(useMapStore.getState().highlightedNodes.size).toBe(1);
+
+    useMapStore.getState().undo();
+    expect(useMapStore.getState().highlightedNodes.size).toBe(0);
+  });
+
+  it('mergeNodes marks all as added', () => {
+    useMapStore.setState({ nodes: [makeNode('n1', 0, 0)], edges: [] });
+
+    useMapStore.getState().mergeNodes(
+      [makeNode('n2', 100, 200), makeNode('n3', 200, 400)],
+      []
+    );
+
+    const highlights = useMapStore.getState().highlightedNodes;
+    expect(highlights.get('n2')).toBe('added');
+    expect(highlights.get('n3')).toBe('added');
+    expect(highlights.size).toBe(2);
   });
 });

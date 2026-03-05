@@ -1,6 +1,7 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
 import type { StoryCardData, Priority } from '../../types';
 import { PRIORITY_COLORS } from '../../types';
+import { useMapStore } from '../../store/useMapStore';
 
 const PRIORITY_BG: Record<Priority, string> = {
   'must-have': 'bg-red-50 border-red-400',
@@ -16,7 +17,9 @@ const PRIORITY_LABEL_STYLE: Record<Priority, string> = {
   'wont-have': 'bg-gray-100 text-gray-700',
 };
 
-export function StoryCardNode({ data, selected }: NodeProps<Node<StoryCardData>>) {
+export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardData>>) {
+  const highlightType = useMapStore((s) => s.highlightedNodes.get(id));
+  const highlightClass = highlightType === 'added' ? 'node-highlight-added' : highlightType === 'modified' ? 'node-highlight-modified' : '';
   const priorityBg = PRIORITY_BG[data.priority] || PRIORITY_BG['must-have'];
   const priorityColor = PRIORITY_COLORS[data.priority] || PRIORITY_COLORS['must-have'];
 
@@ -24,7 +27,7 @@ export function StoryCardNode({ data, selected }: NodeProps<Node<StoryCardData>>
     <div
       className={`px-3 py-2.5 rounded-lg shadow-md border-2 w-[260px] ${priorityBg} ${
         selected ? 'ring-2 ring-green-400' : ''
-      }`}
+      } ${highlightClass}`}
       style={selected ? { borderColor: '#059669' } : undefined}
     >
       <div className="flex items-center justify-between mb-1">

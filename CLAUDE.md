@@ -28,7 +28,7 @@ Monorepo (npm workspaces) with two packages: `frontend/` and `backend/`.
 
 **Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand. Vite proxies `/api` → `localhost:3001`. Features include **undo/redo** (stack-based, max 50), **priority filtering** (hide/show cards by priority), **Markdown export**, and **LayoutCorrector** (measures DOM heights to fix overlapping nodes after AI generation or auto-arrange).
 
-**Data flow:** React Flow canvas state (nodes/edges/viewport) lives in Zustand (`useMapStore`). Auto-save debounces 2s then PUTs JSON to `/api/canvas/:projectId`. Backend stores nodes/edges/viewport as JSON text columns in SQLite.
+**Data flow:** React Flow canvas state (nodes/edges/viewport) lives in Zustand (`useMapStore`). Auto-save debounces 2s then PUTs JSON to `/api/canvas/:projectId`. Backend stores nodes/edges/viewport as JSON text columns in SQLite. **Node highlights:** After AI edit/merge, affected nodes get green (added) or amber (modified) outline+pulse via CSS classes driven by `highlightedNodes` Map in the store; auto-cleared after 5s by `HighlightClearer`.
 
 **AI robustness:** `backend/src/ai/client.js` includes JSON extraction fallback (regex for first `{...}` or `[...]` block), shape validation, and auto-retry with conversational correction when models return prose instead of JSON.
 
@@ -57,6 +57,7 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - `frontend/src/components/LayoutCorrector.tsx` — Measures DOM heights post-render, fixes overlapping nodes. Two modes: `fullArrange` and `correctOverlap`
 - `frontend/src/utils/exportToMarkdown.ts` — Structured Markdown export respecting priority filters
 - `frontend/src/components/panels/VersionHistoryPanel.tsx` — Version list, create/restore snapshots
+- `frontend/src/components/HighlightClearer.tsx` — Auto-clears node highlights after 5s timeout
 
 ## Conventions
 
@@ -76,3 +77,4 @@ Lessons learned during development — add new entries as they arise.
 - **AI models ignoring JSON format instructions** (commits `93427f5`, `15b708f`): Some OpenRouter models return prose instead of JSON even with `response_format: { type: "json_object" }`. Fix: fallback to regex extraction of first `{...}` or `[...]` block, then validate shape, then auto-retry once with conversational correction.
 - **Node overlap after AI generation** (commits `713e704`, `b171425`): AI generates nodes with fixed y-positions, but story cards have variable heights (acceptance criteria expand them). Fix: `LayoutCorrector` component inside `<ReactFlow>` reads actual measured heights from `nodeLookup` and recomputes y-positions with proper spacing.
 - **Local auto-arrange vs AI arrange** (commit `9c72321`): AI-based auto-arrange was slow, cost tokens, and could fail. Replaced with instant local algorithm that rebuilds grid from edge hierarchy and triggers LayoutCorrector for height-aware positioning.
+- **Highlight state decoupled from node data**: Using a separate `highlightedNodes` Map (not `node.data` flags) keeps highlights independent of LayoutCorrector's `setState` for repositioning. CSS `outline` (not `border`) avoids box model changes that would affect height measurements.

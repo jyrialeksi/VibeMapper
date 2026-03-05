@@ -1,7 +1,11 @@
 import { NodeResizer, type NodeProps, type Node } from '@xyflow/react';
 import type { StoryCardData } from '../../types';
+import { useMapStore } from '../../store/useMapStore';
 
-export function AnnotationNode({ data, selected }: NodeProps<Node<StoryCardData>>) {
+export function AnnotationNode({ id, data, selected }: NodeProps<Node<StoryCardData>>) {
+  const highlightType = useMapStore((s) => s.highlightedNodes.get(id));
+  const highlightClass = highlightType === 'added' ? 'node-highlight-added' : highlightType === 'modified' ? 'node-highlight-modified' : '';
+
   return (
     <>
       <NodeResizer
@@ -14,7 +18,7 @@ export function AnnotationNode({ data, selected }: NodeProps<Node<StoryCardData>
       <div
         className={`w-full h-full rounded-lg border-2 border-dashed p-3 ${
           selected ? 'border-amber-500 bg-amber-50/80' : 'border-amber-300 bg-amber-50/50'
-        }`}
+        } ${highlightClass}`}
         style={{ minWidth: data.width || 200, minHeight: data.height || 100 }}
       >
         <div className="text-[10px] font-bold uppercase tracking-wider text-amber-600 mb-1">
