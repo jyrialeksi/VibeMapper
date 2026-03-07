@@ -1,12 +1,41 @@
-import type { Project, CanvasState, AIModel, VersionSummary, VersionDetail, AIGenerateResult } from '../types';
+import type { Project, CanvasState, AIModel, VersionSummary, VersionDetail, AIGenerateResult, Share } from '../types';
 
 const BASE = '/api';
 
+// Token provider — set by AuthProvider so all requests include auth header
+let tokenProvider: (() => Promise<string | null>) | null = null;
+let onUnauthorized: (() => void) | null = null;
+
+export function setTokenProvider(fn: () => Promise<string | null>) {
+  tokenProvider = fn;
+}
+
+export function setOnUnauthorized(fn: () => void) {
+  onUnauthorized = fn;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+  if (tokenProvider) {
+    const token = await tokenProvider();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...options,
+    // Preserve signal and other options but override headers
+    ...(options?.headers ? {} : {}),
   });
+
+  if (res.status === 401) {
+    onUnauthorized?.();
+    throw new Error('Unauthorized');
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || res.statusText);
@@ -75,4 +104,27 @@ export const api = {
       body: JSON.stringify({ nodes, edges, model }),
     }),
   getAIHistory: (projectId: string) => request<unknown[]>(`/ai/history/${projectId}`),
+
+  // Shares
+  listShares: (projectId: string) =>
+    request<Share[]>(`/projects/${projectId}/shares`),
+  addShare: (projectId: string, email: string, role: 'viewer' | 'editor') =>
+    request<Share>(`/projects/${projectId}/shares`, {
+      method: 'POST',
+      body: JSON.stringify({ email, role }),
+    }),
+  updateShare: (projectId: string, shareId: string, role: 'viewer' | 'editor') =>
+    request<Share>(`/projects/${projectId}/shares/${shareId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    }),
+  removeShare: (projectId: string, shareId: string) =>
+    request<void>(`/projects/${projectId}/shares/${shareId}`, { method: 'DELETE' }),
+  createShareLink: (projectId: string, role: 'viewer' | 'editor' = 'viewer') =>
+    request<{ token: string; url: string }>(`/projects/${projectId}/shares/link`, {
+      method: 'POST',
+      body: JSON.stringify({ role }),
+    }),
+  acceptShareLink: (token: string) =>
+    request<{ projectId: string }>(`/shares/accept/${token}`, { method: 'POST' }),
 };

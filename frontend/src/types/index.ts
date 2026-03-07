@@ -22,6 +22,20 @@ export interface Project {
   description: string;
   created_at: string;
   updated_at: string;
+  owner_id?: string;
+  role?: 'owner' | 'editor' | 'viewer';
+  owner_name?: string;
+}
+
+export interface Share {
+  id: string;
+  project_id: string;
+  user_id: string | null;
+  invited_email: string;
+  role: 'viewer' | 'editor';
+  share_token: string | null;
+  created_at: string;
+  user_name?: string;
 }
 
 export interface CanvasState {
@@ -29,6 +43,7 @@ export interface CanvasState {
   edges: import('@xyflow/react').Edge[];
   viewport: { x: number; y: number; zoom: number };
   updated_at?: string;
+  role?: 'owner' | 'editor' | 'viewer';
 }
 
 export interface AIModel {

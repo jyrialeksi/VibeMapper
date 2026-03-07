@@ -8,12 +8,13 @@ export function useAutoSave() {
   const edges = useMapStore((s) => s.edges);
   const viewport = useMapStore((s) => s.viewport);
   const projectId = useMapStore((s) => s.projectId);
+  const projectRole = useMapStore((s) => s.projectRole);
   const setDirty = useMapStore((s) => s.setDirty);
   const setPendingSaveLabel = useMapStore((s) => s.setPendingSaveLabel);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!isDirty || !projectId) return;
+    if (!isDirty || !projectId || projectRole === 'viewer') return;
 
     if (timerRef.current) clearTimeout(timerRef.current);
 
@@ -31,5 +32,5 @@ export function useAutoSave() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [isDirty, nodes, edges, viewport, projectId, setDirty, setPendingSaveLabel]);
+  }, [isDirty, nodes, edges, viewport, projectId, projectRole, setDirty, setPendingSaveLabel]);
 }

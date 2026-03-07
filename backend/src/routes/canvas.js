@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import db from '../db/database.js';
 import { createVersion, listVersions, getVersion } from '../db/versions.js';
+import { requireProjectAccess } from '../middleware/auth.js';
 
 const router = Router();
 
 // Load canvas state
-router.get('/:projectId', (req, res) => {
+router.get('/:projectId', requireProjectAccess('viewer'), (req, res) => {
   const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(req.params.projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
@@ -14,11 +15,12 @@ router.get('/:projectId', (req, res) => {
     edges: JSON.parse(canvas.edges),
     viewport: JSON.parse(canvas.viewport),
     updated_at: canvas.updated_at,
+    role: req.projectRole,
   });
 });
 
 // Save canvas state (auto-save target) + create version
-router.put('/:projectId', (req, res) => {
+router.put('/:projectId', requireProjectAccess('editor'), (req, res) => {
   const { nodes, edges, viewport, label } = req.body;
   const { projectId } = req.params;
 
@@ -41,7 +43,7 @@ router.put('/:projectId', (req, res) => {
 });
 
 // Import JSON → replace canvas state + create version
-router.post('/:projectId/import', (req, res) => {
+router.post('/:projectId/import', requireProjectAccess('editor'), (req, res) => {
   const { nodes, edges, viewport } = req.body;
   const { projectId } = req.params;
 
@@ -71,7 +73,7 @@ router.post('/:projectId/import', (req, res) => {
 });
 
 // Export canvas state as JSON
-router.get('/:projectId/export', (req, res) => {
+router.get('/:projectId/export', requireProjectAccess('viewer'), (req, res) => {
   const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(req.params.projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
@@ -96,7 +98,7 @@ router.get('/:projectId/export', (req, res) => {
 });
 
 // List versions for a project
-router.get('/:projectId/versions', (req, res) => {
+router.get('/:projectId/versions', requireProjectAccess('viewer'), (req, res) => {
   const { projectId } = req.params;
   const limit = Math.min(parseInt(req.query.limit) || 50, 100);
   const offset = parseInt(req.query.offset) || 0;
@@ -106,7 +108,7 @@ router.get('/:projectId/versions', (req, res) => {
 });
 
 // Get a specific version
-router.get('/:projectId/versions/:versionId', (req, res) => {
+router.get('/:projectId/versions/:versionId', requireProjectAccess('viewer'), (req, res) => {
   const { projectId, versionId } = req.params;
 
   const version = getVersion(projectId, versionId);
@@ -124,7 +126,7 @@ router.get('/:projectId/versions/:versionId', (req, res) => {
 });
 
 // Restore a version
-router.post('/:projectId/versions/:versionId/restore', (req, res) => {
+router.post('/:projectId/versions/:versionId/restore', requireProjectAccess('editor'), (req, res) => {
   const { projectId, versionId } = req.params;
 
   const version = getVersion(projectId, versionId);
@@ -156,7 +158,7 @@ router.post('/:projectId/versions/:versionId/restore', (req, res) => {
 });
 
 // Create a named snapshot from current canvas state
-router.post('/:projectId/versions', (req, res) => {
+router.post('/:projectId/versions', requireProjectAccess('editor'), (req, res) => {
   const { projectId } = req.params;
   const { label } = req.body;
 

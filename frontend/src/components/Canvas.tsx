@@ -72,6 +72,9 @@ export function Canvas({ projectId }: CanvasProps) {
   const cancelAIEdit = useMapStore((s) => s.cancelAIEdit);
   const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
   const lastAIEditNodeIds = useMapStore((s) => s.lastAIEditNodeIds);
+  const projectRole = useMapStore((s) => s.projectRole);
+  const setProjectRole = useMapStore((s) => s.setProjectRole);
+  const isReadOnly = projectRole === 'viewer' || isAIEditing;
 
   const visibleNodes = useMemo(() => {
     if (hiddenPriorities.size === 0) return nodes;
@@ -110,8 +113,9 @@ export function Canvas({ projectId }: CanvasProps) {
     setProjectId(projectId);
     api.loadCanvas(projectId).then((state) => {
       loadCanvas(state.nodes, state.edges, state.viewport);
+      if (state.role) setProjectRole(state.role);
     }).catch(console.error);
-  }, [projectId, loadCanvas, setProjectId]);
+  }, [projectId, loadCanvas, setProjectId, setProjectRole]);
 
   const handlePaneClick = useCallback(
     (event: React.MouseEvent) => {
@@ -236,19 +240,19 @@ export function Canvas({ projectId }: CanvasProps) {
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
-        onNodesChange={isAIEditing ? undefined : onNodesChange}
-        onEdgesChange={isAIEditing ? undefined : onEdgesChange}
-        onConnect={isAIEditing ? undefined : onConnect}
+        onNodesChange={isReadOnly ? undefined : onNodesChange}
+        onEdgesChange={isReadOnly ? undefined : onEdgesChange}
+        onConnect={isReadOnly ? undefined : onConnect}
         onInit={(instance) => { rfRef.current = instance; }}
-        onPaneClick={isAIEditing ? undefined : handlePaneClick}
-        onNodeDoubleClick={isAIEditing ? undefined : handleNodeDoubleClick}
-        onNodeClick={isAIEditing ? undefined : handleNodeClick}
-        onNodeDragStart={isAIEditing ? undefined : handleNodeDragStart}
-        nodesDraggable={!isAIEditing}
-        nodesConnectable={!isAIEditing}
-        elementsSelectable={!isAIEditing}
-        deleteKeyCode={isAIEditing ? null : 'Delete'}
-        selectionKeyCode={isAIEditing ? null : 'Shift'}
+        onPaneClick={isReadOnly ? undefined : handlePaneClick}
+        onNodeDoubleClick={isReadOnly ? undefined : handleNodeDoubleClick}
+        onNodeClick={isReadOnly ? undefined : handleNodeClick}
+        onNodeDragStart={isReadOnly ? undefined : handleNodeDragStart}
+        nodesDraggable={!isReadOnly}
+        nodesConnectable={!isReadOnly}
+        elementsSelectable={!isReadOnly}
+        deleteKeyCode={isReadOnly ? null : 'Delete'}
+        selectionKeyCode={isReadOnly ? null : 'Shift'}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView

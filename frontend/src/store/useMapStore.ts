@@ -65,6 +65,9 @@ interface MapState {
   pendingSaveLabel: string | null;
   isVersionPanelOpen: boolean;
 
+  // Project role (for sharing permissions)
+  projectRole: 'owner' | 'editor' | 'viewer';
+
   // Actions
   setNodes: (nodes: Node<StoryCardData>[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -115,6 +118,9 @@ interface MapState {
   // Version actions
   setPendingSaveLabel: (label: string | null) => void;
   setVersionPanelOpen: (open: boolean) => void;
+
+  // Project role actions
+  setProjectRole: (role: 'owner' | 'editor' | 'viewer') => void;
 }
 
 export const useMapStore = create<MapState>((set, get) => ({
@@ -157,6 +163,9 @@ export const useMapStore = create<MapState>((set, get) => ({
   // Version state
   pendingSaveLabel: null,
   isVersionPanelOpen: false,
+
+  // Project role
+  projectRole: 'owner',
 
   setNodes: (nodes) => set({ nodes, isDirty: true }),
   setEdges: (edges) => set({ edges, isDirty: true }),
@@ -446,4 +455,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   // Version actions
   setPendingSaveLabel: (label) => set({ pendingSaveLabel: label }),
   setVersionPanelOpen: (open) => set({ isVersionPanelOpen: open }),
+
+  // Project role actions
+  setProjectRole: (role) => set({ projectRole: role }),
 }));

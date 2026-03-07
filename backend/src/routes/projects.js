@@ -1,12 +1,23 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db/database.js';
+import { requireProjectAccess } from '../middleware/auth.js';
 
 const router = Router();
 
-// List all projects
+// List projects (owned + shared with me)
 router.get('/', (req, res) => {
-  const projects = db.prepare('SELECT * FROM projects ORDER BY updated_at DESC').all();
+  const userId = req.user.id;
+  const projects = db.prepare(`
+    SELECT DISTINCT p.*,
+      CASE WHEN p.owner_id = ? THEN 'owner' ELSE COALESCE(ps.role, 'owner') END as role,
+      CASE WHEN p.owner_id = ? THEN NULL ELSE u.name END as owner_name
+    FROM projects p
+    LEFT JOIN project_shares ps ON ps.project_id = p.id AND ps.user_id = ?
+    LEFT JOIN users u ON u.id = p.owner_id
+    WHERE p.owner_id = ? OR p.owner_id IS NULL OR ps.user_id IS NOT NULL
+    ORDER BY p.updated_at DESC
+  `).all(userId, userId, userId, userId);
   res.json(projects);
 });
 
@@ -17,37 +28,34 @@ router.post('/', (req, res) => {
 
   const id = uuidv4();
   const canvasId = uuidv4();
+  const userId = req.user.id;
 
   const insertProject = db.prepare(
-    'INSERT INTO projects (id, name, description) VALUES (?, ?, ?)'
+    'INSERT INTO projects (id, name, description, owner_id) VALUES (?, ?, ?, ?)'
   );
   const insertCanvas = db.prepare(
     'INSERT INTO canvas_states (id, project_id) VALUES (?, ?)'
   );
 
   const transaction = db.transaction(() => {
-    insertProject.run(id, name, description);
+    insertProject.run(id, name, description, userId);
     insertCanvas.run(canvasId, id);
   });
 
   transaction();
 
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(id);
-  res.status(201).json(project);
+  res.status(201).json({ ...project, role: 'owner' });
 });
 
 // Get single project
-router.get('/:id', (req, res) => {
-  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
-  if (!project) return res.status(404).json({ error: 'Project not found' });
-  res.json(project);
+router.get('/:id', requireProjectAccess('viewer'), (req, res) => {
+  res.json({ ...req.project, role: req.projectRole });
 });
 
 // Update project
-router.patch('/:id', (req, res) => {
+router.patch('/:id', requireProjectAccess('editor'), (req, res) => {
   const { name, description } = req.body;
-  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
-  if (!project) return res.status(404).json({ error: 'Project not found' });
 
   db.prepare(
     "UPDATE projects SET name = COALESCE(?, name), description = COALESCE(?, description), updated_at = datetime('now') WHERE id = ?"
@@ -57,11 +65,8 @@ router.patch('/:id', (req, res) => {
   res.json(updated);
 });
 
-// Delete project (cascade deletes canvas_states and ai_history)
-router.delete('/:id', (req, res) => {
-  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.id);
-  if (!project) return res.status(404).json({ error: 'Project not found' });
-
+// Delete project (owner only)
+router.delete('/:id', requireProjectAccess('owner'), (req, res) => {
   db.prepare('DELETE FROM projects WHERE id = ?').run(req.params.id);
   res.status(204).end();
 });

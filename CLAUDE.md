@@ -24,9 +24,9 @@ Tests use Vitest: `npm test` runs all workspaces, or `npm run test --workspace=f
 
 Monorepo (npm workspaces) with two packages: `frontend/` and `backend/`.
 
-**Backend** — Express + better-sqlite3 (ESM, plain .js files). SQLite database auto-created at `backend/data/app.db` with WAL mode. Env file at `backend/.env` (`OPENROUTER_API_KEY`). Three route files: `projects.js` (CRUD), `canvas.js` (load/save/import/export + versioning: snapshots, restore), `ai.js` (generate/edit via OpenRouter). AI has two modes: **generate** (create map from scratch) and **edit** (surgical operations on existing maps). **Canvas locks during AI edit** (prevents manual edits, shows overlay with cancel button). **AI Diff toggle** dims non-AI-edited nodes to highlight changes.
+**Backend** — Express + better-sqlite3 (ESM, plain .js files). SQLite database auto-created at `backend/data/app.db` with WAL mode. Env file at `backend/.env` (`OPENROUTER_API_KEY`). Route files: `projects.js` (CRUD), `canvas.js` (load/save/import/export + versioning), `ai.js` (generate/edit via OpenRouter), `auth.js` (config/me/logout), `shares.js` (CRUD for project sharing). AI has two modes: **generate** (create map from scratch) and **edit** (surgical operations on existing maps). **Canvas locks during AI edit** (prevents manual edits, shows overlay with cancel button). **AI Diff toggle** dims non-AI-edited nodes to highlight changes. **Authentication** via Firebase Auth (Google sign-in); toggled with `AUTH_ENABLED` env var. **Project sharing** with email invitations and shareable links (viewer/editor roles). Rate limiting on auth and AI endpoints.
 
-**Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand + **lucide-react** (icons). Vite proxies `/api` → `localhost:3001`. Features include **undo/redo** (stack-based, max 50), **priority filtering** (hide/show cards by priority), **Markdown export**, **dark mode** (class-based, persisted to localStorage, OS preference detection), **LayoutCorrector** (measures DOM heights to fix overlapping nodes after AI generation or auto-arrange), **canvas lock during AI edit** (disables all interactions, shows overlay with spinner + cancel), and **AI Diff toggle** (dims unaffected nodes/edges to highlight last AI changes). UI uses glass morphism styling (backdrop-blur, semi-transparent backgrounds) on floating panels. Toolbar is responsive (`flex-wrap`) for narrow viewports.
+**Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand + **lucide-react** (icons) + **Firebase Auth** (Google sign-in). Vite proxies `/api` → `localhost:3001`. Features include **undo/redo** (stack-based, max 50), **priority filtering** (hide/show cards by priority), **Markdown export**, **dark mode** (class-based, persisted to localStorage, OS preference detection), **LayoutCorrector** (measures DOM heights to fix overlapping nodes after AI generation or auto-arrange), **canvas lock during AI edit** (disables all interactions, shows overlay with spinner + cancel), **AI Diff toggle** (dims unaffected nodes/edges to highlight last AI changes), **Google login** (conditional on server config), **project sharing** (SharePanel with email invites, link sharing, role management), **viewer mode** (read-only canvas for viewers). UI uses glass morphism styling (backdrop-blur, semi-transparent backgrounds) on floating panels. Toolbar is responsive (`flex-wrap`) for narrow viewports.
 
 **Data flow:** React Flow canvas state (nodes/edges/viewport) lives in Zustand (`useMapStore`). Auto-save debounces 2s then PUTs JSON to `/api/canvas/:projectId`. Backend stores nodes/edges/viewport as JSON text columns in SQLite. **Node highlights:** After AI edit/merge, affected nodes get green (added) or amber (modified) outline+pulse via CSS classes driven by `highlightedNodes` Map in the store; auto-cleared after 5s by `HighlightClearer`. **AI Diff:** `lastAIEditNodeIds` Set tracks which nodes were touched; `showLastAIEdit` toggle dims everything else to 15% opacity. **Canvas lock:** `isAIEditing` flag disables all ReactFlow interactions; `cancelAIEdit` callback aborts the fetch via AbortController.
 
@@ -51,9 +51,17 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - `frontend/src/types/index.ts` — TypeScript interfaces, color constants (PRIORITY_COLORS, CARD_TYPE_COLORS)
 - `backend/src/ai/prompts.js` — System prompts that define JSON output format for AI
 - `backend/src/ai/models.js` — Available OpenRouter model list
-- `backend/src/db/migrations.js` — SQLite schema (projects, canvas_states, ai_history, canvas_versions)
+- `backend/src/db/migrations.js` — SQLite schema (projects, canvas_states, ai_history, canvas_versions, users, project_shares)
 - `backend/src/db/versions.js` — Canvas versioning queries (save/list/restore snapshots)
 - `backend/src/routes/canvas.js` — Canvas load/save/import/export + version management endpoints
+- `backend/src/routes/auth.js` — Auth config, /me, logout endpoints
+- `backend/src/routes/shares.js` — CRUD for project shares + shareable link generation/acceptance
+- `backend/src/middleware/auth.js` — `requireAuth` (Firebase token verification), `requireProjectAccess(minRole)` (ownership/share check)
+- `frontend/src/hooks/useAuth.ts` — Auth context/hook: Firebase onAuthStateChanged, getIdToken, login/logout
+- `frontend/src/components/AuthProvider.tsx` — Wraps app with AuthContext, connects token provider to API client
+- `frontend/src/components/LoginPage.tsx` — Full-page Google sign-in
+- `frontend/src/components/panels/SharePanel.tsx` — Slide-over panel for email invites, link sharing, role management
+- `frontend/src/lib/firebase.ts` — Firebase app/auth initialization
 - `frontend/src/components/LayoutCorrector.tsx` — Measures DOM heights post-render, fixes overlapping nodes. Two modes: `fullArrange` and `correctOverlap`
 - `frontend/src/utils/exportToMarkdown.ts` — Structured Markdown export respecting priority filters
 - `frontend/src/components/panels/VersionHistoryPanel.tsx` — Version list, create/restore snapshots

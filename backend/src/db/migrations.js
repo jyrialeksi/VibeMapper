@@ -44,5 +44,42 @@ export function runMigrations() {
 
     CREATE INDEX IF NOT EXISTS idx_canvas_versions_project
       ON canvas_versions(project_id, version_number DESC);
+
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      name TEXT NOT NULL,
+      picture TEXT DEFAULT '',
+      created_at TEXT DEFAULT (datetime('now')),
+      last_login TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS project_shares (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      user_id TEXT,
+      invited_email TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'viewer',
+      share_token TEXT UNIQUE,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_project_shares_project
+      ON project_shares(project_id);
+    CREATE INDEX IF NOT EXISTS idx_project_shares_user
+      ON project_shares(user_id);
+    CREATE INDEX IF NOT EXISTS idx_project_shares_email
+      ON project_shares(invited_email);
+    CREATE INDEX IF NOT EXISTS idx_project_shares_token
+      ON project_shares(share_token);
   `);
+
+  // Add owner_id to projects if not present (SQLite lacks ADD COLUMN IF NOT EXISTS)
+  const columns = db.prepare("PRAGMA table_info(projects)").all();
+  if (!columns.some(c => c.name === 'owner_id')) {
+    db.exec(`ALTER TABLE projects ADD COLUMN owner_id TEXT DEFAULT NULL`);
+    db.exec(`CREATE INDEX IF NOT EXISTS idx_projects_owner ON projects(owner_id)`);
+  }
 }

@@ -1,0 +1,8 @@
+node_modules/
+backend/data/
+.git/
+.env
+*.db
+*.db-wal
+*.db-shm
+.claude/

@@ -4,6 +4,7 @@ import db from '../db/database.js';
 import { chatCompletion } from '../ai/client.js';
 import { availableModels } from '../ai/models.js';
 import { GENERATE_SYSTEM_PROMPT, EDIT_SYSTEM_PROMPT, ARRANGE_SYSTEM_PROMPT } from '../ai/prompts.js';
+import { requireProjectAccess } from '../middleware/auth.js';
 
 const router = Router();
 
