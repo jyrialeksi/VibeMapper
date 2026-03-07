@@ -49,6 +49,10 @@ interface MapState {
   // Highlight state
   highlightedNodes: Map<string, HighlightType>;
 
+  // Card content visibility
+  showDescriptions: boolean;
+  showAcceptanceCriteria: boolean;
+
   // Version state
   pendingSaveLabel: string | null;
   isVersionPanelOpen: boolean;
@@ -89,6 +93,10 @@ interface MapState {
   // Highlight actions
   clearHighlights: () => void;
 
+  // Card content visibility actions
+  toggleShowDescriptions: () => void;
+  toggleShowAcceptanceCriteria: () => void;
+
   // Version actions
   setPendingSaveLabel: (label: string | null) => void;
   setVersionPanelOpen: (open: boolean) => void;
@@ -118,6 +126,10 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Highlight state
   highlightedNodes: new Map(),
+
+  // Card content visibility
+  showDescriptions: true,
+  showAcceptanceCriteria: true,
 
   // Version state
   pendingSaveLabel: null,
@@ -384,6 +396,10 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Highlight actions
   clearHighlights: () => set({ highlightedNodes: new Map() }),
+
+  // Card content visibility actions
+  toggleShowDescriptions: () => set((s) => ({ showDescriptions: !s.showDescriptions })),
+  toggleShowAcceptanceCriteria: () => set((s) => ({ showAcceptanceCriteria: !s.showAcceptanceCriteria })),
 
   // Version actions
   setPendingSaveLabel: (label) => set({ pendingSaveLabel: label }),

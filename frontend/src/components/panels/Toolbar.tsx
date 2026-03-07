@@ -10,6 +10,8 @@ import {
   Download,
   FileText,
   History,
+  AlignLeft,
+  ListChecks,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -52,6 +54,10 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
   const setVersionPanelOpen = useMapStore((s) => s.setVersionPanelOpen);
   const hiddenPriorities = useMapStore((s) => s.hiddenPriorities);
   const togglePriority = useMapStore((s) => s.togglePriority);
+  const showDescriptions = useMapStore((s) => s.showDescriptions);
+  const toggleShowDescriptions = useMapStore((s) => s.toggleShowDescriptions);
+  const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
+  const toggleShowAcceptanceCriteria = useMapStore((s) => s.toggleShowAcceptanceCriteria);
 
   return (
     <div className="absolute top-3 left-3 z-50 flex items-center gap-2 flex-wrap max-w-[calc(100vw-24px)]">
@@ -167,6 +173,34 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
             </button>
           );
         })}
+      </div>
+
+      {/* Card content visibility */}
+      <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+        <button
+          onClick={toggleShowDescriptions}
+          className={`px-3 py-2 text-sm font-medium border-r border-gray-200/30 dark:border-gray-700/30 transition-colors duration-150 flex items-center gap-1.5 ${
+            showDescriptions
+              ? 'text-gray-700 dark:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+              : 'text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-800/50'
+          }`}
+          title={`${showDescriptions ? 'Hide' : 'Show'} descriptions`}
+        >
+          <AlignLeft size={15} />
+          Desc
+        </button>
+        <button
+          onClick={toggleShowAcceptanceCriteria}
+          className={`px-3 py-2 text-sm font-medium transition-colors duration-150 flex items-center gap-1.5 ${
+            showAcceptanceCriteria
+              ? 'text-gray-700 dark:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+              : 'text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-800/50'
+          }`}
+          title={`${showAcceptanceCriteria ? 'Hide' : 'Show'} acceptance criteria`}
+        >
+          <ListChecks size={15} />
+          AC
+        </button>
       </div>
 
       {/* History */}

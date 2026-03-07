@@ -14,11 +14,12 @@ const PRIORITY_ORDER: Priority[] = ['must-have', 'should-have', 'could-have', 'w
 const nodeLookupSelector = (s: ReactFlowState) => s.nodeLookup;
 
 function estimateHeight(data: StoryCardData): number {
+  const { showDescriptions, showAcceptanceCriteria } = useMapStore.getState();
   let h = 50;
-  if (data.description) {
+  if (showDescriptions && data.description) {
     h += Math.ceil(data.description.length / 35) * 14;
   }
-  if (data.acceptanceCriteria?.length) {
+  if (showAcceptanceCriteria && data.acceptanceCriteria?.length) {
     h += 18 + data.acceptanceCriteria.length * 14;
   }
   return Math.max(h, 60);

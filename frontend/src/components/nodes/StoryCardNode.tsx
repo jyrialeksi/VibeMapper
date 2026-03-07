@@ -19,6 +19,8 @@ const PRIORITY_LABEL_STYLE: Record<Priority, string> = {
 
 export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardData>>) {
   const highlightType = useMapStore((s) => s.highlightedNodes.get(id));
+  const showDescriptions = useMapStore((s) => s.showDescriptions);
+  const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
   const highlightClass = highlightType === 'added' ? 'node-highlight-added' : highlightType === 'modified' ? 'node-highlight-modified' : '';
   const priorityBg = PRIORITY_BG[data.priority] || PRIORITY_BG['must-have'];
   const priorityColor = PRIORITY_COLORS[data.priority] || PRIORITY_COLORS['must-have'];
@@ -48,10 +50,10 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
         </div>
       </div>
       <div className="font-semibold text-[11px] text-gray-900 leading-snug">{data.title}</div>
-      {data.description && (
+      {showDescriptions && data.description && (
         <div className="text-[10px] text-gray-600 mt-1 leading-snug">{data.description}</div>
       )}
-      {data.acceptanceCriteria && data.acceptanceCriteria.length > 0 && (
+      {showAcceptanceCriteria && data.acceptanceCriteria && data.acceptanceCriteria.length > 0 && (
         <div className="mt-1.5 pt-1.5 border-t border-gray-200/60">
           <div className="text-[8px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5">
             Acceptance Criteria
