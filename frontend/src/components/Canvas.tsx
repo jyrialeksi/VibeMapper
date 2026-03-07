@@ -8,6 +8,7 @@ import {
   type Node,
   BackgroundVariant,
 } from '@xyflow/react';
+import { Loader2, X } from 'lucide-react';
 import { useMapStore } from '../store/useMapStore';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useTheme } from '../hooks/useTheme';
@@ -67,6 +68,10 @@ export function Canvas({ projectId }: CanvasProps) {
   const pushSnapshot = useMapStore((s) => s.pushSnapshot);
   const isVersionPanelOpen = useMapStore((s) => s.isVersionPanelOpen);
   const hiddenPriorities = useMapStore((s) => s.hiddenPriorities);
+  const isAIEditing = useMapStore((s) => s.isAIEditing);
+  const cancelAIEdit = useMapStore((s) => s.cancelAIEdit);
+  const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
+  const lastAIEditNodeIds = useMapStore((s) => s.lastAIEditNodeIds);
 
   const visibleNodes = useMemo(() => {
     if (hiddenPriorities.size === 0) return nodes;
@@ -82,9 +87,18 @@ export function Canvas({ projectId }: CanvasProps) {
   }, [visibleNodes, hiddenPriorities]);
 
   const visibleEdges = useMemo(() => {
-    if (!visibleNodeIds) return edges;
-    return edges.filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
-  }, [edges, visibleNodeIds]);
+    let filtered = edges;
+    if (visibleNodeIds) {
+      filtered = filtered.filter((e) => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
+    }
+    if (showLastAIEdit && lastAIEditNodeIds.size > 0) {
+      filtered = filtered.map((e) => {
+        const connected = lastAIEditNodeIds.has(e.source) || lastAIEditNodeIds.has(e.target);
+        return connected ? e : { ...e, className: 'edge-dimmed-not-ai' };
+      });
+    }
+    return filtered;
+  }, [edges, visibleNodeIds, showLastAIEdit, lastAIEditNodeIds]);
 
   const { theme } = useTheme();
 
@@ -222,21 +236,24 @@ export function Canvas({ projectId }: CanvasProps) {
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        onNodesChange={isAIEditing ? undefined : onNodesChange}
+        onEdgesChange={isAIEditing ? undefined : onEdgesChange}
+        onConnect={isAIEditing ? undefined : onConnect}
         onInit={(instance) => { rfRef.current = instance; }}
-        onPaneClick={handlePaneClick}
-        onNodeDoubleClick={handleNodeDoubleClick}
-        onNodeClick={handleNodeClick}
-        onNodeDragStart={handleNodeDragStart}
+        onPaneClick={isAIEditing ? undefined : handlePaneClick}
+        onNodeDoubleClick={isAIEditing ? undefined : handleNodeDoubleClick}
+        onNodeClick={isAIEditing ? undefined : handleNodeClick}
+        onNodeDragStart={isAIEditing ? undefined : handleNodeDragStart}
+        nodesDraggable={!isAIEditing}
+        nodesConnectable={!isAIEditing}
+        elementsSelectable={!isAIEditing}
+        deleteKeyCode={isAIEditing ? null : 'Delete'}
+        selectionKeyCode={isAIEditing ? null : 'Shift'}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
         connectionMode={toolMode === 'line' ? undefined : undefined}
         className="bg-gray-50 dark:bg-gray-950"
-        deleteKeyCode="Delete"
-        selectionKeyCode="Shift"
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme === 'dark' ? '#4b5563' : '#d1d5db'} />
         <Controls />
@@ -247,7 +264,24 @@ export function Canvas({ projectId }: CanvasProps) {
         <LayoutCorrector />
         <HighlightClearer />
       </ReactFlow>
-      {selectedNodeId && !isVersionPanelOpen && <CardEditor />}
+      {isAIEditing && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 dark:bg-black/40 backdrop-blur-[2px]">
+          <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 px-8 py-6 flex flex-col items-center gap-4">
+            <Loader2 size={32} className="animate-spin text-blue-500" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-200">AI is editing the map...</p>
+            {cancelAIEdit && (
+              <button
+                onClick={cancelAIEdit}
+                className="px-4 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg border border-red-200 dark:border-red-800 transition-colors duration-150 flex items-center gap-1.5"
+              >
+                <X size={14} />
+                Cancel
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      {selectedNodeId && !isVersionPanelOpen && !isAIEditing && <CardEditor />}
       <VersionHistoryPanel />
       <AIPromptBox />
       <input

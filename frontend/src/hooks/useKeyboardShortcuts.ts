@@ -4,9 +4,12 @@ import { useMapStore } from '../store/useMapStore';
 export function useKeyboardShortcuts() {
   const undo = useMapStore((s) => s.undo);
   const redo = useMapStore((s) => s.redo);
+  const isAIEditing = useMapStore((s) => s.isAIEditing);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      if (isAIEditing) return;
+
       const target = e.target as HTMLElement;
       if (
         target.tagName === 'INPUT' ||
@@ -28,5 +31,5 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [undo, redo]);
+  }, [undo, redo, isAIEditing]);
 }

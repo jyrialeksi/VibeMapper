@@ -27,7 +27,10 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
   const highlightType = useMapStore((s) => s.highlightedNodes.get(id));
   const showDescriptions = useMapStore((s) => s.showDescriptions);
   const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
+  const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
+  const isInLastAIEdit = useMapStore((s) => s.lastAIEditNodeIds.has(id));
   const highlightClass = highlightType === 'added' ? 'node-highlight-added' : highlightType === 'modified' ? 'node-highlight-modified' : '';
+  const dimClass = showLastAIEdit && !isInLastAIEdit ? 'node-dimmed-not-ai' : '';
   const priorityBg = PRIORITY_BG[data.priority] || PRIORITY_BG['must-have'];
   const barColor = selected ? '#059669' : (PRIORITY_BAR_COLOR[data.priority] || '#ef4444');
 
@@ -35,7 +38,7 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
     <div
       className={`px-3 pl-5 py-2.5 rounded-lg shadow-md border-2 w-[260px] ${priorityBg} ${
         selected ? 'ring-2 ring-green-400' : ''
-      } ${highlightClass}`}
+      } ${highlightClass} ${dimClass}`}
       style={{ '--tw-inset-shadow': `inset 6px 0 0 0 ${barColor}`, ...(selected ? { borderColor: '#059669' } : {}) } as React.CSSProperties}
     >
       <div className="flex items-center justify-between mb-1">

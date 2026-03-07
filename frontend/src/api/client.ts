@@ -63,10 +63,11 @@ export const api = {
 
   // AI
   getModels: () => request<AIModel[]>('/ai/models'),
-  generateStories: (prompt: string, model: string, projectId?: string, existingNodes?: unknown[], existingEdges?: unknown[]) =>
+  generateStories: (prompt: string, model: string, projectId?: string, existingNodes?: unknown[], existingEdges?: unknown[], signal?: AbortSignal) =>
     request<AIGenerateResult>('/ai/generate', {
       method: 'POST',
       body: JSON.stringify({ prompt, model, projectId, existingNodes, existingEdges }),
+      signal,
     }),
   arrangeNodes: (nodes: unknown[], edges: unknown[], model: string) =>
     request<{ nodes: { id: string; position: { x: number; y: number } }[] }>('/ai/arrange', {

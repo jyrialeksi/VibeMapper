@@ -49,6 +49,14 @@ interface MapState {
   // Highlight state
   highlightedNodes: Map<string, HighlightType>;
 
+  // AI editing state
+  isAIEditing: boolean;
+  cancelAIEdit: (() => void) | null;
+
+  // Last AI edit tracking
+  lastAIEditNodeIds: Set<string>;
+  showLastAIEdit: boolean;
+
   // Card content visibility
   showDescriptions: boolean;
   showAcceptanceCriteria: boolean;
@@ -93,6 +101,13 @@ interface MapState {
   // Highlight actions
   clearHighlights: () => void;
 
+  // AI editing actions
+  setAIEditing: (editing: boolean) => void;
+  setCancelAIEdit: (fn: (() => void) | null) => void;
+
+  // Last AI edit actions
+  toggleShowLastAIEdit: () => void;
+
   // Card content visibility actions
   toggleShowDescriptions: () => void;
   toggleShowAcceptanceCriteria: () => void;
@@ -126,6 +141,14 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Highlight state
   highlightedNodes: new Map(),
+
+  // AI editing state
+  isAIEditing: false,
+  cancelAIEdit: null,
+
+  // Last AI edit tracking
+  lastAIEditNodeIds: new Set<string>(),
+  showLastAIEdit: false,
 
   // Card content visibility
   showDescriptions: true,
@@ -192,7 +215,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   setDirty: (dirty) => set({ isDirty: dirty }),
 
   loadCanvas: (nodes, edges, viewport) => {
-    set({ nodes, edges, viewport, isDirty: false, highlightedNodes: new Map() });
+    set({ nodes, edges, viewport, isDirty: false, highlightedNodes: new Map(), lastAIEditNodeIds: new Set(), showLastAIEdit: false });
     get().clearHistory();
   },
 
@@ -225,6 +248,8 @@ export const useMapStore = create<MapState>((set, get) => ({
       isDirty: true,
       pendingLayout: 'correctOverlap',
       highlightedNodes: highlights,
+      lastAIEditNodeIds: new Set(highlights.keys()),
+      showLastAIEdit: false,
     });
   },
 
@@ -307,6 +332,8 @@ export const useMapStore = create<MapState>((set, get) => ({
       edges,
       isDirty: true,
       highlightedNodes: highlights,
+      lastAIEditNodeIds: new Set(highlights.keys()),
+      showLastAIEdit: false,
       ...(needsLayout && { pendingLayout: 'correctOverlap' as PendingLayout }),
     });
   },
@@ -350,6 +377,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       canRedo: true,
       isDirty: true,
       highlightedNodes: new Map(),
+      showLastAIEdit: false,
     });
   },
 
@@ -372,6 +400,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       canRedo: newRedo.length > 0,
       isDirty: true,
       highlightedNodes: new Map(),
+      showLastAIEdit: false,
     });
   },
 
@@ -396,6 +425,19 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Highlight actions
   clearHighlights: () => set({ highlightedNodes: new Map() }),
+
+  // AI editing actions
+  setAIEditing: (editing) => {
+    if (editing) {
+      set({ isAIEditing: true, selectedNodeId: null, toolMode: 'select' });
+    } else {
+      set({ isAIEditing: false });
+    }
+  },
+  setCancelAIEdit: (fn) => set({ cancelAIEdit: fn }),
+
+  // Last AI edit actions
+  toggleShowLastAIEdit: () => set((s) => ({ showLastAIEdit: !s.showLastAIEdit })),
 
   // Card content visibility actions
   toggleShowDescriptions: () => set((s) => ({ showDescriptions: !s.showDescriptions })),

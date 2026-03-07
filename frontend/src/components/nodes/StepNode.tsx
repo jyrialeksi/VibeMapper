@@ -4,13 +4,16 @@ import { useMapStore } from '../../store/useMapStore';
 
 export function StepNode({ id, data, selected }: NodeProps<Node<StoryCardData>>) {
   const highlightType = useMapStore((s) => s.highlightedNodes.get(id));
+  const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
+  const isInLastAIEdit = useMapStore((s) => s.lastAIEditNodeIds.has(id));
   const highlightClass = highlightType === 'added' ? 'node-highlight-added' : highlightType === 'modified' ? 'node-highlight-modified' : '';
+  const dimClass = showLastAIEdit && !isInLastAIEdit ? 'node-dimmed-not-ai' : '';
 
   return (
     <div
       className={`px-3 py-2.5 rounded-lg shadow-md border-2 w-[260px] bg-blue-200 ${
         selected ? 'border-blue-600 ring-2 ring-blue-300' : 'border-blue-500'
-      } ${highlightClass}`}
+      } ${highlightClass} ${dimClass}`}
     >
       <div className="text-[8px] font-bold uppercase tracking-wider text-blue-600 mb-1">
         Step

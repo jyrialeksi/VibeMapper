@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../api/client';
 import { useMapStore } from '../store/useMapStore';
 import type { AIModel, StoryCardData } from '../types';
@@ -9,6 +9,7 @@ export function useAI() {
   const [selectedModel, setSelectedModel] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const projectId = useMapStore((s) => s.projectId);
   const nodes = useMapStore((s) => s.nodes);
@@ -17,6 +18,8 @@ export function useAI() {
   const applyArrangement = useMapStore((s) => s.applyArrangement);
   const applyOperations = useMapStore((s) => s.applyOperations);
   const setPendingSaveLabel = useMapStore((s) => s.setPendingSaveLabel);
+  const setAIEditing = useMapStore((s) => s.setAIEditing);
+  const setCancelAIEdit = useMapStore((s) => s.setCancelAIEdit);
 
   useEffect(() => {
     api.getModels().then((m) => {
@@ -25,10 +28,20 @@ export function useAI() {
     }).catch(console.error);
   }, []);
 
+  const cancel = useCallback(() => {
+    abortControllerRef.current?.abort();
+  }, []);
+
   const generate = async (prompt: string) => {
     if (!selectedModel || !prompt.trim()) return;
     setLoading(true);
     setError(null);
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    setAIEditing(true);
+    setCancelAIEdit(cancel);
+
     try {
       // Read fresh state to avoid stale closures
       const currentNodes = useMapStore.getState().nodes;
@@ -41,6 +54,7 @@ export function useAI() {
         projectId || undefined,
         isEditMode ? currentNodes : undefined,
         isEditMode ? currentEdges : undefined,
+        controller.signal,
       );
 
       if (result.mode === 'edit') {
@@ -53,9 +67,16 @@ export function useAI() {
         setPendingSaveLabel('AI Generation');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'AI generation failed');
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // User cancelled — no error needed
+      } else {
+        setError(err instanceof Error ? err.message : 'AI generation failed');
+      }
     } finally {
       setLoading(false);
+      setAIEditing(false);
+      setCancelAIEdit(null);
+      abortControllerRef.current = null;
     }
   };
 
@@ -74,5 +95,5 @@ export function useAI() {
     }
   };
 
-  return { models, selectedModel, setSelectedModel, loading, error, generate, arrange };
+  return { models, selectedModel, setSelectedModel, loading, error, generate, arrange, cancel };
 }

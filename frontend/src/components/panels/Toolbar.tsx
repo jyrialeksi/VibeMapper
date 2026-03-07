@@ -12,6 +12,7 @@ import {
   History,
   AlignLeft,
   ListChecks,
+  Sparkles,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -58,9 +59,13 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
   const toggleShowDescriptions = useMapStore((s) => s.toggleShowDescriptions);
   const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
   const toggleShowAcceptanceCriteria = useMapStore((s) => s.toggleShowAcceptanceCriteria);
+  const isAIEditing = useMapStore((s) => s.isAIEditing);
+  const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
+  const toggleShowLastAIEdit = useMapStore((s) => s.toggleShowLastAIEdit);
+  const lastAIEditNodeIds = useMapStore((s) => s.lastAIEditNodeIds);
 
   return (
-    <div className="absolute top-3 left-3 z-50 flex items-center gap-2 flex-wrap max-w-[calc(100vw-24px)]">
+    <div className={`absolute top-3 left-3 z-50 flex items-center gap-2 flex-wrap max-w-[calc(100vw-24px)] ${isAIEditing ? 'opacity-50 pointer-events-none' : ''}`}>
       {/* Tool buttons */}
       <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
         {tools.map((tool) => {
@@ -213,6 +218,19 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
       >
         <History size={15} />
         History
+      </button>
+
+      {/* AI Diff toggle */}
+      <button
+        onClick={toggleShowLastAIEdit}
+        disabled={lastAIEditNodeIds.size === 0}
+        className={`px-3 py-2 text-sm font-medium bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-colors duration-150 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed ${
+          showLastAIEdit ? 'bg-purple-50/80 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+        }`}
+        title="Highlight nodes from last AI edit"
+      >
+        <Sparkles size={15} />
+        AI Diff
       </button>
 
       {/* Save indicator */}

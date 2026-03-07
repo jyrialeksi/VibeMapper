@@ -34,6 +34,17 @@ html, body, #root {
   animation: highlight-pulse-modified 1.5s ease-in-out 2;
 }
 
+/* AI Diff dimming */
+.node-dimmed-not-ai {
+  opacity: 0.15;
+  transition: opacity 0.3s ease;
+}
+
+.react-flow__edge.edge-dimmed-not-ai path {
+  opacity: 0.1;
+  transition: opacity 0.3s ease;
+}
+
 /* React Flow dark mode overrides */
 .dark .react-flow {
   background-color: rgb(3 7 18);
