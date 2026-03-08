@@ -46,9 +46,10 @@ function createDefaultData(cardType: CardType): StoryCardData {
 
 interface CanvasProps {
   projectId: string;
+  onDeleteProject?: () => Promise<void>;
 }
 
-export function Canvas({ projectId }: CanvasProps) {
+export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
   const rfRef = useRef<ReactFlowInstance<Node<StoryCardData>> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -283,7 +284,7 @@ export function Canvas({ projectId }: CanvasProps) {
 
   return (
     <div className="w-full h-full relative">
-      <MobileToolbar onImport={handleImport} onExport={handleExport} onExportMarkdown={handleExportMarkdown} />
+      <MobileToolbar onImport={handleImport} onExport={handleExport} onExportMarkdown={handleExportMarkdown} onDeleteProject={onDeleteProject} />
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}

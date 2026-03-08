@@ -44,7 +44,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 
 // Rate limiters
-const authLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false });
+const authLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
 const aiLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
 
 // Health check (public) with DB connectivity check

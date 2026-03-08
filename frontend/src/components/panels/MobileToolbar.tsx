@@ -18,6 +18,7 @@ import {
   ListChecks,
   Sparkles,
   LayoutGrid,
+  Trash2,
 } from 'lucide-react';
 
 const tools: { mode: ToolMode; label: string; icon: typeof MousePointer2 }[] = [
@@ -43,10 +44,13 @@ interface MobileToolbarProps {
   onImport: () => void;
   onExport: () => void;
   onExportMarkdown: () => void;
+  onDeleteProject?: () => Promise<void>;
 }
 
-export function MobileToolbar({ onImport, onExport, onExportMarkdown }: MobileToolbarProps) {
+export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeleteProject }: MobileToolbarProps) {
   const [open, setOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   const toolMode = useMapStore((s) => s.toolMode);
@@ -246,6 +250,55 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown }: MobileTo
           <button onClick={withClose(onExportMarkdown)} className={`${btnBase} ${btnInactive}`}>
             <FileText size={18} /> Export MD
           </button>
+
+          {/* Delete Project (owner only) */}
+          {onDeleteProject && (
+            <>
+              <div className="border-t border-gray-200/50 dark:border-gray-700/50 my-2" />
+              <button
+                onClick={() => { setOpen(false); setShowDeleteConfirm(true); }}
+                className={`${btnBase} text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30`}
+              >
+                <Trash2 size={18} /> Delete Project
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Delete confirmation dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 dark:bg-black/60 backdrop-blur-[2px]" onClick={() => !deleting && setShowDeleteConfirm(false)}>
+          <div
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 mx-4 max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Delete Project</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to delete this project? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setDeleting(true);
+                  await onDeleteProject!();
+                  setDeleting(false);
+                  setShowDeleteConfirm(false);
+                }}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

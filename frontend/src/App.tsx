@@ -3,7 +3,7 @@ import { Canvas } from './components/Canvas';
 import { LoginPage } from './components/LoginPage';
 import { api } from './api/client';
 import type { Project } from './types';
-import { X, ArrowLeft, Moon, Sun, LogOut, Users, Share2, Key, Check, Trash2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, LogOut, Users, Share2, Key, Check, Trash2, ExternalLink } from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 import { useAuth } from './hooks/useAuth';
 import { useMapStore } from './store/useMapStore';
@@ -65,16 +65,6 @@ function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
     }
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!confirm('Delete this project? This cannot be undone.')) return;
-    try {
-      await api.deleteProject(id);
-      setProjects((prev) => prev.filter((p) => p.id !== id));
-    } catch (err) {
-      console.error('Failed to delete project:', err);
-    }
-  };
 
   if (loading) {
     return (
@@ -216,8 +206,6 @@ function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
           title="My Projects"
           projects={ownedProjects}
           onSelect={onSelect}
-          onDelete={handleDelete}
-          showDelete
         />
 
         {/* Shared projects */}
@@ -227,8 +215,6 @@ function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
               title="Shared with me"
               projects={sharedProjects}
               onSelect={onSelect}
-              onDelete={handleDelete}
-              showDelete={false}
             />
           </div>
         )}
@@ -241,14 +227,10 @@ function ProjectSection({
   title,
   projects,
   onSelect,
-  onDelete,
-  showDelete,
 }: {
   title: string;
   projects: Project[];
   onSelect: (id: string) => void;
-  onDelete: (id: string, e: React.MouseEvent) => void;
-  showDelete: boolean;
 }) {
   if (projects.length === 0 && title === 'My Projects') {
     return (
@@ -270,33 +252,23 @@ function ProjectSection({
           <div
             key={project.id}
             onClick={() => onSelect(project.id)}
-            className="bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/50 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition-all flex items-center justify-between group"
+            className="bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/50 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition-all"
           >
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-gray-900 dark:text-gray-100">{project.name}</span>
-                {project.role && project.role !== 'owner' && (
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
-                    {project.role}
-                  </span>
-                )}
-              </div>
-              {project.description && (
-                <div className="text-sm text-gray-500 dark:text-gray-400">{project.description}</div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-gray-900 dark:text-gray-100">{project.name}</span>
+              {project.role && project.role !== 'owner' && (
+                <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                  {project.role}
+                </span>
               )}
-              <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                {project.owner_name && <span>by {project.owner_name} &middot; </span>}
-                Updated {new Date(project.updated_at).toLocaleString()}
-              </div>
             </div>
-            {showDelete && (
-              <button
-                onClick={(e) => onDelete(project.id, e)}
-                className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity px-2"
-              >
-                <X size={16} />
-              </button>
+            {project.description && (
+              <div className="text-sm text-gray-500 dark:text-gray-400">{project.description}</div>
             )}
+            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              {project.owner_name && <span>by {project.owner_name} &middot; </span>}
+              Updated {new Date(project.updated_at).toLocaleString()}
+            </div>
           </div>
         ))}
       </div>
@@ -337,6 +309,17 @@ function App() {
         window.history.replaceState(null, '', '/');
       });
   }, [shareToken, user]);
+
+  const handleDeleteProject = useCallback(async () => {
+    if (!projectId) return;
+    try {
+      await api.deleteProject(projectId);
+      setProjectId(null);
+      setProjectRole('owner');
+    } catch (err) {
+      console.error('Failed to delete project:', err);
+    }
+  }, [projectId, setProjectRole]);
 
   if (loading) {
     return (
@@ -413,7 +396,7 @@ function App() {
       </div>
       {/* Canvas */}
       <div className="flex-1">
-        <Canvas projectId={projectId} />
+        <Canvas projectId={projectId} onDeleteProject={projectRole === 'owner' ? handleDeleteProject : undefined} />
       </div>
       {projectId && (
         <SharePanel
