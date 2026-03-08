@@ -20,7 +20,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<Node<StoryCardD
       />
       <div
         className={`w-full h-full rounded-lg border-2 border-dashed p-3 ${
-          selected ? 'border-[#C6FF4D]/60 bg-[#f8ffe8]' : 'border-[#C6FF4D]/40 bg-[#f8ffe8]/90'
+          selected ? 'border-[#C6FF4D]/60 bg-[#f8ffe8] dark:bg-[#d4f0a3]' : 'border-[#C6FF4D]/40 bg-[#f8ffe8]/90 dark:bg-[#d4f0a3]/90'
         } ${highlightClass} ${dimClass}`}
         style={{ minWidth: data.width || 200, minHeight: data.height || 100 }}
       >

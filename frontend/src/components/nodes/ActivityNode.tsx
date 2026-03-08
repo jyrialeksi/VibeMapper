@@ -11,7 +11,7 @@ export function ActivityNode({ id, data, selected }: NodeProps<Node<StoryCardDat
 
   return (
     <div
-      className={`px-3 py-2.5 rounded-lg shadow-md border-2 w-[260px] bg-[#f0e8ff] dark:bg-[#f0e8ff] ${
+      className={`px-3 py-2.5 rounded-lg shadow-md border-2 w-[260px] bg-[#f0e8ff] dark:bg-[#c9b3f0] ${
         selected ? 'border-[#7B2FFF] ring-2 ring-[#7B2FFF]/30' : 'border-[#7B2FFF]/60'
       } ${highlightClass} ${dimClass}`}
     >
