@@ -5,10 +5,10 @@ import type { CardStatus } from '../../types';
 import { useMapStore } from '../../store/useMapStore';
 
 const PRIORITY_BG: Record<Priority, string> = {
-  'must-have': 'bg-[#fff0f8] border-[#FF3CAC]/50 dark:bg-[#1a0a18]/90 dark:border-[#FF3CAC]/40 backdrop-blur-md',
-  'should-have': 'bg-[#f8ffe8] border-[#C6FF4D]/50 dark:bg-[#121a08]/90 dark:border-[#C6FF4D]/40 backdrop-blur-md',
-  'could-have': 'bg-[#e8fffa] border-[#00F5D4]/50 dark:bg-[#081a18]/90 dark:border-[#00F5D4]/40 backdrop-blur-md',
-  'wont-have': 'bg-[#f0f0f4] border-[#7A7A9A]/50 dark:bg-[#121218]/90 dark:border-[#7A7A9A]/40 backdrop-blur-md',
+  'must-have': 'bg-[#fff0f8] border-[#FF3CAC]/50 dark:bg-[#fff0f8] dark:border-[#FF3CAC]/50',
+  'should-have': 'bg-[#f8ffe8] border-[#C6FF4D]/50 dark:bg-[#f8ffe8] dark:border-[#C6FF4D]/50',
+  'could-have': 'bg-[#e8fffa] border-[#00F5D4]/50 dark:bg-[#e8fffa] dark:border-[#00F5D4]/50',
+  'wont-have': 'bg-[#f0f0f4] border-[#7A7A9A]/50 dark:bg-[#f0f0f4] dark:border-[#7A7A9A]/50',
 };
 
 const PRIORITY_BAR_COLOR: Record<Priority, string> = {
@@ -19,10 +19,10 @@ const PRIORITY_BAR_COLOR: Record<Priority, string> = {
 };
 
 const PRIORITY_LABEL_STYLE: Record<Priority, string> = {
-  'must-have': 'bg-[#FF3CAC]/20 text-[#FF3CAC]',
-  'should-have': 'bg-[#C6FF4D]/20 text-[#080810] dark:text-[#C6FF4D]',
-  'could-have': 'bg-[#00F5D4]/20 text-[#00F5D4]',
-  'wont-have': 'bg-[#7A7A9A]/20 text-[#7A7A9A]',
+  'must-have': 'bg-[#FF3CAC]/20 text-[#b0286e]',
+  'should-have': 'bg-[#C6FF4D]/30 text-[#4a6600]',
+  'could-have': 'bg-[#00F5D4]/20 text-[#007a6a]',
+  'wont-have': 'bg-[#7A7A9A]/20 text-[#555568]',
 };
 
 export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardData>>) {
@@ -45,7 +45,7 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
     >
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1">
-          <span className="font-mono-brand text-[8px] font-bold uppercase tracking-wider text-[#C6FF4D] dark:text-[#C6FF4D]">
+          <span className="font-mono-brand text-[8px] font-bold uppercase tracking-wider text-[#4a6600]">
             Story
           </span>
           {data.status && (
@@ -59,7 +59,7 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
         </div>
         <div className="flex items-center gap-1">
           {data.estimate && (
-            <span className="text-[8px] bg-[#7A7A9A]/20 text-[#7A7A9A] px-1 py-0.5 rounded font-medium">
+            <span className="text-[8px] bg-[#7A7A9A]/20 text-[#555568] px-1 py-0.5 rounded font-medium">
               {data.estimate}
             </span>
           )}
@@ -70,11 +70,11 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
           </span>
         </div>
       </div>
-      <div className="font-semibold text-[11px] text-[#080810] dark:text-[#F0EEFF] leading-snug">{data.title}</div>
+      <div className="font-semibold text-[11px] text-[#080810] leading-snug">{data.title}</div>
       {data.description && (
         <div className={`card-section-collapsible ${showDescriptions ? 'card-section-open' : ''}`}>
           <div>
-            <div className="text-[10px] text-[#7A7A9A] mt-1 leading-snug">{data.description}</div>
+            <div className="text-[10px] text-[#555568] mt-1 leading-snug">{data.description}</div>
           </div>
         </div>
       )}
@@ -82,13 +82,13 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
         <div className={`card-section-collapsible ${showAcceptanceCriteria ? 'card-section-open' : ''}`}>
           <div>
             <div className="mt-1.5 pt-1.5 border-t border-[#7A7A9A]/20">
-              <div className="text-[8px] font-semibold uppercase tracking-wider text-[#7A7A9A] mb-0.5">
+              <div className="text-[8px] font-semibold uppercase tracking-wider text-[#555568] mb-0.5">
                 Acceptance Criteria
               </div>
               <ul className="space-y-0.5">
                 {data.acceptanceCriteria.map((ac, i) => (
-                  <li key={i} className="text-[9px] text-[#7A7A9A] leading-snug flex gap-1">
-                    <span className="text-[#7A7A9A]/60 shrink-0">•</span>
+                  <li key={i} className="text-[9px] text-[#555568] leading-snug flex gap-1">
+                    <span className="text-[#555568]/60 shrink-0">•</span>
                     <span>{ac}</span>
                   </li>
                 ))}

@@ -19,17 +19,17 @@ export function AnnotationNode({ id, data, selected }: NodeProps<Node<StoryCardD
         handleClassName="!w-2.5 !h-2.5 !bg-[#C6FF4D] !border-[#C6FF4D]"
       />
       <div
-        className={`w-full h-full rounded-lg border-2 border-dashed p-3 backdrop-blur-md ${
-          selected ? 'border-[#C6FF4D]/60 bg-[#f8ffe8] dark:bg-[#121a08]/90' : 'border-[#C6FF4D]/40 bg-[#f8ffe8]/80 dark:bg-[#121a08]/80'
+        className={`w-full h-full rounded-lg border-2 border-dashed p-3 ${
+          selected ? 'border-[#C6FF4D]/60 bg-[#f8ffe8]' : 'border-[#C6FF4D]/40 bg-[#f8ffe8]/90'
         } ${highlightClass} ${dimClass}`}
         style={{ minWidth: data.width || 200, minHeight: data.height || 100 }}
       >
-        <div className="font-mono-brand text-[10px] font-bold uppercase tracking-wider text-[#C6FF4D] mb-1">
+        <div className="font-mono-brand text-[10px] font-bold uppercase tracking-wider text-[#4a6600] mb-1">
           Note
         </div>
-        <div className="font-medium text-sm text-[#080810] dark:text-[#F0EEFF]">{data.title}</div>
+        <div className="font-medium text-sm text-[#080810]">{data.title}</div>
         {data.description && (
-          <div className="text-xs text-[#7A7A9A] mt-1">{data.description}</div>
+          <div className="text-xs text-[#080810]/60 mt-1">{data.description}</div>
         )}
       </div>
     </>
