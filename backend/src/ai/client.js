@@ -1,8 +1,7 @@
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-async function callOpenRouter(model, messages, { jsonMode, temperature }) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY not set');
+async function callOpenRouter(apiKey, model, messages, { jsonMode, temperature }) {
+  if (!apiKey) throw new Error('No API key provided');
 
   const body = {
     model,
@@ -58,8 +57,8 @@ function tryParseJson(content) {
   }
 }
 
-export async function chatCompletion(model, messages, { jsonMode = true, temperature = 0.7, retries = 1 } = {}) {
-  const content = await callOpenRouter(model, messages, { jsonMode, temperature });
+export async function chatCompletion(apiKey, model, messages, { jsonMode = true, temperature = 0.7, retries = 1 } = {}) {
+  const content = await callOpenRouter(apiKey, model, messages, { jsonMode, temperature });
 
   if (!jsonMode) return content;
 
@@ -74,7 +73,7 @@ export async function chatCompletion(model, messages, { jsonMode = true, tempera
       { role: 'assistant', content },
       { role: 'user', content: 'Your response was not valid JSON. Respond with ONLY a valid JSON object — no explanation, no markdown, no text before or after.' },
     ];
-    return chatCompletion(model, correctionMessages, { jsonMode, temperature, retries: retries - 1 });
+    return chatCompletion(apiKey, model, correctionMessages, { jsonMode, temperature, retries: retries - 1 });
   }
 
   throw new Error('AI returned invalid JSON. Try a different model or rephrase your prompt.');

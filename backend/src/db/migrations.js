@@ -91,4 +91,14 @@ export function runMigrations() {
   if (!canvasCols.some(c => c.name === 'show_acceptance_criteria')) {
     db.exec(`ALTER TABLE canvas_states ADD COLUMN show_acceptance_criteria INTEGER DEFAULT 1`);
   }
+
+  // Add openrouter_api_key column to users
+  const userCols = db.prepare("PRAGMA table_info(users)").all();
+  if (!userCols.some(c => c.name === 'openrouter_api_key')) {
+    db.exec(`ALTER TABLE users ADD COLUMN openrouter_api_key TEXT DEFAULT NULL`);
+  }
+
+  // Ensure local-dev user exists for non-auth mode
+  db.prepare(`INSERT OR IGNORE INTO users (id, email, name, picture) VALUES (?, ?, ?, ?)`)
+    .run('local-dev', 'dev@local', 'Local Dev', '');
 }

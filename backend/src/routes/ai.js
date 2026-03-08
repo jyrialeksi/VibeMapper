@@ -5,8 +5,15 @@ import { chatCompletion } from '../ai/client.js';
 import { availableModels } from '../ai/models.js';
 import { GENERATE_SYSTEM_PROMPT, EDIT_SYSTEM_PROMPT, ARRANGE_SYSTEM_PROMPT } from '../ai/prompts.js';
 import { requireProjectAccess } from '../middleware/auth.js';
+import { decrypt } from '../utils/encryption.js';
 
 const router = Router();
+
+function getUserApiKey(userId) {
+  const row = db.prepare('SELECT openrouter_api_key FROM users WHERE id = ?').get(userId);
+  if (!row?.openrouter_api_key) return null;
+  return decrypt(row.openrouter_api_key);
+}
 
 function buildCompactState(nodes, edges) {
   const lines = ['EXISTING NODES:'];
@@ -31,6 +38,9 @@ router.get('/models', (req, res) => {
 // Generate stories from prompt (or edit existing map)
 router.post('/generate', async (req, res) => {
   try {
+    const apiKey = getUserApiKey(req.user.id);
+    if (!apiKey) return res.status(403).json({ error: 'No API key configured. Add your OpenRouter API key on the projects page.' });
+
     const { prompt, model, projectId, existingNodes, existingEdges } = req.body;
     if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
     if (!model) return res.status(400).json({ error: 'Model is required' });
@@ -45,13 +55,13 @@ router.post('/generate', async (req, res) => {
         { role: 'system', content: EDIT_SYSTEM_PROMPT },
         { role: 'user', content: `${compactState}\n\nUSER REQUEST: ${prompt}` },
       ];
-      result = await chatCompletion(model, messages, { temperature: 0.4 });
+      result = await chatCompletion(apiKey, model, messages, { temperature: 0.4 });
     } else {
       messages = [
         { role: 'system', content: GENERATE_SYSTEM_PROMPT },
         { role: 'user', content: prompt },
       ];
-      result = await chatCompletion(model, messages);
+      result = await chatCompletion(apiKey, model, messages);
     }
 
     // Shape validation — retry once with correction if wrong structure
@@ -62,7 +72,7 @@ router.post('/generate', async (req, res) => {
         { role: 'assistant', content: JSON.stringify(result) },
         { role: 'user', content: 'Your response must be a JSON object with an "operations" array. Example: { "operations": [{ "type": "add_node", ... }] }' },
       ];
-      result = await chatCompletion(model, correctionMessages, { temperature: 0.4 });
+      result = await chatCompletion(apiKey, model, correctionMessages, { temperature: 0.4 });
     } else if (!isEditMode && !Array.isArray(result.nodes)) {
       console.warn('AI returned wrong shape (missing nodes), retrying with correction...');
       const correctionMessages = [
@@ -70,7 +80,7 @@ router.post('/generate', async (req, res) => {
         { role: 'assistant', content: JSON.stringify(result) },
         { role: 'user', content: 'Your response must be a JSON object with a "nodes" array and an "edges" array. Example: { "nodes": [...], "edges": [...] }' },
       ];
-      result = await chatCompletion(model, correctionMessages);
+      result = await chatCompletion(apiKey, model, correctionMessages);
     }
 
     // Save to history
@@ -101,11 +111,14 @@ router.post('/generate', async (req, res) => {
 // Rearrange existing nodes
 router.post('/arrange', async (req, res) => {
   try {
+    const apiKey = getUserApiKey(req.user.id);
+    if (!apiKey) return res.status(403).json({ error: 'No API key configured. Add your OpenRouter API key on the projects page.' });
+
     const { nodes, edges, model } = req.body;
     if (!nodes) return res.status(400).json({ error: 'Nodes are required' });
     if (!model) return res.status(400).json({ error: 'Model is required' });
 
-    const result = await chatCompletion(model, [
+    const result = await chatCompletion(apiKey, model, [
       { role: 'system', content: ARRANGE_SYSTEM_PROMPT },
       {
         role: 'user',

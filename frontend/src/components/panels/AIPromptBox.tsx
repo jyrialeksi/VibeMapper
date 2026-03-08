@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAI } from '../../hooks/useAI';
 import { useMapStore } from '../../store/useMapStore';
-import { Sparkles, Send, Loader2, LayoutGrid } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
+import { Sparkles, Send, Loader2, LayoutGrid, KeyRound } from 'lucide-react';
 import { AutoExpandTextarea } from '../ui/AutoExpandTextarea';
 
 export function AIPromptBox() {
@@ -9,6 +10,7 @@ export function AIPromptBox() {
   const { models, selectedModel, setSelectedModel, loading, error, generate } = useAI();
   const hasNodes = useMapStore((s) => s.nodes.length > 0);
   const arrangeLocal = useMapStore((s) => s.arrangeLocal);
+  const { hasApiKey } = useAuth();
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
@@ -22,6 +24,19 @@ export function AIPromptBox() {
       handleGenerate();
     }
   };
+
+  if (!hasApiKey) {
+    return (
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl">
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-3">
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 justify-center py-1">
+            <KeyRound size={15} />
+            <span>AI features require an API key. Set your OpenRouter key on the projects page.</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl">

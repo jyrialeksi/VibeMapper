@@ -112,6 +112,14 @@ export const api = {
       body: JSON.stringify({ showDescriptions, showAcceptanceCriteria }),
     }),
 
+  // API Key
+  getApiKeyStatus: () => request<{ hasKey: boolean }>('/auth/api-key/status'),
+  saveApiKey: (apiKey: string) => request<{ success: boolean; hasKey: boolean }>('/auth/api-key', {
+    method: 'PUT',
+    body: JSON.stringify({ apiKey }),
+  }),
+  deleteApiKey: () => request<{ success: boolean; hasKey: boolean }>('/auth/api-key', { method: 'DELETE' }),
+
   // Shares
   listShares: (projectId: string) =>
     request<Share[]>(`/projects/${projectId}/shares`),
