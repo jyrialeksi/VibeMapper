@@ -2,7 +2,7 @@ import { useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
-  Controls,
+
   type ReactFlowInstance,
   type Node,
   BackgroundVariant,
@@ -308,7 +308,6 @@ export function Canvas({ projectId }: CanvasProps) {
         className="bg-gray-50 dark:bg-gray-950 touch-manipulation"
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme === 'dark' ? '#4b5563' : '#d1d5db'} />
-        <Controls />
         <LayoutCorrector />
         <HighlightClearer />
       </ReactFlow>
