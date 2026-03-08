@@ -33,24 +33,24 @@ export function CardEditor() {
   const { data } = node;
 
   return (
-    <div className="absolute right-0 top-0 h-full w-80 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-l border-gray-200/50 dark:border-gray-700/50 shadow-lg z-50 overflow-y-auto">
+    <div className="absolute right-0 top-0 h-full w-80 bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border-l border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] shadow-lg z-50 overflow-y-auto">
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">Edit Card</h3>
+          <h3 className="font-semibold text-[#080810] dark:text-[#F0EEFF]">Edit Card</h3>
           <button
             onClick={() => setSelectedNodeId(null)}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
+            className="p-1 hover:bg-[#7B2FFF]/10 dark:hover:bg-[#7B2FFF]/20 rounded-md text-[#7A7A9A] hover:text-[#7B2FFF] transition-colors duration-150"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Card Type */}
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Card Type</label>
+        <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Card Type</label>
         <select
           value={data.cardType}
           onChange={(e) => updateNodeData(node.id, { cardType: e.target.value as CardType })}
-          className="w-full rounded-lg bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 px-2 py-1.5 text-sm mb-3 dark:text-gray-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150"
+          className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-2 py-1.5 text-sm mb-3 dark:text-[#F0EEFF] focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150"
         >
           {cardTypes.map((ct) => (
             <option key={ct} value={ct}>{ct}</option>
@@ -58,32 +58,32 @@ export function CardEditor() {
         </select>
 
         {/* Title */}
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Title</label>
+        <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Title</label>
         <AutoExpandTextarea
           minRows={1}
           maxRows={4}
           value={data.title}
           onChange={(e) => updateNodeData(node.id, { title: e.target.value })}
-          className="w-full rounded-lg bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 px-2 py-1.5 text-sm mb-3 dark:text-gray-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150 placeholder:text-gray-400"
+          className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-2 py-1.5 text-sm mb-3 dark:text-[#F0EEFF] focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150 placeholder:text-[#7A7A9A]"
         />
 
         {/* Description */}
-        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Description</label>
+        <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Description</label>
         <textarea
           value={data.description}
           onChange={(e) => updateNodeData(node.id, { description: e.target.value })}
-          className="w-full rounded-lg bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 px-2 py-1.5 text-sm mb-3 dark:text-gray-100 resize-y focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150 placeholder:text-gray-400"
+          className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-2 py-1.5 text-sm mb-3 dark:text-[#F0EEFF] resize-y focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150 placeholder:text-[#7A7A9A]"
           rows={3}
         />
 
         {/* Priority */}
         {data.cardType !== 'annotation' && (
           <>
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Priority</label>
+            <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Priority</label>
             <select
               value={data.priority}
               onChange={(e) => updateNodeData(node.id, { priority: e.target.value as Priority })}
-              className="w-full rounded-lg bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 px-2 py-1.5 text-sm mb-3 dark:text-gray-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150"
+              className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-2 py-1.5 text-sm mb-3 dark:text-[#F0EEFF] focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150"
             >
               {priorities.map((p) => (
                 <option key={p} value={p}>{p}</option>
@@ -95,7 +95,7 @@ export function CardEditor() {
         {/* Estimate (stories only) */}
         {data.cardType === 'story' && (
           <>
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Estimate</label>
+            <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Estimate</label>
             <div className="flex gap-1 mb-3">
               {estimates.map((est) => (
                 <button
@@ -103,8 +103,8 @@ export function CardEditor() {
                   onClick={() => updateNodeData(node.id, { estimate: est })}
                   className={`px-2 py-1 text-xs rounded-lg border transition-colors duration-150 ${
                     data.estimate === est
-                      ? 'bg-emerald-100 border-emerald-400 text-emerald-700 dark:bg-emerald-900/40 dark:border-emerald-600 dark:text-emerald-300'
-                      : 'bg-white/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-700/50'
+                      ? 'bg-[#C6FF4D]/20 border-[#C6FF4D]/40 text-[#080810] dark:text-[#C6FF4D]'
+                      : 'bg-white/50 dark:bg-[#16162A]/50 border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
                   }`}
                 >
                   {est}
@@ -117,14 +117,14 @@ export function CardEditor() {
         {/* Status (stories only) */}
         {data.cardType === 'story' && (
           <>
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status</label>
+            <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Status</label>
             <div className="flex flex-wrap gap-1 mb-3">
               <button
                 onClick={() => updateNodeData(node.id, { status: undefined })}
                 className={`px-2 py-1 text-xs rounded-lg border transition-colors duration-150 ${
                   !data.status
-                    ? 'bg-gray-100 border-gray-400 text-gray-700 dark:bg-gray-800 dark:border-gray-500 dark:text-gray-300'
-                    : 'bg-white/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-700/50'
+                    ? 'bg-[#7A7A9A]/20 border-[#7A7A9A]/40 text-[#080810] dark:text-[#F0EEFF]'
+                    : 'bg-white/50 dark:bg-[#16162A]/50 border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
                 }`}
               >
                 None
@@ -136,7 +136,7 @@ export function CardEditor() {
                   className={`px-2 py-1 text-xs rounded-lg border transition-colors duration-150 ${
                     data.status === s
                       ? 'border-current'
-                      : 'bg-white/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-100/50 dark:hover:bg-gray-700/50'
+                      : 'bg-white/50 dark:bg-[#16162A]/50 border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
                   }`}
                   style={data.status === s ? { backgroundColor: STATUS_COLORS[s] + '20', color: STATUS_COLORS[s], borderColor: STATUS_COLORS[s] } : undefined}
                 >
@@ -150,7 +150,7 @@ export function CardEditor() {
         {/* Acceptance Criteria */}
         {data.cardType === 'story' && (
           <>
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+            <label className="block text-xs font-medium text-[#7A7A9A] mb-1">
               Acceptance Criteria
             </label>
             {(data.acceptanceCriteria || []).map((ac, i) => (
@@ -164,7 +164,7 @@ export function CardEditor() {
                     updated[i] = e.target.value;
                     updateNodeData(node.id, { acceptanceCriteria: updated });
                   }}
-                  className="flex-1 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 px-2 py-1 text-xs dark:text-gray-100 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150 placeholder:text-gray-400"
+                  className="flex-1 rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-2 py-1 text-xs dark:text-[#F0EEFF] focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150 placeholder:text-[#7A7A9A]"
                 />
                 <button
                   onClick={() => {
@@ -183,7 +183,7 @@ export function CardEditor() {
                   acceptanceCriteria: [...(data.acceptanceCriteria || []), ''],
                 })
               }
-              className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mt-1 mb-3 transition-colors duration-150"
+              className="flex items-center gap-1 text-xs text-[#C6FF4D] hover:text-[#d4ff70] mt-1 mb-3 transition-colors duration-150"
             >
               <Plus size={14} />
               Add criterion

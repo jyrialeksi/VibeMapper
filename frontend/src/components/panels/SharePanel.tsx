@@ -80,13 +80,13 @@ export function SharePanel({ projectId, isOpen, onClose }: SharePanelProps) {
   const linkShares = shares.filter((s) => s.invited_email === 'link-share');
 
   return (
-    <div className="fixed inset-y-0 right-0 w-80 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-l border-gray-200 dark:border-gray-700 shadow-xl flex flex-col">
+    <div className="fixed inset-y-0 right-0 w-80 z-50 bg-white/95 dark:bg-[#0F0F1E]/95 backdrop-blur-xl border-l border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] shadow-xl flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Share Project</h3>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)]">
+        <h3 className="text-sm font-semibold text-[#080810] dark:text-[#F0EEFF]">Share Project</h3>
         <button
           onClick={onClose}
-          className="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="p-1 rounded text-[#7A7A9A] hover:text-[#7B2FFF] dark:hover:text-[#C6FF4D]"
         >
           <X size={16} />
         </button>
@@ -95,7 +95,7 @@ export function SharePanel({ projectId, isOpen, onClose }: SharePanelProps) {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Invite by email */}
         <div>
-          <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">
+          <label className="text-xs font-medium text-[#7A7A9A] mb-1.5 block">
             Invite by email
           </label>
           <div className="flex gap-1.5">
@@ -105,12 +105,12 @@ export function SharePanel({ projectId, isOpen, onClose }: SharePanelProps) {
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
               placeholder="colleague@example.com"
-              className="flex-1 text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2.5 py-1.5 bg-white dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-300 dark:focus:ring-blue-700"
+              className="flex-1 text-xs border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-lg px-2.5 py-1.5 bg-white dark:bg-[#16162A] dark:text-[#F0EEFF] focus:outline-none focus:ring-1 focus:ring-[#7B2FFF]/30"
             />
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as 'viewer' | 'editor')}
-              className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-1.5 py-1.5 bg-white dark:bg-gray-800 dark:text-gray-100"
+              className="text-xs border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-lg px-1.5 py-1.5 bg-white dark:bg-[#16162A] dark:text-[#F0EEFF]"
             >
               <option value="viewer">Viewer</option>
               <option value="editor">Editor</option>
@@ -119,7 +119,7 @@ export function SharePanel({ projectId, isOpen, onClose }: SharePanelProps) {
           <button
             onClick={handleInvite}
             disabled={loading || !email.trim()}
-            className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs font-medium bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="mt-2 w-full flex items-center justify-center gap-1.5 text-xs font-medium btn-primary px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors"
           >
             <UserPlus size={12} />
             Invite
@@ -133,7 +133,7 @@ export function SharePanel({ projectId, isOpen, onClose }: SharePanelProps) {
         <div>
           <button
             onClick={handleCopyLink}
-            className="w-full flex items-center justify-center gap-1.5 text-xs font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 text-xs font-medium border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] text-[#080810]/70 dark:text-[#F0EEFF]/70 px-3 py-1.5 rounded-lg hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 transition-colors"
           >
             {copiedLink ? <Check size={12} className="text-green-500" /> : <Link size={12} />}
             {copiedLink ? 'Link copied!' : 'Copy shareable link'}
@@ -143,37 +143,37 @@ export function SharePanel({ projectId, isOpen, onClose }: SharePanelProps) {
         {/* Current shares */}
         {emailShares.length > 0 && (
           <div>
-            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">
+            <label className="text-xs font-medium text-[#7A7A9A] mb-1.5 block">
               People with access
             </label>
             <div className="space-y-1.5">
               {emailShares.map((share) => (
                 <div
                   key={share.id}
-                  className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                  className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-[#7B2FFF]/5 dark:bg-[#16162A]"
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
+                    <div className="text-xs font-medium text-[#080810] dark:text-[#F0EEFF] truncate">
                       {share.user_name || share.invited_email}
                     </div>
                     {share.user_name && (
-                      <div className="text-[10px] text-gray-400 truncate">{share.invited_email}</div>
+                      <div className="text-[10px] text-[#7A7A9A] truncate">{share.invited_email}</div>
                     )}
                     {!share.user_id && (
-                      <span className="text-[10px] text-amber-500">Pending</span>
+                      <span className="text-[10px] text-[#C6FF4D]">Pending</span>
                     )}
                   </div>
                   <select
                     value={share.role}
                     onChange={(e) => handleUpdateRole(share.id, e.target.value as 'viewer' | 'editor')}
-                    className="text-[10px] border border-gray-200 dark:border-gray-600 rounded px-1 py-0.5 bg-white dark:bg-gray-800 dark:text-gray-300"
+                    className="text-[10px] border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded px-1 py-0.5 bg-white dark:bg-[#16162A] dark:text-[#F0EEFF]/70"
                   >
                     <option value="viewer">Viewer</option>
                     <option value="editor">Editor</option>
                   </select>
                   <button
                     onClick={() => handleRemove(share.id)}
-                    className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                    className="p-1 text-[#7A7A9A] hover:text-red-500 transition-colors"
                   >
                     <Trash2 size={12} />
                   </button>
@@ -186,24 +186,24 @@ export function SharePanel({ projectId, isOpen, onClose }: SharePanelProps) {
         {/* Link shares */}
         {linkShares.length > 0 && (
           <div>
-            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">
+            <label className="text-xs font-medium text-[#7A7A9A] mb-1.5 block">
               Shareable links ({linkShares.length})
             </label>
             <div className="space-y-1">
               {linkShares.map((share) => (
                 <div
                   key={share.id}
-                  className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#7B2FFF]/5 dark:bg-[#16162A]"
                 >
                   <div className="flex items-center gap-1.5">
-                    <Link size={10} className="text-gray-400" />
-                    <span className="text-[10px] text-gray-500">
+                    <Link size={10} className="text-[#7A7A9A]" />
+                    <span className="text-[10px] text-[#7A7A9A]">
                       {share.role} &middot; {new Date(share.created_at).toLocaleDateString()}
                     </span>
                   </div>
                   <button
                     onClick={() => handleRemove(share.id)}
-                    className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                    className="p-1 text-[#7A7A9A] hover:text-red-500 transition-colors"
                   >
                     <Trash2 size={10} />
                   </button>

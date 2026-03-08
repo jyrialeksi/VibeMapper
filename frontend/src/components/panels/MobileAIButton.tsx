@@ -29,7 +29,7 @@ export function MobileAIButton() {
       {!open && (
         <button
           onClick={() => setActivePanel('ai')}
-          className="absolute bottom-6 right-4 z-50 w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center active:bg-blue-700 transition-colors duration-150"
+          className="absolute bottom-6 right-4 z-50 w-14 h-14 rounded-full btn-primary shadow-lg flex items-center justify-center active:bg-[#d4ff70] transition-colors duration-150"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
           <Sparkles size={24} />
@@ -40,19 +40,19 @@ export function MobileAIButton() {
       {open && (
         <div className="absolute bottom-0 left-0 right-0 z-50 animate-slide-up flex justify-center">
           <div
-            className="w-full max-w-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-t-2xl shadow-lg border-t border-x border-gray-200/50 dark:border-gray-700/50 px-4 pt-3"
+            className="w-full max-w-3xl bg-white/95 dark:bg-[#0F0F1E]/95 backdrop-blur-xl rounded-t-2xl shadow-lg border-t border-x border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-4 pt-3"
             style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
           >
             {/* Drag handle + close */}
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
-              <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
-                <Sparkles size={15} className="text-blue-500" />
+              <div className="w-10 h-1 bg-[#7A7A9A]/30 rounded-full" />
+              <span className="text-sm font-semibold text-[#080810] dark:text-[#F0EEFF] flex items-center gap-1.5">
+                <Sparkles size={15} className="text-[#C6FF4D]" />
                 AI {hasNodes ? 'Edit' : 'Generate'}
               </span>
               <button
                 onClick={() => setActivePanel('none')}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md text-gray-400"
+                className="p-1 hover:bg-[#7B2FFF]/10 dark:hover:bg-[#7B2FFF]/20 rounded-md text-[#7A7A9A]"
               >
                 <X size={18} />
               </button>
@@ -68,7 +68,7 @@ export function MobileAIButton() {
             <select
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full rounded-lg bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 px-3 py-2.5 text-sm dark:text-gray-100 mb-2 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150"
+              className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-3 py-2.5 text-sm dark:text-[#F0EEFF] mb-2 focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150"
             >
               {models.map((m) => (
                 <option key={m.id} value={m.id}>{m.name}</option>
@@ -80,7 +80,7 @@ export function MobileAIButton() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder={hasNodes ? 'Describe changes to your story map...' : 'Describe your product or feature...'}
-              className="w-full rounded-lg bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 px-3 py-2.5 text-sm dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-colors duration-150 placeholder:text-gray-400 resize-none"
+              className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-3 py-2.5 text-sm dark:text-[#F0EEFF] focus:outline-none focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150 placeholder:text-[#7A7A9A] resize-none"
               rows={3}
               disabled={loading}
             />
@@ -89,7 +89,7 @@ export function MobileAIButton() {
             <button
               onClick={handleGenerate}
               disabled={loading || !prompt.trim()}
-              className="w-full mt-2 bg-blue-600 text-white px-4 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 flex items-center justify-center gap-2"
+              className="w-full mt-2 btn-primary px-4 py-3 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

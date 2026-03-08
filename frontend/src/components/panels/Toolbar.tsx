@@ -37,6 +37,9 @@ const cardTypeOptions: { type: CardType; label: string }[] = [
   { type: 'annotation', label: 'Note' },
 ];
 
+const glass = 'bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)]';
+const glassInner = 'border-[rgba(123,47,255,0.08)] dark:border-[rgba(198,255,77,0.08)]';
+
 interface ToolbarProps {
   onImport: () => void;
   onExport: () => void;
@@ -91,17 +94,17 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
     <div className={`absolute top-3 left-3 z-50 flex items-center gap-2 flex-wrap max-w-[calc(100vw-24px)] ${isAIEditing ? 'opacity-50 pointer-events-none' : ''}`}>
       {/* Tool buttons (hidden for viewers) */}
       {!isViewer && (
-        <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+        <div className={`flex rounded-xl shadow-sm overflow-hidden ${glass}`}>
           {tools.map((tool) => {
             const Icon = tool.icon;
             return (
               <button
                 key={tool.mode}
                 onClick={() => setToolMode(tool.mode)}
-                className={`px-3 py-2 text-sm font-medium border-r border-gray-200/30 dark:border-gray-700/30 last:border-r-0 transition-colors duration-150 flex items-center gap-1.5 ${
+                className={`font-mono-brand px-3 py-2 text-sm font-medium border-r ${glassInner} last:border-r-0 transition-colors duration-150 flex items-center gap-1.5 ${
                   toolMode === tool.mode
-                    ? 'bg-blue-50/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+                    ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]'
+                    : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
                 }`}
                 title={tool.label}
               >
@@ -115,15 +118,15 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
 
       {/* Card type selector (shown when addCard tool active, hidden for viewers) */}
       {!isViewer && toolMode === 'addCard' && (
-        <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+        <div className={`flex rounded-xl shadow-sm overflow-hidden ${glass}`}>
           {cardTypeOptions.map((opt) => (
             <button
               key={opt.type}
               onClick={() => setCardTypeToAdd(opt.type)}
-              className={`px-3 py-2 text-sm font-medium border-r border-gray-200/30 dark:border-gray-700/30 last:border-r-0 transition-colors duration-150 ${
+              className={`font-mono-brand px-3 py-2 text-sm font-medium border-r ${glassInner} last:border-r-0 transition-colors duration-150 ${
                 cardTypeToAdd === opt.type
-                  ? 'bg-emerald-50/80 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+                  ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]'
+                  : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
               }`}
             >
               {opt.label}
@@ -133,10 +136,10 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
       )}
 
       {/* Import/Export */}
-      <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+      <div className={`flex rounded-xl shadow-sm overflow-hidden ${glass}`}>
         <button
           onClick={onImport}
-          className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 border-r border-gray-200/30 dark:border-gray-700/30 transition-colors duration-150 flex items-center gap-1.5"
+          className={`px-3 py-2 text-sm text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 border-r ${glassInner} transition-colors duration-150 flex items-center gap-1.5`}
           title="Import"
         >
           <Upload size={15} />
@@ -144,7 +147,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
         </button>
         <button
           onClick={onExport}
-          className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 border-r border-gray-200/30 dark:border-gray-700/30 transition-colors duration-150 flex items-center gap-1.5"
+          className={`px-3 py-2 text-sm text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 border-r ${glassInner} transition-colors duration-150 flex items-center gap-1.5`}
           title="Export"
         >
           <Download size={15} />
@@ -152,7 +155,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
         </button>
         <button
           onClick={onExportMarkdown}
-          className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 transition-colors duration-150 flex items-center gap-1.5"
+          className="px-3 py-2 text-sm text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 transition-colors duration-150 flex items-center gap-1.5"
           title="Export visible map as Markdown"
         >
           <FileText size={15} />
@@ -162,11 +165,11 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
 
       {/* Undo/Redo (hidden for viewers) */}
       {!isViewer && (
-        <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+        <div className={`flex rounded-xl shadow-sm overflow-hidden ${glass}`}>
           <button
             onClick={undo}
             disabled={!canUndo}
-            className="px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 border-r border-gray-200/30 dark:border-gray-700/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
+            className={`px-3 py-2 text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 border-r ${glassInner} disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150`}
             title="Undo (Ctrl+Z)"
           >
             <Undo2 size={16} />
@@ -174,7 +177,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
           <button
             onClick={redo}
             disabled={!canRedo}
-            className="px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
+            className="px-3 py-2 text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
             title="Redo (Ctrl+Shift+Z)"
           >
             <Redo2 size={16} />
@@ -183,22 +186,22 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
       )}
 
       {/* Priority filters */}
-      <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+      <div className={`flex rounded-xl shadow-sm overflow-hidden ${glass}`}>
         {priorityOptions.map((opt) => {
           const isHidden = hiddenPriorities.has(opt.priority);
           return (
             <button
               key={opt.priority}
               onClick={() => togglePriority(opt.priority)}
-              className={`px-3 py-2 text-sm font-medium border-r border-gray-200/30 dark:border-gray-700/30 last:border-r-0 transition-colors duration-150 ${
-                isHidden ? 'text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-800/50' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+              className={`px-3 py-2 text-sm font-medium border-r ${glassInner} last:border-r-0 transition-colors duration-150 ${
+                isHidden ? 'text-[#7A7A9A]/50 bg-[#7A7A9A]/5' : 'text-[#080810]/80 dark:text-[#F0EEFF]/80 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
               }`}
               title={`${isHidden ? 'Show' : 'Hide'} ${opt.label} Have stories`}
             >
               <span
                 className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 align-middle"
                 style={{
-                  backgroundColor: isHidden ? '#d1d5db' : PRIORITY_COLORS[opt.priority],
+                  backgroundColor: isHidden ? '#7A7A9A' : PRIORITY_COLORS[opt.priority],
                 }}
               />
               {opt.label}
@@ -208,13 +211,13 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
       </div>
 
       {/* Card content visibility */}
-      <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+      <div className={`flex rounded-xl shadow-sm overflow-hidden ${glass}`}>
         <button
           onClick={handleToggleDescriptions}
-          className={`px-3 py-2 text-sm font-medium border-r border-gray-200/30 dark:border-gray-700/30 transition-colors duration-150 flex items-center gap-1.5 ${
+          className={`px-3 py-2 text-sm font-medium border-r ${glassInner} transition-colors duration-150 flex items-center gap-1.5 ${
             showDescriptions
-              ? 'text-gray-700 dark:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
-              : 'text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-800/50'
+              ? 'text-[#080810]/80 dark:text-[#F0EEFF]/80 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
+              : 'text-[#7A7A9A]/50'
           }`}
           title={`${showDescriptions ? 'Hide' : 'Show'} descriptions`}
         >
@@ -225,8 +228,8 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
           onClick={handleToggleAC}
           className={`px-3 py-2 text-sm font-medium transition-colors duration-150 flex items-center gap-1.5 ${
             showAcceptanceCriteria
-              ? 'text-gray-700 dark:text-gray-200 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
-              : 'text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-800/50'
+              ? 'text-[#080810]/80 dark:text-[#F0EEFF]/80 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
+              : 'text-[#7A7A9A]/50'
           }`}
           title={`${showAcceptanceCriteria ? 'Hide' : 'Show'} acceptance criteria`}
         >
@@ -240,7 +243,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
         <button
           onClick={() => arrangeLocal()}
           disabled={!hasNodes}
-          className="px-3 py-2 text-sm font-medium bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-colors duration-150 flex items-center gap-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 disabled:opacity-40 disabled:cursor-not-allowed"
+          className={`px-3 py-2 text-sm font-medium rounded-xl shadow-sm transition-colors duration-150 flex items-center gap-1.5 text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 disabled:opacity-40 disabled:cursor-not-allowed ${glass}`}
           title="Auto-arrange nodes"
         >
           <LayoutGrid size={15} />
@@ -252,8 +255,8 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
       {!isViewer && (
         <button
           onClick={() => setVersionPanelOpen(!isVersionPanelOpen)}
-          className={`px-3 py-2 text-sm font-medium bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-colors duration-150 flex items-center gap-1.5 ${
-            isVersionPanelOpen ? 'bg-blue-50/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+          className={`px-3 py-2 text-sm font-medium rounded-xl shadow-sm transition-colors duration-150 flex items-center gap-1.5 ${glass} ${
+            isVersionPanelOpen ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]' : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
           }`}
           title="Version History"
         >
@@ -267,8 +270,8 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
         <button
           onClick={toggleShowLastAIEdit}
           disabled={lastAIEditNodeIds.size === 0}
-          className={`px-3 py-2 text-sm font-medium bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-colors duration-150 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed ${
-            showLastAIEdit ? 'bg-purple-50/80 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+          className={`px-3 py-2 text-sm font-medium rounded-xl shadow-sm transition-colors duration-150 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed ${glass} ${
+            showLastAIEdit ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]' : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
           }`}
           title="Highlight nodes from last AI edit"
         >
@@ -279,7 +282,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
 
       {/* Save indicator (hidden for viewers) */}
       {!isViewer && isDirty && (
-        <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-900/40 backdrop-blur-xl px-2 py-1 rounded-lg border border-amber-200/50 dark:border-amber-700/50">
+        <span className="text-xs text-[#C6FF4D] bg-[#C6FF4D]/10 dark:bg-[#C6FF4D]/15 backdrop-blur-xl px-2 py-1 rounded-lg border border-[#C6FF4D]/20">
           Unsaved
         </span>
       )}

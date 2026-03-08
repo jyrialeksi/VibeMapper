@@ -17,7 +17,7 @@ function ProjectSection({
 }) {
   if (projects.length === 0 && title === 'My Projects') {
     return (
-      <div className="text-center py-12 text-gray-400 dark:text-gray-500">
+      <div className="text-center py-12 text-[#7A7A9A]">
         No projects yet. Create one to get started.
       </div>
     );
@@ -26,7 +26,7 @@ function ProjectSection({
 
   return (
     <>
-      <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
+      <h2 className="text-sm font-medium text-[#7A7A9A] mb-2 flex items-center gap-1.5">
         {title === 'Shared with me' && <Users size={14} />}
         {title}
       </h2>
@@ -35,20 +35,20 @@ function ProjectSection({
           <div
             key={project.id}
             onClick={() => onSelect(project.id)}
-            className="bg-white dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700/50 rounded-lg px-4 py-3 cursor-pointer hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition-all"
+            className="bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-lg px-4 py-3 cursor-pointer hover:border-[#C6FF4D]/40 dark:hover:border-[#C6FF4D]/40 hover:shadow-sm transition-all"
           >
             <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-900 dark:text-gray-100">{project.name}</span>
+              <span className="font-medium text-[#080810] dark:text-[#F0EEFF]">{project.name}</span>
               {project.role && project.role !== 'owner' && (
-                <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                <span className="text-xs px-1.5 py-0.5 rounded bg-[#7B2FFF]/10 dark:bg-[#7B2FFF]/20 text-[#7B2FFF] dark:text-[#C6FF4D]">
                   {project.role}
                 </span>
               )}
             </div>
             {project.description && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">{project.description}</div>
+              <div className="text-sm text-[#7A7A9A]">{project.description}</div>
             )}
-            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            <div className="text-xs text-[#7A7A9A]/70 mt-1">
               {project.owner_name && <span>by {project.owner_name} &middot; </span>}
               Updated {new Date(project.updated_at).toLocaleString()}
             </div>
@@ -102,29 +102,29 @@ export function ProjectList() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+      <div className="min-h-screen bg-[#F0EEFF] dark:bg-[#080810] flex items-center justify-center">
+        <div className="text-[#7A7A9A]">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-[#F0EEFF] dark:bg-[#080810]">
       {/* Top-right controls */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
         {authEnabled && user && (
-          <div className="flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-lg px-3 py-1.5 shadow-sm">
+          <div className="flex items-center gap-2 bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-lg px-3 py-1.5 shadow-sm">
             {user.picture ? (
               <img src={user.picture} alt="" className="w-6 h-6 rounded-full" />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium">
+              <div className="w-6 h-6 rounded-full bg-[#7B2FFF] flex items-center justify-center text-white text-xs font-medium">
                 {user.name.charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="text-sm text-gray-700 dark:text-gray-300">{user.name}</span>
+            <span className="text-sm text-[#080810]/80 dark:text-[#F0EEFF]/80">{user.name}</span>
             <button
               onClick={logout}
-              className="p-1 rounded text-gray-400 hover:text-red-500 transition-colors"
+              className="p-1 rounded text-[#7A7A9A] hover:text-red-500 transition-colors"
               title="Sign out"
             >
               <LogOut size={14} />
@@ -133,7 +133,7 @@ export function ProjectList() {
         )}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
+          className="p-2 rounded-lg bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] shadow-sm text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 transition-colors duration-150"
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
           {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
@@ -141,8 +141,8 @@ export function ProjectList() {
       </div>
 
       <div className="max-w-2xl mx-auto pt-16 px-4">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">User Story Mapper</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-8">Create and manage user story maps with AI assistance</p>
+        <h1 className="font-display text-5xl text-[#080810] dark:text-[#F0EEFF] mb-2 tracking-wide">VIBEMAPPER</h1>
+        <p className="text-[#7A7A9A] mb-8">Create and manage user story maps with AI assistance</p>
 
         {/* Create new project */}
         <div className="flex gap-2 mb-6">
@@ -152,12 +152,12 @@ export function ProjectList() {
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             placeholder="New project name..."
-            className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 bg-white dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
+            className="flex-1 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7B2FFF]/20 bg-white dark:bg-[#16162A] dark:text-[#F0EEFF] dark:placeholder:text-[#7A7A9A]"
           />
           <button
             onClick={handleCreate}
             disabled={!newName.trim()}
-            className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="btn-primary px-5 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50"
           >
             Create
           </button>
@@ -166,25 +166,25 @@ export function ProjectList() {
         {/* Settings status card */}
         <button
           onClick={() => navigate('/settings')}
-          className="w-full mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl px-4 py-3 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition-all text-left cursor-pointer"
+          className="w-full mb-6 bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-xl px-4 py-3 hover:border-[#C6FF4D]/40 hover:shadow-sm transition-all text-left cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Settings size={16} className="text-gray-500 dark:text-gray-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Settings</span>
+              <Settings size={16} className="text-[#7A7A9A]" />
+              <span className="text-sm font-medium text-[#080810]/80 dark:text-[#F0EEFF]/80">Settings</span>
             </div>
-            <ChevronRight size={16} className="text-gray-400 dark:text-gray-500" />
+            <ChevronRight size={16} className="text-[#7A7A9A]" />
           </div>
           <div className="flex items-center gap-4 mt-1.5 ml-6">
             <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-green-500' : 'bg-amber-500'}`} />
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <div className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-[#00F5D4]' : 'bg-[#C6FF4D]'}`} />
+              <span className="text-xs text-[#7A7A9A]">
                 {hasApiKey ? 'AI Ready' : 'API Key Required'}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${hasMcpToken ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <div className={`w-2 h-2 rounded-full ${hasMcpToken ? 'bg-[#00F5D4]' : 'bg-[#7A7A9A]/40'}`} />
+              <span className="text-xs text-[#7A7A9A]">
                 {hasMcpToken ? 'MCP Connected' : 'MCP Not Set Up'}
               </span>
             </div>

@@ -3,10 +3,63 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  --brand-lime: #C6FF4D;
+  --brand-void: #080810;
+  --brand-surface: #0F0F1E;
+  --brand-surface2: #16162A;
+  --brand-white: #F0EEFF;
+  --brand-pink: #FF3CAC;
+  --brand-teal: #00F5D4;
+  --brand-purple: #7B2FFF;
+  --brand-muted: #7A7A9A;
+  --brand-border: rgba(198,255,77,0.12);
+}
+
+html {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+/* Brand utility classes */
+.font-display {
+  font-family: 'Bebas Neue', cursive;
+}
+
+.font-mono-brand {
+  font-family: 'Space Mono', monospace;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(123, 47, 255, 0.12);
+}
+
+.dark .glass-panel {
+  background: rgba(15, 15, 30, 0.85);
+  border-color: rgba(198, 255, 77, 0.12);
+}
+
+.btn-primary {
+  background-color: #C6FF4D;
+  color: #080810;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: #d4ff70;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Node highlight animations for AI edits */
@@ -65,24 +118,24 @@ html, body, #root {
 
 /* React Flow dark mode overrides */
 .dark .react-flow {
-  background-color: rgb(3 7 18);
+  background-color: #080810;
 }
 .dark .react-flow__controls-button {
-  background-color: rgb(31 41 55);
-  fill: rgb(209 213 219);
-  border-color: rgb(55 65 81);
+  background-color: #0F0F1E;
+  fill: #F0EEFF;
+  border-color: rgba(198,255,77,0.12);
 }
 .dark .react-flow__controls-button:hover {
-  background-color: rgb(55 65 81);
+  background-color: #16162A;
 }
 .dark .react-flow__edge-path {
-  stroke: rgb(107 114 128);
+  stroke: #7A7A9A;
 }
 .dark .react-flow__attribution {
-  background-color: rgb(17 24 39 / 0.8);
+  background-color: rgba(8, 8, 16, 0.8);
 }
 .dark .react-flow__attribution a {
-  color: rgb(156 163 175);
+  color: #7A7A9A;
 }
 
 /* Mobile bottom sheet slide-up animation */

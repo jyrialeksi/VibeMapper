@@ -57,10 +57,10 @@ export interface AIModel {
 }
 
 export const PRIORITY_COLORS: Record<Priority, string> = {
-  'must-have': '#ef4444',
-  'should-have': '#f59e0b',
-  'could-have': '#3b82f6',
-  'wont-have': '#6b7280',
+  'must-have': '#FF3CAC',
+  'should-have': '#C6FF4D',
+  'could-have': '#00F5D4',
+  'wont-have': '#7A7A9A',
 };
 
 export interface VersionSummary {
@@ -99,10 +99,10 @@ export interface EditResponse {
 export type AIGenerateResult = GenerateResponse | EditResponse;
 
 export const CARD_TYPE_COLORS: Record<CardType, string> = {
-  activity: '#7c3aed',
-  step: '#2563eb',
-  story: '#059669',
-  annotation: '#d97706',
+  activity: '#7B2FFF',
+  step: '#00F5D4',
+  story: '#C6FF4D',
+  annotation: '#C6FF4D',
 };
 
 export const STATUS_COLORS: Record<CardStatus, string> = {

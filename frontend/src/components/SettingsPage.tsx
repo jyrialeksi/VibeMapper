@@ -32,22 +32,22 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-[#F0EEFF] dark:bg-[#080810]">
       {/* Top-right controls */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
         {authEnabled && user && (
-          <div className="flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-lg px-3 py-1.5 shadow-sm">
+          <div className="flex items-center gap-2 bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-lg px-3 py-1.5 shadow-sm">
             {user.picture ? (
               <img src={user.picture} alt="" className="w-6 h-6 rounded-full" />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium">
+              <div className="w-6 h-6 rounded-full bg-[#7B2FFF] flex items-center justify-center text-white text-xs font-medium">
                 {user.name.charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="text-sm text-gray-700 dark:text-gray-300">{user.name}</span>
+            <span className="text-sm text-[#080810]/80 dark:text-[#F0EEFF]/80">{user.name}</span>
             <button
               onClick={logout}
-              className="p-1 rounded text-gray-400 hover:text-red-500 transition-colors"
+              className="p-1 rounded text-[#7A7A9A] hover:text-red-500 transition-colors"
               title="Sign out"
             >
               <LogOut size={14} />
@@ -56,7 +56,7 @@ export function SettingsPage() {
         )}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150"
+          className="p-2 rounded-lg bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] shadow-sm text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 transition-colors duration-150"
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
           {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
@@ -66,22 +66,22 @@ export function SettingsPage() {
       <div className="max-w-2xl mx-auto pt-16 px-4">
         <button
           onClick={() => navigate('/')}
-          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-6 flex items-center gap-1 transition-colors duration-150"
+          className="text-sm text-[#7A7A9A] hover:text-[#080810] dark:hover:text-[#F0EEFF] mb-6 flex items-center gap-1 transition-colors duration-150"
         >
           <ArrowLeft size={14} />
           Back to Projects
         </button>
 
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Settings</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-8">Configure API keys and integrations</p>
+        <h1 className="font-display text-4xl text-[#080810] dark:text-[#F0EEFF] mb-2 tracking-wide">SETTINGS</h1>
+        <p className="text-[#7A7A9A] mb-8">Configure API keys and integrations</p>
 
         {/* API Key settings */}
-        <div className="mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-4">
+        <div className="mb-8 bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Key size={16} className="text-gray-500 dark:text-gray-400" />
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">OpenRouter API Key</h3>
+            <Key size={16} className="text-[#7A7A9A]" />
+            <h3 className="text-sm font-medium text-[#080810]/80 dark:text-[#F0EEFF]/80">OpenRouter API Key</h3>
             {hasApiKey && (
-              <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 flex items-center gap-1">
+              <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-[#00F5D4]/15 text-[#00F5D4] flex items-center gap-1">
                 <Check size={12} />
                 Configured
               </span>
@@ -89,7 +89,7 @@ export function SettingsPage() {
           </div>
           {hasApiKey ? (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">••••••••</span>
+              <span className="text-sm text-[#7A7A9A] font-mono-brand">••••••••</span>
               <button
                 onClick={async () => {
                   try {
@@ -121,26 +121,26 @@ export function SettingsPage() {
                   }
                 }}
                 placeholder="Enter your API key..."
-                className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 bg-white dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
+                className="flex-1 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-lg px-3 py-2 text-sm font-mono-brand focus:outline-none focus:ring-2 focus:ring-[#7B2FFF]/20 bg-white dark:bg-[#16162A] dark:text-[#F0EEFF] dark:placeholder:text-[#7A7A9A]"
               />
               <button
                 onClick={handleSaveApiKey}
                 disabled={!apiKeyInput.trim() || apiKeySaving}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                className="btn-primary px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
               >
                 Save
               </button>
             </div>
           )}
           {apiKeyMsg && (
-            <p className={`text-xs mt-2 ${apiKeyMsg.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+            <p className={`text-xs mt-2 ${apiKeyMsg.type === 'success' ? 'text-[#00F5D4]' : 'text-red-600 dark:text-red-400'}`}>
               {apiKeyMsg.text}
             </p>
           )}
           {!hasApiKey && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+            <p className="text-xs text-[#7A7A9A] mt-2">
               Required for AI features.{' '}
-              <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-0.5">
+              <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-[#7B2FFF] dark:text-[#C6FF4D] hover:underline inline-flex items-center gap-0.5">
                 Get a key <ExternalLink size={10} />
               </a>
             </p>

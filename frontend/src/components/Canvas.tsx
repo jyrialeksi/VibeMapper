@@ -309,17 +309,17 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         fitView
         minZoom={0.2}
         connectionMode={toolMode === 'line' ? undefined : undefined}
-        className="bg-gray-50 dark:bg-gray-950 touch-manipulation"
+        className="bg-[#F0EEFF] dark:bg-[#080810] touch-manipulation"
       >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme === 'dark' ? '#4b5563' : '#d1d5db'} />
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme === 'dark' ? '#7A7A9A' : '#7B2FFF33'} />
         <LayoutCorrector />
         <HighlightClearer />
       </ReactFlow>
       {isAIEditing && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 dark:bg-black/40 backdrop-blur-[2px]">
-          <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 px-8 py-6 flex flex-col items-center gap-4">
-            <Loader2 size={32} className="animate-spin text-blue-500" />
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-200">AI is editing the map...</p>
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 dark:bg-[#080810]/60 backdrop-blur-[2px]">
+          <div className="bg-white/90 dark:bg-[#0F0F1E]/90 backdrop-blur-xl rounded-2xl shadow-lg border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-8 py-6 flex flex-col items-center gap-4">
+            <Loader2 size={32} className="animate-spin text-[#7B2FFF]" />
+            <p className="text-sm font-medium text-[#080810] dark:text-[#F0EEFF]">AI is editing the map...</p>
             {cancelAIEdit && (
               <button
                 onClick={cancelAIEdit}
