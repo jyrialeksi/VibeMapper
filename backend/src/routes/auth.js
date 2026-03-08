@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Router } from 'express';
 import db from '../db/database.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -58,6 +59,26 @@ router.put('/api-key', requireAuth, (req, res) => {
 router.delete('/api-key', requireAuth, (req, res) => {
   db.prepare('UPDATE users SET openrouter_api_key = NULL WHERE id = ?').run(req.user.id);
   res.json({ success: true, hasKey: false });
+});
+
+// Generate MCP API token
+router.post('/mcp-token', requireAuth, (req, res) => {
+  const raw = 'mcp_' + crypto.randomBytes(32).toString('hex');
+  const hash = crypto.createHash('sha256').update(raw).digest('hex');
+  db.prepare('UPDATE users SET mcp_api_token = ? WHERE id = ?').run(hash, req.user.id);
+  res.json({ token: raw });
+});
+
+// Revoke MCP API token
+router.delete('/mcp-token', requireAuth, (req, res) => {
+  db.prepare('UPDATE users SET mcp_api_token = NULL WHERE id = ?').run(req.user.id);
+  res.json({ success: true });
+});
+
+// Check MCP API token status
+router.get('/mcp-token/status', requireAuth, (req, res) => {
+  const row = db.prepare('SELECT mcp_api_token FROM users WHERE id = ?').get(req.user.id);
+  res.json({ hasToken: !!(row?.mcp_api_token) });
 });
 
 export default router;

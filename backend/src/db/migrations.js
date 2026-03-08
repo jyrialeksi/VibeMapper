@@ -97,6 +97,9 @@ export function runMigrations() {
   if (!userCols.some(c => c.name === 'openrouter_api_key')) {
     db.exec(`ALTER TABLE users ADD COLUMN openrouter_api_key TEXT DEFAULT NULL`);
   }
+  if (!userCols.some(c => c.name === 'mcp_api_token')) {
+    db.exec(`ALTER TABLE users ADD COLUMN mcp_api_token TEXT DEFAULT NULL`);
+  }
 
   // Ensure local-dev user exists for non-auth mode
   db.prepare(`INSERT OR IGNORE INTO users (id, email, name, picture) VALUES (?, ?, ?, ?)`)

@@ -42,7 +42,8 @@ Return JSON with this exact structure:
         "acceptanceCriteria": ["Given... When... Then..."],
         "cardType": "story",
         "priority": "must-have",
-        "estimate": "S"
+        "estimate": "S",
+        "status": "not-started"
       }
     }
   ],
@@ -63,6 +64,7 @@ Layout rules:
 - Connect activities to their steps, and steps to their stories with edges
 - Use priority values: "must-have", "should-have", "could-have", "wont-have"
 - Use estimate values: "XS", "S", "M", "L", "XL"
+- Optional status values for stories: "not-started", "in-progress", "blocked", "testing", "done"
 - IDs follow pattern: activity-N, step-N-M, story-N-M-K
 
 Generate comprehensive but focused story maps. Include 2-4 activities, 2-3 steps per activity, and 2-4 stories per step.`;
@@ -104,7 +106,7 @@ ID conventions:
 
 Node data structure:
 - activity/step: { title, description, acceptanceCriteria: [], cardType: "activity"|"step", priority: "must-have" }
-- story: { title, description, acceptanceCriteria: ["Given... When... Then..."], cardType: "story", priority, estimate: "S"|"M"|"L"|"XL"|"XS" }
+- story: { title, description, acceptanceCriteria: ["Given... When... Then..."], cardType: "story", priority, estimate: "S"|"M"|"L"|"XL"|"XS", status?: "not-started"|"in-progress"|"blocked"|"testing"|"done" }
 
 Priority values: "must-have", "should-have", "could-have", "wont-have"
 

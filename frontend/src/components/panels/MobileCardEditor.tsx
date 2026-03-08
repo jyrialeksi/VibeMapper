@@ -1,7 +1,10 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useMapStore } from '../../store/useMapStore';
-import type { Priority, CardType } from '../../types';
+import type { Priority, CardType, CardStatus } from '../../types';
+import { STATUS_COLORS, STATUS_LABELS } from '../../types';
 import { X, Plus, Trash2, GripHorizontal } from 'lucide-react';
+
+const statuses: CardStatus[] = ['not-started', 'in-progress', 'blocked', 'testing', 'done'];
 
 const priorities: Priority[] = ['must-have', 'should-have', 'could-have', 'wont-have'];
 const estimates = ['XS', 'S', 'M', 'L', 'XL'];
@@ -154,6 +157,39 @@ export function MobileCardEditor() {
                     }`}
                   >
                     {est}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Status (stories only) */}
+          {data.cardType === 'story' && (
+            <>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status</label>
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                <button
+                  onClick={() => updateNodeData(node.id, { status: undefined })}
+                  className={`min-h-[44px] px-3 text-sm rounded-lg border transition-colors duration-150 ${
+                    !data.status
+                      ? 'bg-gray-100 border-gray-400 text-gray-700 dark:bg-gray-800 dark:border-gray-500 dark:text-gray-300'
+                      : 'bg-white/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  None
+                </button>
+                {statuses.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => updateNodeData(node.id, { status: s })}
+                    className={`min-h-[44px] px-3 text-sm rounded-lg border transition-colors duration-150 ${
+                      data.status === s
+                        ? 'border-current'
+                        : 'bg-white/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50'
+                    }`}
+                    style={data.status === s ? { backgroundColor: STATUS_COLORS[s] + '20', color: STATUS_COLORS[s], borderColor: STATUS_COLORS[s] } : undefined}
+                  >
+                    {STATUS_LABELS[s]}
                   </button>
                 ))}
               </div>

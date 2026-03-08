@@ -1,5 +1,7 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
 import type { StoryCardData, Priority } from '../../types';
+import { STATUS_COLORS, STATUS_LABELS } from '../../types';
+import type { CardStatus } from '../../types';
 import { useMapStore } from '../../store/useMapStore';
 
 const PRIORITY_BG: Record<Priority, string> = {
@@ -42,9 +44,19 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
       style={{ '--tw-inset-shadow': `inset 6px 0 0 0 ${barColor}`, ...(selected ? { borderColor: '#059669' } : {}) } as React.CSSProperties}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-600">
-          Story
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-600">
+            Story
+          </span>
+          {data.status && (
+            <span
+              className="text-[8px] px-1 py-0.5 rounded font-medium"
+              style={{ backgroundColor: STATUS_COLORS[data.status as CardStatus] + '30', color: STATUS_COLORS[data.status as CardStatus] }}
+            >
+              {STATUS_LABELS[data.status as CardStatus]}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-1">
           {data.estimate && (
             <span className="text-[8px] bg-gray-200 text-gray-700 px-1 py-0.5 rounded font-medium">

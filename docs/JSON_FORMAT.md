@@ -91,7 +91,8 @@ Individual user stories. Displayed in rows below steps, grouped by priority.
     ],
     "cardType": "story",
     "priority": "must-have",
-    "estimate": "M"
+    "estimate": "M",
+    "status": "not-started"
   }
 }
 ```
@@ -141,6 +142,7 @@ Edges connect nodes. Typically: Activity → Step → Story.
 | `cardType` | enum | Yes | `"activity"`, `"step"`, `"story"`, or `"annotation"` |
 | `priority` | enum | Yes | `"must-have"`, `"should-have"`, `"could-have"`, `"wont-have"` |
 | `estimate` | string | No | Size estimate: `"XS"`, `"S"`, `"M"`, `"L"`, `"XL"` |
+| `status` | string | No | Card status: `"not-started"`, `"in-progress"`, `"blocked"`, `"testing"`, `"done"` |
 | `color` | string | No | Custom hex color override |
 | `width` | number | No | Width in px (annotations only) |
 | `height` | number | No | Height in px (annotations only) |

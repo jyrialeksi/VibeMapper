@@ -16,15 +16,19 @@ npm run lint --workspace=frontend     # ESLint
 # Backend only
 npm run dev:backend                   # node --watch
 npm run start --workspace=backend
+
+# MCP Server
+npm run build --workspace=mcp-server  # TypeScript compile
+npm run start --workspace=mcp-server  # Run MCP server (stdio)
 ```
 
 Tests use Vitest: `npm test` runs all workspaces, or `npm run test --workspace=frontend` / `npm run test --workspace=backend` individually.
 
 ## Architecture
 
-Monorepo (npm workspaces) with two packages: `frontend/` and `backend/`.
+Monorepo (npm workspaces) with three packages: `frontend/`, `backend/`, and `mcp-server/`.
 
-**Backend** — Express + better-sqlite3 (ESM, plain .js files). SQLite database auto-created at `backend/data/app.db` with WAL mode. Env file at `backend/.env` (`ENCRYPTION_KEY`). Route files: `projects.js` (CRUD), `canvas.js` (load/save/import/export + versioning), `ai.js` (generate/edit via OpenRouter), `auth.js` (config/me/logout + API key management), `shares.js` (CRUD for project sharing). AI has two modes: **generate** (create map from scratch) and **edit** (surgical operations on existing maps). **Per-user OpenRouter API keys**: each user stores their own API key (encrypted with AES-256-GCM via `ENCRYPTION_KEY` env var); AI features are disabled until a key is set. **Canvas locks during AI edit** (prevents manual edits, shows overlay with cancel button). **AI Diff toggle** dims non-AI-edited nodes to highlight changes. **Authentication** via Firebase Auth (Google sign-in); toggled with `AUTH_ENABLED` env var. **Project sharing** with email invitations and shareable links (viewer/editor roles). Rate limiting on auth and AI endpoints.
+**Backend** — Express + better-sqlite3 (ESM, plain .js files). SQLite database auto-created at `backend/data/app.db` with WAL mode. Env file at `backend/.env` (`ENCRYPTION_KEY`). Route files: `projects.js` (CRUD), `canvas.js` (load/save/import/export + versioning), `ai.js` (generate/edit via OpenRouter), `auth.js` (config/me/logout + API key management + MCP token CRUD), `shares.js` (CRUD for project sharing). AI has two modes: **generate** (create map from scratch) and **edit** (surgical operations on existing maps). **Per-user OpenRouter API keys**: each user stores their own API key (encrypted with AES-256-GCM via `ENCRYPTION_KEY` env var); AI features are disabled until a key is set. **Canvas locks during AI edit** (prevents manual edits, shows overlay with cancel button). **AI Diff toggle** dims non-AI-edited nodes to highlight changes. **Authentication** via Firebase Auth (Google sign-in); toggled with `AUTH_ENABLED` env var. **MCP API tokens**: users can generate `mcp_`-prefixed API tokens for external tool access; tokens are stored as SHA-256 hashes in `users.mcp_api_token`; `requireAuth` middleware accepts both Firebase tokens and MCP tokens. **Project sharing** with email invitations and shareable links (viewer/editor roles). Rate limiting on auth and AI endpoints.
 
 **Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand + **lucide-react** (icons) + **Firebase Auth** (Google sign-in). Vite proxies `/api` → `localhost:3001`. Features include **undo/redo** (stack-based, max 50), **priority filtering** (hide/show cards by priority), **Markdown export**, **dark mode** (class-based, persisted to localStorage, OS preference detection), **LayoutCorrector** (measures DOM heights to fix overlapping nodes after AI generation or auto-arrange), **canvas lock during AI edit** (disables all interactions, shows overlay with spinner + cancel), **AI Diff toggle** (dims unaffected nodes/edges to highlight last AI changes), **Google login** (conditional on server config), **project sharing** (SharePanel with email invites, link sharing, role management), **viewer mode** (read-only canvas for viewers), **persisted visibility** (description/AC toggles saved per-project, synced live via SSE), **mobile UX** (`<768px` breakpoint via `useIsMobile` hook: MobileToolbar floating menu button, MobileAIButton FAB with bottom sheet, MobileCardEditor bottom sheet with swipe-to-dismiss, one-finger pan, double-tap to edit nodes). UI uses glass morphism styling (backdrop-blur, semi-transparent backgrounds) on floating panels.
 
@@ -34,9 +38,13 @@ Monorepo (npm workspaces) with two packages: `frontend/` and `backend/`.
 
 **Local auto-arrange:** Auto-arrange is a local algorithm (not AI-based) — triggered via the "Arrange" button in the top toolbar or `arrangeLocal` in the store, with height-aware positioning by `LayoutCorrector.tsx`.
 
+**MCP Server** (`mcp-server/`) — TypeScript + @modelcontextprotocol/sdk, stdio transport. Thin translation layer that calls the Express backend over HTTP. Tools: `list_projects`, `create_project`, `get_project`, `delete_project`, `get_story_map`, `set_story_map`, `add_nodes`, `update_nodes`, `remove_nodes`, `update_card_status`, `create_story_map` (high-level: hierarchical input → positioned nodes/edges). Resources: `storymap://format` (static format spec), `storymap://projects` (dynamic list), `storymap://projects/{id}/map` (dynamic template). Env vars: `USM_BACKEND_URL` (default `http://localhost:3001`), `USM_API_TOKEN` (MCP API token, optional in dev mode).
+
+**Card status:** Story cards have optional `status` field (`not-started`, `in-progress`, `blocked`, `testing`, `done`) with colored badges in the card header and status selector in card editors.
+
 ## Canvas Data Model
 
-Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: `default` (built-in bezier), `line` (custom straight). Node components in `frontend/src/components/nodes/`, edge components in `frontend/src/components/edges/`.
+Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: `default` (built-in bezier), `line` (custom straight). Node components in `frontend/src/components/nodes/`, edge components in `frontend/src/components/edges/`. Story cards have optional `status` field (`CardStatus` type) with colored badge display.
 
 **Layout grid** (y-axis): Activities at 0, Steps at 200, Must-have stories at 400, Should-have at 600, Could-have at 800, Won't-have at 1000. Horizontal spacing: 300px. Full spec in `docs/JSON_FORMAT.md`.
 
@@ -48,7 +56,7 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - `frontend/src/hooks/useAutoSave.ts` — Debounced save to backend
 - `frontend/src/hooks/useAI.ts` — AI generate/arrange hooks
 - `frontend/src/components/Canvas.tsx` — React Flow wrapper, event handlers for tool modes
-- `frontend/src/types/index.ts` — TypeScript interfaces, color constants (PRIORITY_COLORS, CARD_TYPE_COLORS)
+- `frontend/src/types/index.ts` — TypeScript interfaces, color constants (PRIORITY_COLORS, CARD_TYPE_COLORS, STATUS_COLORS, STATUS_LABELS)
 - `backend/src/ai/prompts.js` — System prompts that define JSON output format for AI
 - `backend/src/ai/models.js` — Available OpenRouter model list
 - `backend/src/db/migrations.js` — SQLite schema (projects, canvas_states, ai_history, canvas_versions, users, project_shares)
@@ -56,9 +64,9 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - `backend/src/routes/canvas.js` — Canvas load/save/import/export + version management + visibility + SSE events endpoints
 - `backend/src/sse/connections.js` — SSE connection manager (addClient/broadcast per project)
 - `backend/src/utils/encryption.js` — AES-256-GCM encrypt/decrypt for API keys
-- `backend/src/routes/auth.js` — Auth config, /me, logout, API key CRUD endpoints
+- `backend/src/routes/auth.js` — Auth config, /me, logout, API key CRUD, MCP token CRUD endpoints
 - `backend/src/routes/shares.js` — CRUD for project shares + shareable link generation/acceptance
-- `backend/src/middleware/auth.js` — `requireAuth` (Firebase token verification), `requireProjectAccess(minRole)` (ownership/share check), `verifyTokenAndGetUser` (reusable token→user helper)
+- `backend/src/middleware/auth.js` — `requireAuth` (Firebase token + MCP API token verification), `requireProjectAccess(minRole)` (ownership/share check), `verifyTokenAndGetUser` (reusable token→user helper)
 - `frontend/src/hooks/useAuth.ts` — Auth context/hook: Firebase onAuthStateChanged, getIdToken, login/logout, hasApiKey state
 - `frontend/src/components/AuthProvider.tsx` — Wraps app with AuthContext, connects token provider to API client
 - `frontend/src/components/LoginPage.tsx` — Full-page Google sign-in
@@ -74,6 +82,24 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - `frontend/src/components/panels/MobileToolbar.tsx` — Mobile floating menu button + popover with organized tool groups
 - `frontend/src/components/panels/MobileAIButton.tsx` — Mobile AI FAB (bottom-right) with bottom sheet prompt input
 - `frontend/src/components/panels/MobileCardEditor.tsx` — Mobile bottom sheet card editor (60vh, swipe-to-dismiss)
+- `mcp-server/src/index.ts` — MCP server entry point (McpServer + StdioServerTransport)
+- `mcp-server/src/api-client.ts` — HTTP client for backend API (USM_BACKEND_URL, USM_API_TOKEN)
+- `mcp-server/src/tools/` — MCP tool registrations (projects, canvas, nodes, status, create-map)
+- `mcp-server/src/resources/index.ts` — MCP resource registrations (format, projects, project map)
+- `mcp-server/src/utils/layout.ts` — Layout algorithm: hierarchical input → positioned nodes/edges
+
+## MCP Server Configuration
+
+```bash
+# Build MCP server
+npm run build --workspace=mcp-server
+
+# Add to Claude Code (dev mode, no auth needed)
+claude mcp add user-story-mapper -- node /path/to/mcp-server/build/index.js
+
+# With auth (set env vars)
+claude mcp add user-story-mapper -e USM_BACKEND_URL=http://localhost:3001 -e USM_API_TOKEN=mcp_xxx -- node /path/to/mcp-server/build/index.js
+```
 
 ## Conventions
 
@@ -101,3 +127,4 @@ Lessons learned during development — add new entries as they arise.
 - **Node.js `decipher.update()` needs explicit encoding**: `decipher.update(data)` returns a Buffer; concatenating via `+` with a string relies on implicit `Buffer.toString()` which can be unreliable. Always specify output encoding explicitly: `decipher.update(data, null, 'utf8')`.
 - **React hooks must be called before early returns**: Placing `useCallback`/`useMemo`/etc. after conditional `return` statements (e.g., `if (loading) return ...`) violates Rules of Hooks — the hook count changes between renders, causing "Rendered more hooks than during the previous render" crash. Always place all hooks at the top of the component, before any early returns.
 - **Auth rate limiter too strict for dev**: React 19 Strict Mode double-fires effects, so each page load sends 2x auth requests. Combined with Vite HMR, 10 req/min was too low. Increased to 30 req/min — still protective in production while comfortable for dev.
+- **MCP SDK + Zod type recursion**: `@modelcontextprotocol/sdk` v1.27+ has dual Zod v3/v4 compat types (`AnySchema = z3.ZodTypeAny | z4.$ZodType`). Using `z.string()`, `z.enum()`, `z.array()`, or `z.optional()` in tool schemas causes `TS2589: Type instantiation is excessively deep`. Fix: use the `server.tool(name, description, callback)` overload without Zod schemas; put parameter docs in the description string instead. Tools still work — LLMs read descriptions, not JSON Schema.

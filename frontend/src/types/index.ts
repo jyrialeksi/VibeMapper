@@ -1,5 +1,6 @@
 export type CardType = 'activity' | 'step' | 'story' | 'annotation';
 export type Priority = 'must-have' | 'should-have' | 'could-have' | 'wont-have';
+export type CardStatus = 'not-started' | 'in-progress' | 'blocked' | 'testing' | 'done';
 export type ToolMode = 'select' | 'addCard' | 'line' | 'box';
 export type HighlightType = 'added' | 'modified';
 
@@ -11,6 +12,7 @@ export interface StoryCardData {
   cardType: CardType;
   priority: Priority;
   estimate?: string;
+  status?: CardStatus;
   color?: string;
   width?: number;
   height?: number;
@@ -101,4 +103,20 @@ export const CARD_TYPE_COLORS: Record<CardType, string> = {
   step: '#2563eb',
   story: '#059669',
   annotation: '#d97706',
+};
+
+export const STATUS_COLORS: Record<CardStatus, string> = {
+  'not-started': '#9ca3af',
+  'in-progress': '#3b82f6',
+  'blocked': '#ef4444',
+  'testing': '#f59e0b',
+  'done': '#22c55e',
+};
+
+export const STATUS_LABELS: Record<CardStatus, string> = {
+  'not-started': 'Not Started',
+  'in-progress': 'In Progress',
+  'blocked': 'Blocked',
+  'testing': 'Testing',
+  'done': 'Done',
 };

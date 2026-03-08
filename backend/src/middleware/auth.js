@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import admin from 'firebase-admin';
 import db from '../db/database.js';
 
@@ -35,6 +36,19 @@ export function requireAuth(req, res, next) {
   }
 
   const token = header.slice(7);
+
+  // MCP API token path
+  if (token.startsWith('mcp_')) {
+    const hash = crypto.createHash('sha256').update(token).digest('hex');
+    const user = db.prepare('SELECT * FROM users WHERE mcp_api_token = ?').get(hash);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid API token' });
+    }
+    req.user = { id: user.id, email: user.email, name: user.name, picture: user.picture };
+    return next();
+  }
+
+  // Firebase token path
   verifyTokenAndGetUser(token)
     .then(user => {
       req.user = user;
