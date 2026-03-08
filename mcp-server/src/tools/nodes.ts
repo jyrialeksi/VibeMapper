@@ -1,8 +1,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { api } from '../api-client.js';
+import type { ApiClient } from '../api-client.js';
 import type { CanvasState } from '../utils/schemas.js';
 
-export function registerNodeTools(server: McpServer) {
+export function registerNodeTools(server: McpServer, api: ApiClient) {
   server.tool(
     'add_nodes',
     'Add new nodes and/or edges to an existing story map. Parameters: project_id (string), nodes_json (string - JSON array of nodes to add, or "[]"), edges_json (string - JSON array of edges to add, or "[]")',

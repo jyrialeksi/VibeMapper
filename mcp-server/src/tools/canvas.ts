@@ -1,5 +1,5 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { api } from '../api-client.js';
+import type { ApiClient } from '../api-client.js';
 import type { CanvasState } from '../utils/schemas.js';
 
 function formatMapAsText(canvas: CanvasState): string {
@@ -53,7 +53,7 @@ function formatMapAsText(canvas: CanvasState): string {
   return lines.join('\n');
 }
 
-export function registerCanvasTools(server: McpServer) {
+export function registerCanvasTools(server: McpServer, api: ApiClient) {
   server.tool(
     'get_story_map',
     'Read a project\'s story map. Returns a human-readable summary and raw JSON. Parameters: project_id (string, required)',

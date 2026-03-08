@@ -8,6 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Start both frontend (5173) and backend (3001) concurrently
 npm run dev
 
+# Build all (frontend + mcp-server)
+npm run build
+
 # Frontend only
 npm run dev:frontend
 npm run build --workspace=frontend    # TypeScript check + Vite build
@@ -28,7 +31,7 @@ Tests use Vitest: `npm test` runs all workspaces, or `npm run test --workspace=f
 
 Monorepo (npm workspaces) with three packages: `frontend/`, `backend/`, and `mcp-server/`.
 
-**Backend** — Express + better-sqlite3 (ESM, plain .js files). SQLite database auto-created at `backend/data/app.db` with WAL mode. Env file at `backend/.env` (`ENCRYPTION_KEY`). Route files: `projects.js` (CRUD), `canvas.js` (load/save/import/export + versioning), `ai.js` (generate/edit via OpenRouter), `auth.js` (config/me/logout + API key management + MCP token CRUD), `shares.js` (CRUD for project sharing). AI has two modes: **generate** (create map from scratch) and **edit** (surgical operations on existing maps). **Per-user OpenRouter API keys**: each user stores their own API key (encrypted with AES-256-GCM via `ENCRYPTION_KEY` env var); AI features are disabled until a key is set. **Canvas locks during AI edit** (prevents manual edits, shows overlay with cancel button). **AI Diff toggle** dims non-AI-edited nodes to highlight changes. **Authentication** via Firebase Auth (Google sign-in); toggled with `AUTH_ENABLED` env var. **MCP API tokens**: users can generate `mcp_`-prefixed API tokens for external tool access; tokens are stored as SHA-256 hashes in `users.mcp_api_token`; `requireAuth` middleware accepts both Firebase tokens and MCP tokens. **Project sharing** with email invitations and shareable links (viewer/editor roles). Rate limiting on auth and AI endpoints.
+**Backend** — Express + better-sqlite3 (ESM, plain .js files). SQLite database auto-created at `backend/data/app.db` with WAL mode. Env file at `backend/.env` (`ENCRYPTION_KEY`). Route files: `projects.js` (CRUD), `canvas.js` (load/save/import/export + versioning), `ai.js` (generate/edit via OpenRouter), `auth.js` (config/me/logout + API key management + MCP token CRUD), `shares.js` (CRUD for project sharing), `mcp.js` (MCP HTTP endpoint via StreamableHTTPServerTransport). AI has two modes: **generate** (create map from scratch) and **edit** (surgical operations on existing maps). **Per-user OpenRouter API keys**: each user stores their own API key (encrypted with AES-256-GCM via `ENCRYPTION_KEY` env var); AI features are disabled until a key is set. **Canvas locks during AI edit** (prevents manual edits, shows overlay with cancel button). **AI Diff toggle** dims non-AI-edited nodes to highlight changes. **Authentication** via Firebase Auth (Google sign-in); toggled with `AUTH_ENABLED` env var. **MCP API tokens**: users can generate `mcp_`-prefixed API tokens for external tool access; tokens are stored as SHA-256 hashes in `users.mcp_api_token`; `requireAuth` middleware accepts both Firebase tokens and MCP tokens. **Project sharing** with email invitations and shareable links (viewer/editor roles). Rate limiting on auth and AI endpoints.
 
 **Frontend** — React 19 + TypeScript + Vite + Tailwind CSS v4 + @xyflow/react (React Flow) + Zustand + **lucide-react** (icons) + **Firebase Auth** (Google sign-in). Vite proxies `/api` → `localhost:3001`. Features include **undo/redo** (stack-based, max 50), **priority filtering** (hide/show cards by priority), **Markdown export**, **dark mode** (class-based, persisted to localStorage, OS preference detection), **LayoutCorrector** (measures DOM heights to fix overlapping nodes after AI generation or auto-arrange), **canvas lock during AI edit** (disables all interactions, shows overlay with spinner + cancel), **AI Diff toggle** (dims unaffected nodes/edges to highlight last AI changes), **Google login** (conditional on server config), **project sharing** (SharePanel with email invites, link sharing, role management), **viewer mode** (read-only canvas for viewers), **persisted visibility** (description/AC toggles saved per-project, synced live via SSE), **mobile UX** (`<768px` breakpoint via `useIsMobile` hook: MobileToolbar floating menu button, MobileAIButton FAB with bottom sheet, MobileCardEditor bottom sheet with swipe-to-dismiss, one-finger pan, double-tap to edit nodes). UI uses glass morphism styling (backdrop-blur, semi-transparent backgrounds) on floating panels.
 
@@ -38,7 +41,7 @@ Monorepo (npm workspaces) with three packages: `frontend/`, `backend/`, and `mcp
 
 **Local auto-arrange:** Auto-arrange is a local algorithm (not AI-based) — triggered via the "Arrange" button in the top toolbar or `arrangeLocal` in the store, with height-aware positioning by `LayoutCorrector.tsx`.
 
-**MCP Server** (`mcp-server/`) — TypeScript + @modelcontextprotocol/sdk, stdio transport. Thin translation layer that calls the Express backend over HTTP. Tools: `list_projects`, `create_project`, `get_project`, `delete_project`, `get_story_map`, `set_story_map`, `add_nodes`, `update_nodes`, `remove_nodes`, `update_card_status`, `create_story_map` (high-level: hierarchical input → positioned nodes/edges). Resources: `storymap://format` (static format spec), `storymap://projects` (dynamic list), `storymap://projects/{id}/map` (dynamic template). Env vars: `USM_BACKEND_URL` (default `http://localhost:3001`), `USM_API_TOKEN` (MCP API token, optional in dev mode).
+**MCP Server** (`mcp-server/`) — TypeScript + @modelcontextprotocol/sdk, dual transport: stdio (for local dev via `node build/index.js`) and StreamableHTTP (embedded in Express backend at `/mcp` for production). Uses factory pattern (`createMcpServer(apiClient)`) for dependency injection. Thin translation layer that calls the Express backend over HTTP. Tools: `list_projects`, `create_project`, `get_project`, `delete_project`, `get_story_map`, `set_story_map`, `add_nodes`, `update_nodes`, `remove_nodes`, `update_card_status`, `create_story_map` (high-level: hierarchical input → positioned nodes/edges). Resources: `storymap://format` (static format spec), `storymap://projects` (dynamic list), `storymap://projects/{id}/map` (dynamic template). Env vars: `USM_BACKEND_URL` (default `http://localhost:3001`), `USM_API_TOKEN` (MCP API token, optional in dev mode).
 
 **Card status:** Story cards have optional `status` field (`not-started`, `in-progress`, `blocked`, `testing`, `done`) with colored badges in the card header and status selector in card editors.
 
@@ -66,6 +69,7 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - `backend/src/utils/encryption.js` — AES-256-GCM encrypt/decrypt for API keys
 - `backend/src/routes/auth.js` — Auth config, /me, logout, API key CRUD, MCP token CRUD endpoints
 - `backend/src/routes/shares.js` — CRUD for project shares + shareable link generation/acceptance
+- `backend/src/routes/mcp.js` — MCP HTTP endpoint (StreamableHTTPServerTransport, session management, per-user api client via localhost loopback)
 - `backend/src/middleware/auth.js` — `requireAuth` (Firebase token + MCP API token verification), `requireProjectAccess(minRole)` (ownership/share check), `verifyTokenAndGetUser` (reusable token→user helper)
 - `frontend/src/hooks/useAuth.ts` — Auth context/hook: Firebase onAuthStateChanged, getIdToken, login/logout, hasApiKey state
 - `frontend/src/components/AuthProvider.tsx` — Wraps app with AuthContext, connects token provider to API client
@@ -82,7 +86,9 @@ Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: 
 - `frontend/src/components/panels/MobileToolbar.tsx` — Mobile floating menu button + popover with organized tool groups
 - `frontend/src/components/panels/MobileAIButton.tsx` — Mobile AI FAB (bottom-right) with bottom sheet prompt input
 - `frontend/src/components/panels/MobileCardEditor.tsx` — Mobile bottom sheet card editor (60vh, swipe-to-dismiss)
-- `mcp-server/src/index.ts` — MCP server entry point (McpServer + StdioServerTransport)
+- `frontend/src/components/panels/McpServerPanel.tsx` — MCP Server setup card (token management, tool list, Claude Code/Cursor setup guides)
+- `mcp-server/src/server.ts` — `createMcpServer(apiClient)` factory (registers all tools/resources with injected API client)
+- `mcp-server/src/index.ts` — MCP server stdio entry point (uses factory + default api client from env vars)
 - `mcp-server/src/api-client.ts` — HTTP client for backend API (USM_BACKEND_URL, USM_API_TOKEN)
 - `mcp-server/src/tools/` — MCP tool registrations (projects, canvas, nodes, status, create-map)
 - `mcp-server/src/resources/index.ts` — MCP resource registrations (format, projects, project map)

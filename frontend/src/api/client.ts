@@ -120,6 +120,11 @@ export const api = {
   }),
   deleteApiKey: () => request<{ success: boolean; hasKey: boolean }>('/auth/api-key', { method: 'DELETE' }),
 
+  // MCP Token
+  getMcpTokenStatus: () => request<{ hasToken: boolean }>('/auth/mcp-token/status'),
+  generateMcpToken: () => request<{ token: string }>('/auth/mcp-token', { method: 'POST' }),
+  revokeMcpToken: () => request<{ success: boolean }>('/auth/mcp-token', { method: 'DELETE' }),
+
   // Shares
   listShares: (projectId: string) =>
     request<Share[]>(`/projects/${projectId}/shares`),

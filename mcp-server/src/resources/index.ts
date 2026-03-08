@@ -1,6 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { api } from '../api-client.js';
+import type { ApiClient } from '../api-client.js';
 import type { CanvasState } from '../utils/schemas.js';
 
 const FORMAT_DOC = `# User Story Map JSON Format
@@ -43,7 +43,7 @@ Horizontal spacing: 300px between nodes.
 - "line": Straight line (custom connections)
 `;
 
-export function registerResources(server: McpServer) {
+export function registerResources(server: McpServer, api: ApiClient) {
   // Static: JSON format documentation
   server.resource(
     'format',

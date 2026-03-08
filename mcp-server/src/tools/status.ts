@@ -1,8 +1,8 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { api } from '../api-client.js';
+import type { ApiClient } from '../api-client.js';
 import type { CanvasState } from '../utils/schemas.js';
 
-export function registerStatusTools(server: McpServer) {
+export function registerStatusTools(server: McpServer, api: ApiClient) {
   server.tool(
     'update_card_status',
     'Set the status of story cards. Parameters: project_id (string), node_ids (string - comma-separated story card IDs), status (string - one of: not-started, in-progress, blocked, testing, done)',

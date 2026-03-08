@@ -17,6 +17,7 @@ import projectsRouter from './routes/projects.js';
 import canvasRouter from './routes/canvas.js';
 import aiRouter from './routes/ai.js';
 import sharesRouter from './routes/shares.js';
+import mcpRouter from './routes/mcp.js';
 
 // Initialize Firebase Admin if auth is enabled
 if (process.env.AUTH_ENABLED === 'true') {
@@ -69,6 +70,9 @@ app.use('/api/canvas', canvasRouter);
 app.use('/api/ai', aiLimiter, aiRouter);
 app.use('/api/projects', sharesRouter);
 app.use('/api/shares', sharesRouter);
+
+// MCP endpoint (requires auth via Bearer token)
+app.use('/mcp', requireAuth, mcpRouter);
 
 // Serve frontend static files in production
 const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');

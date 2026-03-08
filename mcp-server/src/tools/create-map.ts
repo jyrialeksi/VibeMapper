@@ -1,9 +1,9 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { buildLayout } from '../utils/layout.js';
-import { api } from '../api-client.js';
+import type { ApiClient } from '../api-client.js';
 import type { ActivityInput } from '../utils/schemas.js';
 
-export function registerCreateMapTool(server: McpServer) {
+export function registerCreateMapTool(server: McpServer, api: ApiClient) {
   server.tool(
     'create_story_map',
     `Create a new project and populate it with a complete story map. The server handles layout, positioning, IDs, and edges automatically.

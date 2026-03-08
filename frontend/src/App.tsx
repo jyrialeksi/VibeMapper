@@ -8,6 +8,7 @@ import { useTheme } from './hooks/useTheme';
 import { useAuth } from './hooks/useAuth';
 import { useMapStore } from './store/useMapStore';
 import { SharePanel } from './components/panels/SharePanel';
+import { McpServerPanel } from './components/panels/McpServerPanel';
 
 function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -200,6 +201,9 @@ function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
             </p>
           )}
         </div>
+
+        {/* MCP Server */}
+        <McpServerPanel />
 
         {/* Owned projects */}
         <ProjectSection

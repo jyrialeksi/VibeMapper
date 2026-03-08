@@ -1,7 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { api } from '../api-client.js';
+import type { ApiClient } from '../api-client.js';
 
-export function registerProjectTools(server: McpServer) {
+export function registerProjectTools(server: McpServer, api: ApiClient) {
   server.tool(
     'list_projects',
     'List all story map projects',
