@@ -62,10 +62,10 @@ export function MobileCardEditor() {
   const { data } = node;
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-50 animate-slide-up" style={{ height: '60vh' }}>
+    <div className="absolute bottom-0 left-0 right-0 z-50 animate-slide-up flex justify-center" style={{ height: '60vh' }}>
       <div
         ref={sheetRef}
-        className="h-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-t-2xl shadow-lg border-t border-x border-gray-200/50 dark:border-gray-700/50 flex flex-col"
+        className="h-full w-full max-w-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-t-2xl shadow-lg border-t border-x border-gray-200/50 dark:border-gray-700/50 flex flex-col"
         style={{ willChange: 'transform' }}
       >
         {/* Handle area - swipe zone */}
