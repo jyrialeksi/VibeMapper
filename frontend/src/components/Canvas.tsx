@@ -76,6 +76,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
   const setProjectRole = useMapStore((s) => s.setProjectRole);
   const mobileEditingNodeId = useMapStore((s) => s.mobileEditingNodeId);
   const setMobileEditingNodeId = useMapStore((s) => s.setMobileEditingNodeId);
+  const setActivePanel = useMapStore((s) => s.setActivePanel);
   const isReadOnly = projectRole === 'viewer' || isAIEditing;
 
   const visibleNodes = useMemo(() => {
@@ -203,9 +204,10 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
       } else {
         setSelectedNodeId(null);
         setMobileEditingNodeId(null);
+        setActivePanel('none');
       }
     },
-    [toolMode, cardTypeToAdd, addNode, setSelectedNodeId, setMobileEditingNodeId]
+    [toolMode, cardTypeToAdd, addNode, setSelectedNodeId, setMobileEditingNodeId, setActivePanel]
   );
 
   const handleNodeDoubleClick = useCallback(

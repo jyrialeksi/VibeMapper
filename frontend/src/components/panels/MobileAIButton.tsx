@@ -1,23 +1,26 @@
-import { useState } from 'react';
 import { useAI } from '../../hooks/useAI';
 import { useMapStore } from '../../store/useMapStore';
 import { useAuth } from '../../hooks/useAuth';
 import { Sparkles, Send, Loader2, X } from 'lucide-react';
 
 export function MobileAIButton() {
-  const [open, setOpen] = useState(false);
-  const [prompt, setPrompt] = useState('');
   const { models, selectedModel, setSelectedModel, loading, error, generate } = useAI();
   const hasNodes = useMapStore((s) => s.nodes.length > 0);
+  const activePanel = useMapStore((s) => s.activePanel);
+  const setActivePanel = useMapStore((s) => s.setActivePanel);
+  const prompt = useMapStore((s) => s.aiPromptText);
+  const setPrompt = useMapStore((s) => s.setAIPromptText);
   const { hasApiKey } = useAuth();
 
   if (!hasApiKey) return null;
+
+  const open = activePanel === 'ai';
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
     generate(prompt);
     setPrompt('');
-    setOpen(false);
+    setActivePanel('none');
   };
 
   return (
@@ -25,7 +28,7 @@ export function MobileAIButton() {
       {/* FAB */}
       {!open && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => setActivePanel('ai')}
           className="absolute bottom-6 right-4 z-50 w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center active:bg-blue-700 transition-colors duration-150"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
@@ -48,7 +51,7 @@ export function MobileAIButton() {
                 AI {hasNodes ? 'Edit' : 'Generate'}
               </span>
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => setActivePanel('none')}
                 className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md text-gray-400"
               >
                 <X size={18} />

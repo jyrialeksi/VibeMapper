@@ -20,6 +20,7 @@ interface Snapshot {
 const MAX_HISTORY = 50;
 
 export type PendingLayout = 'none' | 'correctOverlap' | 'fullArrange';
+export type ActivePanel = 'none' | 'toolbar' | 'ai' | 'cardEditor';
 
 interface MapState {
   // Canvas state
@@ -70,6 +71,8 @@ interface MapState {
 
   // Mobile state
   mobileEditingNodeId: string | null;
+  activePanel: ActivePanel;
+  aiPromptText: string;
 
   // Actions
   setNodes: (nodes: Node<StoryCardData>[]) => void;
@@ -128,6 +131,8 @@ interface MapState {
 
   // Mobile actions
   setMobileEditingNodeId: (id: string | null) => void;
+  setActivePanel: (panel: ActivePanel) => void;
+  setAIPromptText: (text: string) => void;
 }
 
 export const useMapStore = create<MapState>((set, get) => ({
@@ -176,6 +181,8 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Mobile state
   mobileEditingNodeId: null,
+  activePanel: 'none',
+  aiPromptText: '',
 
   setNodes: (nodes) => set({ nodes, isDirty: true }),
   setEdges: (edges) => set({ edges, isDirty: true }),
@@ -476,8 +483,20 @@ export const useMapStore = create<MapState>((set, get) => ({
   setProjectRole: (role) => set({ projectRole: role }),
 
   // Mobile actions
-  setMobileEditingNodeId: (id) => set({
-    mobileEditingNodeId: id,
-    selectedNodeId: id,
+  setMobileEditingNodeId: (id) => {
+    if (id !== null) {
+      set({ mobileEditingNodeId: id, selectedNodeId: id, activePanel: 'cardEditor' });
+    } else {
+      set((s) => ({
+        mobileEditingNodeId: null,
+        selectedNodeId: null,
+        ...(s.activePanel === 'cardEditor' && { activePanel: 'none' as ActivePanel }),
+      }));
+    }
+  },
+  setActivePanel: (panel) => set({
+    activePanel: panel,
+    ...(panel !== 'cardEditor' && { mobileEditingNodeId: null }),
   }),
+  setAIPromptText: (text) => set({ aiPromptText: text }),
 }));

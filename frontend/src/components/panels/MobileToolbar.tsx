@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useMapStore } from '../../store/useMapStore';
 import { api } from '../../api/client';
 import type { ToolMode, CardType, Priority } from '../../types';
@@ -48,7 +48,9 @@ interface MobileToolbarProps {
 }
 
 export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeleteProject }: MobileToolbarProps) {
-  const [open, setOpen] = useState(false);
+  const activePanel = useMapStore((s) => s.activePanel);
+  const setActivePanel = useMapStore((s) => s.setActivePanel);
+  const open = activePanel === 'toolbar';
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -85,7 +87,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
     if (!open) return;
     const handler = (e: MouseEvent) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target as HTMLElement)) {
-        setOpen(false);
+        setActivePanel('none');
       }
     };
     document.addEventListener('mousedown', handler);
@@ -109,7 +111,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
   };
 
   // Helper: close popover for mode-changing actions
-  const withClose = (fn: () => void) => () => { fn(); setOpen(false); };
+  const withClose = (fn: () => void) => () => { fn(); setActivePanel('none'); };
 
   const btnBase = 'min-h-[44px] px-3 py-2 text-sm font-medium transition-colors duration-150 flex items-center gap-2 rounded-lg w-full';
   const btnInactive = 'text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80';
@@ -120,7 +122,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
     <div ref={popoverRef} className={`absolute top-3 left-3 z-50 ${isAIEditing ? 'opacity-50 pointer-events-none' : ''}`}>
       {/* Toggle button */}
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => setActivePanel(open ? 'none' : 'toolbar')}
         className="w-11 h-11 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 text-gray-700 dark:text-gray-200"
       >
         {open ? <X size={20} /> : <Menu size={20} />}
@@ -256,7 +258,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
             <>
               <div className="border-t border-gray-200/50 dark:border-gray-700/50 my-2" />
               <button
-                onClick={() => { setOpen(false); setShowDeleteConfirm(true); }}
+                onClick={() => { setActivePanel('none'); setShowDeleteConfirm(true); }}
                 className={`${btnBase} text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30`}
               >
                 <Trash2 size={18} /> Delete Project
