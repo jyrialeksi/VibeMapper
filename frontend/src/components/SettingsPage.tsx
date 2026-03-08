@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Moon, Sun, Key, Check, Trash2, ExternalLink, LogOut } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../api/client';
 import { McpServerPanel } from './panels/McpServerPanel';
 
-export function SettingsPage({ onBack }: { onBack: () => void }) {
+export function SettingsPage() {
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { user, authEnabled, logout, hasApiKey, refreshApiKeyStatus } = useAuth();
   const [apiKeyInput, setApiKeyInput] = useState('');
@@ -63,7 +65,7 @@ export function SettingsPage({ onBack }: { onBack: () => void }) {
 
       <div className="max-w-2xl mx-auto pt-16 px-4">
         <button
-          onClick={onBack}
+          onClick={() => navigate('/')}
           className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mb-6 flex items-center gap-1 transition-colors duration-150"
         >
           <ArrowLeft size={14} />
