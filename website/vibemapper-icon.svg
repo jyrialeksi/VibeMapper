@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background with rounded square shape (like app icon) -->
+  <rect width="512" height="512" rx="112" fill="#080810"/>
+
+  <!-- Subtle grid lines -->
+  <line x1="0" y1="200" x2="512" y2="200" stroke="#c6ff4d" stroke-width="1" opacity="0.06"/>
+  <line x1="0" y1="320" x2="512" y2="320" stroke="#c6ff4d" stroke-width="1" opacity="0.06"/>
+  <line x1="170" y1="0" x2="170" y2="512" stroke="#c6ff4d" stroke-width="1" opacity="0.06"/>
+  <line x1="340" y1="0" x2="340" y2="512" stroke="#c6ff4d" stroke-width="1" opacity="0.06"/>
+
+  <!-- Row 1: Epics (large blocks) -->
+  <rect x="64"  y="80"  width="130" height="100" rx="14" fill="#c6ff4d" opacity="0.95"/>
+  <rect x="212" y="80"  width="130" height="100" rx="14" fill="#c6ff4d" opacity="0.45"/>
+  <rect x="360" y="80"  width="88"  height="100" rx="14" fill="#c6ff4d" opacity="0.22"/>
+
+  <!-- Row 2: Stories -->
+  <rect x="64"  y="202" width="130" height="72" rx="10" fill="#c6ff4d" opacity="0.38"/>
+  <rect x="212" y="202" width="130" height="72" rx="10" fill="#ff3cac" opacity="0.70"/>
+  <rect x="360" y="202" width="88"  height="72" rx="10" fill="#00f5d4" opacity="0.55"/>
+
+  <!-- Row 3: Sub-stories -->
+  <rect x="64"  y="296" width="130" height="56" rx="8" fill="#c6ff4d" opacity="0.16"/>
+  <rect x="212" y="296" width="130" height="56" rx="8" fill="#c6ff4d" opacity="0.16"/>
+  <rect x="360" y="296" width="88"  height="56" rx="8" fill="#ff3cac" opacity="0.16"/>
+
+  <!-- Row 4: Faint bottom row -->
+  <rect x="64"  y="374" width="130" height="40" rx="6" fill="#c6ff4d" opacity="0.07"/>
+  <rect x="212" y="374" width="130" height="40" rx="6" fill="#c6ff4d" opacity="0.07"/>
+  <rect x="360" y="374" width="88"  height="40" rx="6" fill="#00f5d4" opacity="0.07"/>
+
+  <!-- "VM" monogram subtle overlay for brand recognition at small sizes -->
+  <!-- Lightning / vibe accent dot on top-left epic -->
+  <circle cx="98" cy="107" r="12" fill="#080810" opacity="0.3"/>
+  <text x="91" y="113" font-family="monospace" font-size="16" fill="#080810" font-weight="bold">V</text>
+</svg>

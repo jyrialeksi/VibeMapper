@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>VibeMapper — Brand Guidelines</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #080810; --surface: #0f0f1e; --surface2: #16162a;
+      --lime: #c6ff4d; --pink: #ff3cac; --teal: #00f5d4; --purple: #7b2fff;
+      --text: #f0eeff; --muted: #7a7a9a; --border: rgba(198,255,77,0.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; padding: 64px; line-height: 1.6; }
+    h1 { font-family: 'Bebas Neue'; font-size: 72px; letter-spacing: 4px; color: var(--lime); }
+    h2 { font-family: 'Bebas Neue'; font-size: 36px; letter-spacing: 3px; margin: 48px 0 24px; }
+    h3 { font-family: 'Space Mono'; font-size: 13px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+    p { color: rgba(240,238,255,0.6); margin-bottom: 16px; }
+    .tagline { font-family: 'Space Mono'; font-size: 14px; letter-spacing: 3px; color: var(--muted); margin-bottom: 48px; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+    .colors { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
+    .swatch { border-radius: 4px; overflow: hidden; min-width: 120px; }
+    .swatch-color { height: 80px; }
+    .swatch-info { padding: 12px; background: var(--surface); }
+    .swatch-name { font-family: 'Space Mono'; font-size: 11px; font-weight: 700; color: var(--text); }
+    .swatch-hex { font-family: 'Space Mono'; font-size: 11px; color: var(--muted); }
+    .type-row { margin-bottom: 24px; }
+    .type-sample-bebas { font-family: 'Bebas Neue'; font-size: 48px; letter-spacing: 3px; }
+    .type-sample-mono { font-family: 'Space Mono'; font-size: 14px; }
+    .type-sample-body { font-family: 'DM Sans'; font-size: 17px; font-weight: 300; color: rgba(240,238,255,0.7); }
+    .logo-display { background: var(--surface); border: 1px solid var(--border); padding: 48px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+    .do-dont { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .do { background: rgba(198,255,77,0.05); border: 1px solid rgba(198,255,77,0.2); padding: 24px; border-radius: 2px; }
+    .dont { background: rgba(255,60,172,0.05); border: 1px solid rgba(255,60,172,0.2); padding: 24px; border-radius: 2px; }
+    .do h3 { color: var(--lime); }
+    .dont h3 { color: var(--pink); }
+    ul { padding-left: 20px; color: rgba(240,238,255,0.55); }
+    ul li { margin-bottom: 8px; font-size: 14px; }
+    @media (max-width: 768px) { body { padding: 32px 20px; } .do-dont { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <h1>VIBEMAPPER</h1>
+  <p class="tagline">// BRAND GUIDELINES v1.0</p>
+  <p>This document defines the visual and tonal identity of VibeMapper. Use it to maintain consistency across the product, marketing, and community.</p>
+
+  <hr class="divider"/>
+
+  <h2>COLORS</h2>
+  <h3>Primary Palette</h3>
+  <div class="colors">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#c6ff4d"></div>
+      <div class="swatch-info"><div class="swatch-name">VIBE LIME</div><div class="swatch-hex">#C6FF4D</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#080810"></div>
+      <div class="swatch-info"><div class="swatch-name">DEEP VOID</div><div class="swatch-hex">#080810</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#0f0f1e"></div>
+      <div class="swatch-info"><div class="swatch-name">SURFACE</div><div class="swatch-hex">#0F0F1E</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#f0eeff"></div>
+      <div class="swatch-info"><div class="swatch-name">SOFT WHITE</div><div class="swatch-hex">#F0EEFF</div></div>
+    </div>
+  </div>
+  <h3>Accent Palette</h3>
+  <div class="colors">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#ff3cac"></div>
+      <div class="swatch-info"><div class="swatch-name">NEON PINK</div><div class="swatch-hex">#FF3CAC</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#00f5d4"></div>
+      <div class="swatch-info"><div class="swatch-name">CYBER TEAL</div><div class="swatch-hex">#00F5D4</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#7b2fff"></div>
+      <div class="swatch-info"><div class="swatch-name">ELECTRIC PURPLE</div><div class="swatch-hex">#7B2FFF</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#7a7a9a"></div>
+      <div class="swatch-info"><div class="swatch-name">MUTED</div><div class="swatch-hex">#7A7A9A</div></div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>TYPOGRAPHY</h2>
+  <div class="type-row">
+    <h3>Display — Bebas Neue</h3>
+    <div class="type-sample-bebas">MAP YOUR VIBE, SHIP IT</div>
+    <p style="margin-top:8px; font-size:13px;">Used for hero headlines, section titles, pricing numbers, and the logo wordmark. Always uppercase, generous letter-spacing (3–6px).</p>
+  </div>
+  <div class="type-row">
+    <h3>Monospace — Space Mono</h3>
+    <div class="type-sample-mono">// USER STORY MAPPER FOR VIBE CODERS</div>
+    <p style="margin-top:8px; font-size:13px;">Used for labels, navigation, badges, code snippets, CTAs, and secondary headings. Reinforces the developer/technical DNA.</p>
+  </div>
+  <div class="type-row">
+    <h3>Body — DM Sans (Light 300)</h3>
+    <div class="type-sample-body">Stop context-switching between napkin sketches and your AI. VibeMapper lets you visualize your app's entire user journey in one shot.</div>
+    <p style="margin-top:8px; font-size:13px;">Used for body copy and descriptions. Keep weight at 300 for an airy, modern feel. Font-size 15–18px, line-height 1.7.</p>
+  </div>
+
+  <hr class="divider"/>
+
+  <h2>LOGO</h2>
+  <div class="logo-display">
+    <svg viewBox="0 0 80 80" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2" width="22" height="22" rx="2" fill="#c6ff4d" opacity="0.95"/>
+      <rect x="28" y="2" width="22" height="22" rx="2" fill="#c6ff4d" opacity="0.5"/>
+      <rect x="54" y="2" width="24" height="22" rx="2" fill="#c6ff4d" opacity="0.25"/>
+      <rect x="2" y="28" width="22" height="14" rx="2" fill="#c6ff4d" opacity="0.4"/>
+      <rect x="28" y="28" width="22" height="14" rx="2" fill="#ff3cac" opacity="0.7"/>
+      <rect x="54" y="28" width="24" height="14" rx="2" fill="#00f5d4" opacity="0.5"/>
+      <rect x="2" y="46" width="22" height="10" rx="2" fill="#c6ff4d" opacity="0.15"/>
+      <rect x="28" y="46" width="22" height="10" rx="2" fill="#c6ff4d" opacity="0.15"/>
+      <rect x="54" y="46" width="24" height="10" rx="2" fill="#ff3cac" opacity="0.15"/>
+      <rect x="2" y="60" width="22" height="10" rx="2" fill="#c6ff4d" opacity="0.07"/>
+      <rect x="28" y="60" width="22" height="10" rx="2" fill="#c6ff4d" opacity="0.07"/>
+      <rect x="54" y="60" width="24" height="10" rx="2" fill="#00f5d4" opacity="0.07"/>
+    </svg>
+    <span style="font-family:'Bebas Neue'; font-size:42px; letter-spacing:4px; color:#c6ff4d;">VIBEMAPPER</span>
+  </div>
+  <p style="font-size:13px; font-family:'Space Mono'; color: var(--muted);">The icon represents a user story map: bold epics at top (lime), stories in the middle (pink/teal accents), sub-tasks fading below. It's the product, as the logo.</p>
+
+  <hr class="divider"/>
+
+  <h2>VOICE & TONE</h2>
+  <p>VibeMapper talks like a sharp developer friend who actually ships things. Not corporate, not cringe — confident and concise.</p>
+  <div class="do-dont">
+    <div class="do">
+      <h3>✓ DO</h3>
+      <ul>
+        <li>Use active, punchy verbs: ship, map, build, export</li>
+        <li>Address the builder directly ("your next app")</li>
+        <li>Keep it short. If it can be 5 words, don't use 10</li>
+        <li>Lean into the vibe coder culture authentically</li>
+        <li>Use technical shorthand when talking to builders</li>
+      </ul>
+    </div>
+    <div class="dont">
+      <h3>✗ DON'T</h3>
+      <ul>
+        <li>Use corporate jargon ("leverage synergies", "streamline workflows")</li>
+        <li>Over-explain what user story mapping is</li>
+        <li>Use passive voice or hedge excessively</li>
+        <li>Be try-hard with slang ("fr fr no cap")</li>
+        <li>Make it feel like enterprise software</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+  <p style="font-family:'Space Mono'; font-size:11px; color: var(--muted); letter-spacing: 1px;">© 2025 VIBEMAPPER · vibemapper.io · BRAND GUIDELINES v1.0</p>
+
+</body>
+</html>

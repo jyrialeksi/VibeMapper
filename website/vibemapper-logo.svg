@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" width="360" height="100">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="360" height="100" fill="#080810"/>
+
+  <!-- Icon mark (36x36, centered at y=32) -->
+  <!-- Epic row -->
+  <rect x="12" y="12" width="22" height="22" rx="2" fill="#c6ff4d" opacity="0.95"/>
+  <rect x="38" y="12" width="22" height="22" rx="2" fill="#c6ff4d" opacity="0.5"/>
+  <rect x="64" y="12" width="14" height="22" rx="2" fill="#c6ff4d" opacity="0.25"/>
+
+  <!-- Story row 1 -->
+  <rect x="12" y="38" width="22" height="14" rx="2" fill="#c6ff4d" opacity="0.4"/>
+  <rect x="38" y="38" width="22" height="14" rx="2" fill="#ff3cac" opacity="0.65"/>
+  <rect x="64" y="38" width="14" height="14" rx="2" fill="#00f5d4" opacity="0.5"/>
+
+  <!-- Story row 2 -->
+  <rect x="12" y="56" width="22" height="10" rx="2" fill="#c6ff4d" opacity="0.18"/>
+  <rect x="38" y="56" width="22" height="10" rx="2" fill="#c6ff4d" opacity="0.18"/>
+  <rect x="64" y="56" width="14" height="10" rx="2" fill="#ff3cac" opacity="0.18"/>
+
+  <!-- Story row 3 -->
+  <rect x="12" y="70" width="22" height="10" rx="2" fill="#c6ff4d" opacity="0.09"/>
+  <rect x="38" y="70" width="22" height="10" rx="2" fill="#c6ff4d" opacity="0.09"/>
+  <rect x="64" y="70" width="14" height="10" rx="2" fill="#00f5d4" opacity="0.09"/>
+
+  <!-- Wordmark -->
+  <text x="100" y="60" font-family="'Bebas Neue', sans-serif" font-size="52" fill="#c6ff4d" letter-spacing="4">VIBEMAPPER</text>
+
+  <!-- Tagline -->
+  <text x="101" y="78" font-family="'Courier New', monospace" font-size="11" fill="#7a7a9a" letter-spacing="2.5">USER STORY MAPPER FOR VIBE CODERS</text>
+</svg>

@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VibeMapper — User Story Mapper for Vibe Coders</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080810;
+      --surface: #0f0f1e;
+      --surface2: #16162a;
+      --lime: #c6ff4d;
+      --pink: #ff3cac;
+      --teal: #00f5d4;
+      --purple: #7b2fff;
+      --text: #f0eeff;
+      --muted: #7a7a9a;
+      --border: rgba(198,255,77,0.12);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.5;
+    }
+
+    /* ── GRID BACKGROUND ── */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(198,255,77,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(198,255,77,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── GLOW ORBS ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 { width: 600px; height: 600px; background: rgba(123,47,255,0.15); top: -200px; right: -200px; }
+    .orb-2 { width: 400px; height: 400px; background: rgba(255,60,172,0.1); bottom: 100px; left: -100px; }
+    .orb-3 { width: 300px; height: 300px; background: rgba(0,245,212,0.08); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: rgba(8,8,16,0.7);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 2px;
+      color: var(--lime);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--lime); }
+
+    .nav-cta {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 1px;
+      background: var(--lime);
+      color: #080810;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: 700;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      z-index: 1;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--teal);
+      border: 1px solid rgba(0,245,212,0.25);
+      padding: 6px 16px;
+      border-radius: 2px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--teal);
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(72px, 12vw, 160px);
+      line-height: 0.9;
+      letter-spacing: 4px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero-title .line-accent { color: var(--lime); }
+    .hero-title .line-pink { color: var(--pink); }
+
+    .hero-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(13px, 1.5vw, 17px);
+      color: var(--muted);
+      letter-spacing: 3px;
+      margin-top: 24px;
+      text-transform: uppercase;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-desc {
+      max-width: 560px;
+      font-size: 18px;
+      line-height: 1.7;
+      color: rgba(240,238,255,0.6);
+      margin-top: 28px;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 48px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .btn-primary {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      background: var(--lime);
+      color: #080810;
+      border: none;
+      padding: 16px 36px;
+      cursor: pointer;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(198,255,77,0.3); }
+
+    .btn-secondary {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(240,238,255,0.2);
+      padding: 16px 36px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-secondary:hover { border-color: var(--lime); color: var(--lime); }
+
+    /* ── STORY MAP PREVIEW ── */
+    .map-preview {
+      margin-top: 80px;
+      width: 100%;
+      max-width: 900px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      animation: fadeUp 0.6s 0.5s ease both;
+      position: relative;
+    }
+
+    .map-preview-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #28ca42; }
+
+    .map-preview-url {
+      flex: 1;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .map-canvas {
+      padding: 24px;
+      overflow-x: auto;
+    }
+
+    .map-epics {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .epic {
+      flex: 1;
+      min-width: 120px;
+      padding: 10px 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-align: center;
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+
+    .epic-1 { background: rgba(198,255,77,0.12); color: var(--lime); border: 1px solid rgba(198,255,77,0.3); }
+    .epic-2 { background: rgba(255,60,172,0.1); color: var(--pink); border: 1px solid rgba(255,60,172,0.3); }
+    .epic-3 { background: rgba(0,245,212,0.1); color: var(--teal); border: 1px solid rgba(0,245,212,0.3); }
+    .epic-4 { background: rgba(123,47,255,0.12); color: #b084ff; border: 1px solid rgba(123,47,255,0.3); }
+
+    .map-stories {
+      display: flex;
+      gap: 12px;
+    }
+
+    .story-col {
+      flex: 1;
+      min-width: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .story-card {
+      padding: 8px 12px;
+      background: var(--surface2);
+      border: 1px solid rgba(240,238,255,0.06);
+      border-radius: 2px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      color: rgba(240,238,255,0.6);
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    .story-card.highlight {
+      border-color: rgba(198,255,77,0.2);
+      color: var(--text);
+    }
+
+    /* ── FEATURES ── */
+    .section {
+      position: relative;
+      z-index: 1;
+      padding: 120px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--lime);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(42px, 5vw, 72px);
+      letter-spacing: 3px;
+      line-height: 1;
+      margin-bottom: 64px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      padding: 36px;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--lime);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+      transform-origin: left;
+    }
+    .feature-card:hover::before { transform: scaleX(1); }
+    .feature-card:hover { background: var(--surface2); transform: translateY(-4px); }
+
+    .feature-icon {
+      width: 40px; height: 40px;
+      margin-bottom: 20px;
+    }
+
+    .feature-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--lime);
+      margin-bottom: 12px;
+    }
+
+    .feature-desc {
+      font-size: 15px;
+      line-height: 1.7;
+      color: rgba(240,238,255,0.5);
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-section {
+      position: relative;
+      z-index: 1;
+      padding: 0 48px 120px;
+    }
+
+    .how-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--lime), var(--pink), var(--teal), transparent);
+      opacity: 0.3;
+    }
+
+    .step {
+      padding: 0 24px 0 0;
+      position: relative;
+    }
+
+    .step-num {
+      width: 56px; height: 56px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      color: var(--lime);
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: rgba(240,238,255,0.45);
+    }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials {
+      position: relative;
+      z-index: 1;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 80px 48px;
+      overflow: hidden;
+    }
+
+    .testimonials-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .testimonial {
+      padding: 28px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .testimonial::before {
+      content: '"';
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 80px;
+      color: var(--lime);
+      opacity: 0.15;
+      position: absolute;
+      top: -8px; left: 16px;
+      line-height: 1;
+    }
+
+    .testimonial-text {
+      font-size: 15px;
+      line-height: 1.7;
+      color: rgba(240,238,255,0.65);
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+
+    .author-name { color: var(--lime); }
+    .author-role { color: var(--muted); margin-top: 2px; }
+
+    /* ── PRICING ── */
+    .pricing-section {
+      position: relative;
+      z-index: 1;
+      padding: 120px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2px;
+      margin-top: 64px;
+      text-align: left;
+    }
+
+    .plan {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 40px;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .plan.featured {
+      border-color: var(--lime);
+      background: rgba(198,255,77,0.04);
+    }
+
+    .plan.featured::after {
+      content: 'MOST POPULAR';
+      position: absolute;
+      top: -1px; right: 24px;
+      background: var(--lime);
+      color: #080810;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      font-weight: 700;
+      padding: 4px 12px;
+    }
+
+    .plan-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .plan-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 64px;
+      letter-spacing: 2px;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .plan-price span {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 18px;
+      color: var(--muted);
+    }
+
+    .plan-desc {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 12px 0 28px;
+    }
+
+    .plan-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .plan-features li {
+      font-size: 14px;
+      color: rgba(240,238,255,0.6);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .plan-features li::before {
+      content: '→';
+      color: var(--lime);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .plan-btn {
+      width: 100%;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      padding: 14px;
+      cursor: pointer;
+      border: 1px solid rgba(240,238,255,0.2);
+      background: transparent;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .plan-btn:hover { border-color: var(--lime); color: var(--lime); }
+
+    .plan.featured .plan-btn {
+      background: var(--lime);
+      color: #080810;
+      border-color: var(--lime);
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    }
+    .plan.featured .plan-btn:hover { box-shadow: 0 8px 24px rgba(198,255,77,0.3); }
+
+    /* ── CTA BANNER ── */
+    .cta-banner {
+      position: relative;
+      z-index: 1;
+      margin: 0 48px 120px;
+      background: var(--surface);
+      border: 1px solid rgba(198,255,77,0.2);
+      padding: 80px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(198,255,77,0.06), transparent 70%);
+    }
+
+    .cta-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(48px, 6vw, 90px);
+      letter-spacing: 4px;
+      position: relative;
+      z-index: 1;
+    }
+    .cta-title span { color: var(--lime); }
+
+    .cta-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin: 16px 0 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 40px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: gap;
+      gap: 16px;
+    }
+
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 2px;
+      color: var(--lime);
+    }
+
+    .footer-copy {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    .footer-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--lime); }
+
+    /* ── MARQUEE ── */
+    .marquee-wrap {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+      background: var(--surface2);
+    }
+
+    .marquee {
+      display: flex;
+      gap: 48px;
+      animation: marquee 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    .marquee-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 4px;
+      color: var(--muted);
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+    .marquee-item.accent { color: var(--lime); opacity: 0.7; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 16px 20px; }
+      .nav-links { display: none; }
+      .section, .pricing-section { padding: 80px 20px; }
+      .how-section { padding: 0 20px 80px; }
+      .cta-banner { margin: 0 20px 80px; padding: 48px 24px; }
+      footer { padding: 32px 20px; flex-direction: column; text-align: center; }
+      .steps::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background layers -->
+  <div class="grid-bg"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a class="logo-mark" href="#">
+      <svg class="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Grid squares -->
+        <rect x="2" y="2" width="10" height="10" rx="1" fill="#c6ff4d" opacity="0.9"/>
+        <rect x="15" y="2" width="10" height="10" rx="1" fill="#c6ff4d" opacity="0.5"/>
+        <rect x="28" y="2" width="6" height="10" rx="1" fill="#c6ff4d" opacity="0.3"/>
+        <!-- Cards below -->
+        <rect x="2" y="16" width="10" height="7" rx="1" fill="#c6ff4d" opacity="0.4"/>
+        <rect x="15" y="16" width="10" height="7" rx="1" fill="#ff3cac" opacity="0.6"/>
+        <rect x="28" y="16" width="6" height="7" rx="1" fill="#00f5d4" opacity="0.4"/>
+        <!-- Wave bottom -->
+        <rect x="2" y="27" width="10" height="7" rx="1" fill="#c6ff4d" opacity="0.2"/>
+        <rect x="15" y="27" width="10" height="7" rx="1" fill="#c6ff4d" opacity="0.2"/>
+        <rect x="28" y="27" width="6" height="7" rx="1" fill="#ff3cac" opacity="0.2"/>
+      </svg>
+      <span class="logo-text">VIBEMAPPER</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+    <button class="nav-cta">GET STARTED FREE</button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">✦ NOW IN BETA — FREE FOR VIBE CODERS</div>
+    <h1 class="hero-title">
+      <div>MAP YOUR</div>
+      <div class="line-accent">VIBE,</div>
+      <div class="line-pink">SHIP IT</div>
+    </h1>
+    <p class="hero-tagline">User Story Mapper for Vibe Coders</p>
+    <p class="hero-desc">
+      Stop context-switching between napkin sketches and your AI. VibeMapper lets you visualize your app's entire user journey in one shot — then hand it off to Cursor, Claude, or Copilot.
+    </p>
+    <div class="hero-actions">
+      <a href="#" class="btn-primary">START MAPPING FREE →</a>
+      <a href="#" class="btn-secondary">WATCH DEMO</a>
+    </div>
+
+    <!-- APP PREVIEW -->
+    <div class="map-preview">
+      <div class="map-preview-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="map-preview-url">vibemapper.io · my-saas-app</div>
+      </div>
+      <div class="map-canvas">
+        <div class="map-epics">
+          <div class="epic epic-1">Onboarding</div>
+          <div class="epic epic-2">Dashboard</div>
+          <div class="epic epic-3">Billing</div>
+          <div class="epic epic-4">Settings</div>
+        </div>
+        <div class="map-stories">
+          <div class="story-col">
+            <div class="story-card highlight">Sign up with email</div>
+            <div class="story-card">Verify email</div>
+            <div class="story-card">Set up profile</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card highlight">View analytics</div>
+            <div class="story-card">Create project</div>
+            <div class="story-card">Invite team</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card highlight">Add payment method</div>
+            <div class="story-card">Upgrade plan</div>
+            <div class="story-card">View invoices</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card">Edit profile</div>
+            <div class="story-card highlight">Manage integrations</div>
+            <div class="story-card">API keys</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee">
+      <span class="marquee-item">USER STORIES</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">VIBE CODING</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">EPIC MAPPING</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">SHIP FASTER</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">AI-FIRST WORKFLOW</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">NO MORE CONFUSION</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">USER STORIES</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">VIBE CODING</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">EPIC MAPPING</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">SHIP FASTER</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">AI-FIRST WORKFLOW</span>
+      <span class="marquee-item accent">✦</span>
+      <span class="marquee-item">NO MORE CONFUSION</span>
+      <span class="marquee-item accent">✦</span>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="section-label">// features</div>
+    <h2 class="section-title">BUILT FOR HOW<br><span style="color:var(--lime)">VIBERS BUILD</span></h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <rect x="4" y="4" width="14" height="14" rx="2" fill="#c6ff4d" opacity="0.8"/>
+          <rect x="22" y="4" width="14" height="14" rx="2" fill="#c6ff4d" opacity="0.3"/>
+          <rect x="4" y="22" width="14" height="14" rx="2" fill="#c6ff4d" opacity="0.3"/>
+          <rect x="22" y="22" width="14" height="14" rx="2" fill="#c6ff4d" opacity="0.15"/>
+        </svg>
+        <div class="feature-title">DRAG & DROP CANVAS</div>
+        <p class="feature-desc">Arrange epics, stories, and tasks on an infinite canvas. Feels like a whiteboard, works like a spec doc.</p>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="14" stroke="#ff3cac" stroke-width="1.5" stroke-dasharray="4 2"/>
+          <path d="M14 20l4 4 8-8" stroke="#ff3cac" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="feature-title">AI STORY GENERATOR</div>
+        <p class="feature-desc">Describe your app idea and watch VibeMapper auto-generate a complete user story map. Edit, not invent.</p>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <rect x="6" y="8" width="28" height="4" rx="2" fill="#00f5d4" opacity="0.8"/>
+          <rect x="6" y="18" width="20" height="4" rx="2" fill="#00f5d4" opacity="0.5"/>
+          <rect x="6" y="28" width="24" height="4" rx="2" fill="#00f5d4" opacity="0.3"/>
+        </svg>
+        <div class="feature-title">EXPORT TO PROMPT</div>
+        <p class="feature-desc">One click to convert your map into a structured prompt ready for Cursor, Claude Code, or any AI IDE.</p>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <path d="M8 32L16 12L24 22L32 8" stroke="#7b2fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="32" cy="8" r="3" fill="#7b2fff"/>
+          <circle cx="16" cy="12" r="3" fill="#7b2fff" opacity="0.5"/>
+        </svg>
+        <div class="feature-title">RELEASE SWIM LANES</div>
+        <p class="feature-desc">Slice your map horizontally into MVP, v1.0, v2.0. Know exactly what to build first and what to skip.</p>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <circle cx="12" cy="20" r="6" stroke="#c6ff4d" stroke-width="1.5"/>
+          <circle cx="28" cy="20" r="6" stroke="#ff3cac" stroke-width="1.5"/>
+          <path d="M18 20h4" stroke="#c6ff4d" stroke-width="1.5"/>
+        </svg>
+        <div class="feature-title">REAL-TIME COLLAB</div>
+        <p class="feature-desc">Share your map with your AI pair programmer... or actual humans. Live multiplayer editing built in.</p>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <rect x="4" y="14" width="32" height="20" rx="2" stroke="#00f5d4" stroke-width="1.5"/>
+          <path d="M14 14V10a6 6 0 0 1 12 0v4" stroke="#00f5d4" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="20" cy="24" r="3" fill="#00f5d4" opacity="0.6"/>
+        </svg>
+        <div class="feature-title">SHAREABLE SNAPSHOTS</div>
+        <p class="feature-desc">Freeze your map at any point. Share a read-only link for feedback, documentation, or handoff.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section" id="how">
+    <div class="how-inner">
+      <div class="section-label">// how it works</div>
+      <h2 class="section-title">FOUR STEPS TO<br><span style="color:var(--pink)">SHIPPING</span></h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-title">DESCRIBE YOUR APP</div>
+          <p class="step-desc">Type a one-liner about what you're building. VibeMapper's AI generates your first story map draft in seconds.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-title">REFINE ON CANVAS</div>
+          <p class="step-desc">Drag stories, add epics, reorganize flows. Make it look exactly like your mental model.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-title">DEFINE YOUR MVP</div>
+          <p class="step-desc">Draw a release line. Everything above the line ships first. Zero ambiguity about scope.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-title">EXPORT & BUILD</div>
+          <p class="step-desc">Export as a structured prompt, markdown spec, or Jira import. Hand it to your AI and start building.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <div class="testimonials">
+    <div class="testimonials-inner">
+      <div class="section-label">// from the community</div>
+      <h2 class="section-title" style="margin-bottom:0">VIBERS LOVE IT</h2>
+      <div class="testimonials-grid">
+        <div class="testimonial">
+          <p class="testimonial-text">I used to spend half my vibe session just explaining the app structure to Claude. Now I just drop in my VibeMapper export and we're building in minutes.</p>
+          <div class="testimonial-author">
+            <div class="author-name">@techbro_no_code</div>
+            <div class="author-role">Shipped 3 SaaS apps in 2 months</div>
+          </div>
+        </div>
+        <div class="testimonial">
+          <p class="testimonial-text">Finally something that bridges the gap between "I have an idea" and "okay Cursor, here's exactly what to build." Game changer for solo founders.</p>
+          <div class="testimonial-author">
+            <div class="author-name">@makervibes_</div>
+            <div class="author-role">Indie hacker &amp; AI builder</div>
+          </div>
+        </div>
+        <div class="testimonial">
+          <p class="testimonial-text">The swim lane feature is 🔥. I finally stopped building features nobody asked for by mapping out my MVP cut line before touching any code.</p>
+          <div class="testimonial-author">
+            <div class="author-name">@startupmode_on</div>
+            <div class="author-role">Founder @ something stealth</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <section class="pricing-section" id="pricing">
+    <div class="section-label">// pricing</div>
+    <h2 class="section-title">HONEST PRICING,<br><span style="color:var(--lime)">ZERO BS</span></h2>
+    <div class="pricing-grid">
+      <div class="plan">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">$0</div>
+        <div class="plan-desc">Forever free, no credit card</div>
+        <ul class="plan-features">
+          <li>3 story maps</li>
+          <li>AI story generation (10/mo)</li>
+          <li>Prompt export</li>
+          <li>Shareable read-only links</li>
+        </ul>
+        <button class="plan-btn">START FOR FREE</button>
+      </div>
+      <div class="plan featured">
+        <div class="plan-name">Vibe Pro</div>
+        <div class="plan-price">$12 <span>/ mo</span></div>
+        <div class="plan-desc">For serious builders</div>
+        <ul class="plan-features">
+          <li>Unlimited story maps</li>
+          <li>Unlimited AI generation</li>
+          <li>Release swim lanes</li>
+          <li>Real-time collaboration</li>
+          <li>Jira / Linear export</li>
+          <li>Version history</li>
+        </ul>
+        <button class="plan-btn">GET VIBE PRO</button>
+      </div>
+      <div class="plan">
+        <div class="plan-name">Team</div>
+        <div class="plan-price">$39 <span>/ mo</span></div>
+        <div class="plan-desc">Up to 5 builders</div>
+        <ul class="plan-features">
+          <li>Everything in Vibe Pro</li>
+          <li>5 seats included</li>
+          <li>Team workspace</li>
+          <li>Priority support</li>
+          <li>Custom templates</li>
+        </ul>
+        <button class="plan-btn">GET TEAM PLAN</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-banner">
+    <h2 class="cta-title">STOP PLANNING.<br><span>START SHIPPING.</span></h2>
+    <p class="cta-sub">Your next app starts with a map.</p>
+    <a href="#" class="btn-primary">MAP YOUR VIBE FOR FREE →</a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">VIBEMAPPER</div>
+    <div class="footer-copy">© 2025 VibeMapper · vibemapper.io</div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Twitter</a>
+      <a href="#">Discord</a>
+    </div>
+  </footer>
+
+</body>
+</html>
