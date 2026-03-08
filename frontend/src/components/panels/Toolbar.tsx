@@ -14,6 +14,7 @@ import {
   AlignLeft,
   ListChecks,
   Sparkles,
+  LayoutGrid,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -66,6 +67,8 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
   const lastAIEditNodeIds = useMapStore((s) => s.lastAIEditNodeIds);
   const projectRole = useMapStore((s) => s.projectRole);
   const projectId = useMapStore((s) => s.projectId);
+  const arrangeLocal = useMapStore((s) => s.arrangeLocal);
+  const hasNodes = useMapStore((s) => s.nodes.length > 0);
   const isViewer = projectRole === 'viewer';
 
   const handleToggleDescriptions = () => {
@@ -231,6 +234,19 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
           AC
         </button>
       </div>
+
+      {/* Auto-arrange (hidden for viewers) */}
+      {!isViewer && (
+        <button
+          onClick={() => arrangeLocal()}
+          disabled={!hasNodes}
+          className="px-3 py-2 text-sm font-medium bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-colors duration-150 flex items-center gap-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 disabled:opacity-40 disabled:cursor-not-allowed"
+          title="Auto-arrange nodes"
+        >
+          <LayoutGrid size={15} />
+          Arrange
+        </button>
+      )}
 
       {/* History (hidden for viewers) */}
       {!isViewer && (

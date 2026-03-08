@@ -2,14 +2,13 @@ import { useState } from 'react';
 import { useAI } from '../../hooks/useAI';
 import { useMapStore } from '../../store/useMapStore';
 import { useAuth } from '../../hooks/useAuth';
-import { Sparkles, Send, Loader2, LayoutGrid, KeyRound } from 'lucide-react';
+import { Sparkles, Send, Loader2, KeyRound } from 'lucide-react';
 import { AutoExpandTextarea } from '../ui/AutoExpandTextarea';
 
 export function AIPromptBox() {
   const [prompt, setPrompt] = useState('');
   const { models, selectedModel, setSelectedModel, loading, error, generate } = useAI();
   const hasNodes = useMapStore((s) => s.nodes.length > 0);
-  const arrangeLocal = useMapStore((s) => s.arrangeLocal);
   const { hasApiKey } = useAuth();
 
   const handleGenerate = () => {
@@ -89,14 +88,6 @@ export function AIPromptBox() {
                 Generate
               </>
             )}
-          </button>
-          <button
-            onClick={() => { console.log('[AIPromptBox] Auto-arrange clicked'); arrangeLocal(); }}
-            disabled={loading || !hasNodes}
-            className="bg-white/50 dark:bg-gray-800/50 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100/80 dark:hover:bg-gray-700/80 disabled:opacity-50 border border-gray-200/50 dark:border-gray-700/50 whitespace-nowrap transition-colors duration-150 flex items-center gap-1.5 self-end"
-          >
-            <LayoutGrid size={15} />
-            Auto-arrange
           </button>
         </div>
       </div>

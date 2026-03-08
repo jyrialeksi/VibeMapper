@@ -153,7 +153,7 @@ function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
           </div>
           {hasApiKey ? (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">sk-or-...****</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">••••••••</span>
               <button
                 onClick={async () => {
                   try {
@@ -184,7 +184,7 @@ function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
                     handleSaveApiKey();
                   }
                 }}
-                placeholder="sk-or-v1-..."
+                placeholder="Enter your API key..."
                 className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 bg-white dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
               />
               <button
