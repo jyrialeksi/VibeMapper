@@ -48,4 +48,4 @@ echo "==> Deploying to Fly.io..."
 fly deploy
 
 echo ""
-echo "==> Deployed! App is live at https://user-story-mapper.fly.dev"
+echo "==> Deployed! App is live at https://app.vibemapper.io"

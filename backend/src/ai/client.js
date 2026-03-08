@@ -19,8 +19,8 @@ async function callOpenRouter(apiKey, model, messages, { jsonMode, temperature }
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'http://localhost:5173',
-      'X-Title': 'User Story Mapper AI',
+      'HTTP-Referer': 'https://app.vibemapper.io',
+      'X-Title': 'VibeMapper',
     },
     body: JSON.stringify(body),
   });

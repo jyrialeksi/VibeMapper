@@ -6,8 +6,13 @@ import type { CanvasState } from '../utils/schemas.js';
 export function registerNodeTools(server: McpServer, api: ApiClient) {
   (server as any).tool(
     'add_nodes',
-    'Add new nodes and/or edges to an existing story map.',
-    { project_id: z.string(), nodes_json: z.string().describe('JSON array of nodes to add, or "[]"'), edges_json: z.string().describe('JSON array of edges to add, or "[]"') },
+    `Add new nodes and/or edges to an existing story map.
+
+Content guidelines:
+- Activity title: short capability name (2-5 words), description: one sentence of scope
+- Step title: concise action/phase (2-4 words), description: one sentence of who does what
+- Story title: "As a [role], I want to [action] so that [benefit]", description: 1-2 sentences of context, acceptanceCriteria: 1-4 Given/When/Then items (short and testable)`,
+    { project_id: z.string(), nodes_json: z.string().describe('JSON array of nodes to add (see format resource for full spec), or "[]"'), edges_json: z.string().describe('JSON array of edges to add, or "[]"') },
     async (args: Record<string, unknown>) => {
       const canvas = (await api.get(`/api/canvas/${args.project_id}`)) as CanvasState;
       const newNodes = JSON.parse(args.nodes_json as string);
@@ -26,7 +31,12 @@ export function registerNodeTools(server: McpServer, api: ApiClient) {
 
   (server as any).tool(
     'update_nodes',
-    'Update data on existing nodes (shallow merge).',
+    `Update data on existing nodes (shallow merge).
+
+When updating content, follow these guidelines:
+- Story titles should use "As a [role], I want to [action] so that [benefit]" format
+- Acceptance criteria: 1-4 Given/When/Then items, short and testable
+- Descriptions: 1-2 sentences of context`,
     { project_id: z.string(), updates_json: z.string().describe('JSON array of [{id: "node-id", data: {field: "value"}}]') },
     async (args: Record<string, unknown>) => {
       const canvas = (await api.get(`/api/canvas/${args.project_id}`)) as CanvasState;
