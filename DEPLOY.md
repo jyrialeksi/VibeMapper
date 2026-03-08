@@ -92,3 +92,44 @@ fly ssh console         # SSH into the machine
 fly volumes list        # Check persistent volume
 fly secrets list        # List set secrets (values hidden)
 ```
+
+## Marketing Website (Cloudflare Pages)
+
+The marketing site at `vibmapper.io` is a static HTML page served via Cloudflare Pages. The app runs on `app.vibmapper.io` (Fly.io).
+
+### Domain Routing
+
+```
+vibmapper.io       → Cloudflare Pages (website/ directory)
+www.vibmapper.io   → Redirect → vibmapper.io (Cloudflare Page Rule)
+app.vibmapper.io   → CNAME → user-story-mapper.fly.dev (Fly.io app)
+```
+
+### Setup Steps
+
+1. **Register domain** — Register `vibmapper.io` and point nameservers to Cloudflare
+
+2. **Create Cloudflare Pages project**
+   - Connect GitHub repo
+   - Set root directory to `website/`
+   - No build command needed (static HTML)
+   - No build output directory (serves from root)
+
+3. **Add custom domain** — In Cloudflare Pages settings, add `vibmapper.io` as custom domain
+
+4. **Set up www redirect** — Create a Cloudflare Page Rule:
+   - URL: `www.vibmapper.io/*`
+   - Setting: Forwarding URL (301) → `https://vibmapper.io/$1`
+
+5. **Point app subdomain to Fly.io** — Add DNS record:
+   - Type: `CNAME`
+   - Name: `app`
+   - Target: `user-story-mapper.fly.dev`
+   - Proxy: OFF (DNS only / grey cloud) — Fly.io handles TLS
+
+6. **Add TLS cert on Fly.io**
+   ```bash
+   fly certs add app.vibmapper.io
+   ```
+
+7. **Update Firebase authorized domains** — Add `app.vibmapper.io` to Firebase Console → Authentication → Settings → Authorized domains

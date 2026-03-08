@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VibMapper — AI-Powered User Story Mapping for Vibe Coders</title>
+  <meta name="description" content="Describe your app, get a full user story map. AI-powered story mapping with visual canvas, priority swim lanes, and MCP integration for Claude Code & Cursor." />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="VibMapper — Map Your Vibe, Ship It" />
+  <meta property="og:description" content="AI-powered user story mapping. Describe your app, get a visual map, export to Markdown or connect via MCP to your AI IDE." />
+  <meta property="og:url" content="https://vibmapper.io" />
+  <meta property="og:site_name" content="VibMapper" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="VibMapper — Map Your Vibe, Ship It" />
+  <meta name="twitter:description" content="AI-powered user story mapping. Describe your app, get a visual map, ship faster." />
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080810;
+      --surface: #0f0f1e;
+      --surface2: #16162a;
+      --lime: #c6ff4d;
+      --pink: #ff3cac;
+      --teal: #00f5d4;
+      --purple: #7b2fff;
+      --text: #f0eeff;
+      --muted: #7a7a9a;
+      --border: rgba(198,255,77,0.12);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.5;
+    }
+
+    /* ── GRID BACKGROUND ── */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(198,255,77,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(198,255,77,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── GLOW ORBS ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 { width: 600px; height: 600px; background: rgba(123,47,255,0.15); top: -200px; right: -200px; }
+    .orb-2 { width: 400px; height: 400px; background: rgba(255,60,172,0.1); bottom: 100px; left: -100px; }
+    .orb-3 { width: 300px; height: 300px; background: rgba(0,245,212,0.08); top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: rgba(8,8,16,0.7);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 2px;
+      color: var(--lime);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--lime); }
+
+    .nav-cta {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 1px;
+      background: var(--lime);
+      color: #080810;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: 700;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      transition: opacity 0.2s, transform 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .nav-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      z-index: 1;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--teal);
+      border: 1px solid rgba(0,245,212,0.25);
+      padding: 6px 16px;
+      border-radius: 2px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--teal);
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(72px, 12vw, 160px);
+      line-height: 0.9;
+      letter-spacing: 4px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero-title .line-accent { color: var(--lime); }
+    .hero-title .line-pink { color: var(--pink); }
+
+    .hero-tagline {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(13px, 1.5vw, 17px);
+      color: var(--muted);
+      letter-spacing: 3px;
+      margin-top: 24px;
+      text-transform: uppercase;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-desc {
+      max-width: 560px;
+      font-size: 18px;
+      line-height: 1.7;
+      color: rgba(240,238,255,0.6);
+      margin-top: 28px;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 48px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .btn-primary {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      background: var(--lime);
+      color: #080810;
+      border: none;
+      padding: 16px 36px;
+      cursor: pointer;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(198,255,77,0.3); }
+
+    .btn-secondary {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(240,238,255,0.2);
+      padding: 16px 36px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-secondary:hover { border-color: var(--lime); color: var(--lime); }
+
+    /* ── STORY MAP PREVIEW ── */
+    .map-preview {
+      margin-top: 80px;
+      width: 100%;
+      max-width: 900px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      animation: fadeUp 0.6s 0.5s ease both;
+      position: relative;
+    }
+
+    .map-preview-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #28ca42; }
+
+    .map-preview-url {
+      flex: 1;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .map-canvas {
+      padding: 24px;
+      overflow-x: auto;
+    }
+
+    .map-row-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      margin-top: 12px;
+      opacity: 0.6;
+    }
+    .map-row-label:first-child { margin-top: 0; }
+
+    .map-epics {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .epic {
+      flex: 1;
+      min-width: 120px;
+      padding: 10px 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-align: center;
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+
+    .epic-1 { background: rgba(198,255,77,0.12); color: var(--lime); border: 1px solid rgba(198,255,77,0.3); }
+    .epic-2 { background: rgba(255,60,172,0.1); color: var(--pink); border: 1px solid rgba(255,60,172,0.3); }
+    .epic-3 { background: rgba(0,245,212,0.1); color: var(--teal); border: 1px solid rgba(0,245,212,0.3); }
+    .epic-4 { background: rgba(123,47,255,0.12); color: #b084ff; border: 1px solid rgba(123,47,255,0.3); }
+
+    .map-steps {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .step-card {
+      flex: 1;
+      min-width: 120px;
+      padding: 7px 10px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      text-align: center;
+      border-radius: 2px;
+      background: var(--surface2);
+      border: 1px solid rgba(240,238,255,0.08);
+      color: rgba(240,238,255,0.7);
+    }
+
+    .map-stories {
+      display: flex;
+      gap: 12px;
+    }
+
+    .story-col {
+      flex: 1;
+      min-width: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .story-card {
+      padding: 8px 12px;
+      background: var(--surface2);
+      border: 1px solid rgba(240,238,255,0.06);
+      border-radius: 2px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      color: rgba(240,238,255,0.6);
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    .story-card.highlight {
+      border-color: rgba(198,255,77,0.2);
+      color: var(--text);
+    }
+
+    .story-card.must { border-left: 3px solid var(--lime); }
+    .story-card.should { border-left: 3px solid var(--teal); }
+    .story-card.could { border-left: 3px solid var(--purple); }
+
+    .swim-lane-divider {
+      border: none;
+      border-top: 1px dashed rgba(198,255,77,0.2);
+      margin: 8px 0 4px;
+    }
+
+    /* ── FEATURES ── */
+    .section {
+      position: relative;
+      z-index: 1;
+      padding: 120px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--lime);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(42px, 5vw, 72px);
+      letter-spacing: 3px;
+      line-height: 1;
+      margin-bottom: 64px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      padding: 36px;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--lime);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+      transform-origin: left;
+    }
+    .feature-card:hover::before { transform: scaleX(1); }
+    .feature-card:hover { background: var(--surface2); transform: translateY(-4px); }
+
+    .feature-icon {
+      width: 40px; height: 40px;
+      margin-bottom: 20px;
+    }
+
+    .feature-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--lime);
+      margin-bottom: 12px;
+    }
+
+    .feature-desc {
+      font-size: 15px;
+      line-height: 1.7;
+      color: rgba(240,238,255,0.5);
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-section {
+      position: relative;
+      z-index: 1;
+      padding: 0 48px 120px;
+    }
+
+    .how-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--lime), var(--pink), var(--teal), transparent);
+      opacity: 0.3;
+    }
+
+    .step {
+      padding: 0 24px 0 0;
+      position: relative;
+    }
+
+    .step-num {
+      width: 56px; height: 56px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      color: var(--lime);
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: rgba(240,238,255,0.45);
+    }
+
+    /* ── MCP SPOTLIGHT ── */
+    .mcp-section {
+      position: relative;
+      z-index: 1;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 100px 48px;
+      overflow: hidden;
+    }
+
+    .mcp-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .mcp-content {}
+
+    .mcp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--teal);
+      border: 1px solid rgba(0,245,212,0.25);
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+
+    .mcp-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 4vw, 56px);
+      letter-spacing: 3px;
+      line-height: 1;
+      margin-bottom: 24px;
+    }
+
+    .mcp-desc {
+      font-size: 16px;
+      line-height: 1.8;
+      color: rgba(240,238,255,0.55);
+      margin-bottom: 32px;
+    }
+
+    .mcp-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mcp-features li {
+      font-size: 14px;
+      color: rgba(240,238,255,0.6);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mcp-features li::before {
+      content: '>';
+      color: var(--teal);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .mcp-code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .mcp-code-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mcp-code-bar span {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .mcp-code pre {
+      padding: 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      color: rgba(240,238,255,0.7);
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .mcp-code .cmd { color: var(--lime); }
+    .mcp-code .flag { color: var(--pink); }
+    .mcp-code .str { color: var(--teal); }
+    .mcp-code .comment { color: var(--muted); }
+
+    /* ── PRICING ── */
+    .pricing-section {
+      position: relative;
+      z-index: 1;
+      padding: 120px 48px;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .plan {
+      background: var(--surface);
+      border: 1px solid var(--lime);
+      padding: 48px;
+      position: relative;
+      text-align: left;
+      margin-top: 64px;
+      background: rgba(198,255,77,0.03);
+    }
+
+    .plan::after {
+      content: 'FREE BETA';
+      position: absolute;
+      top: -1px; right: 24px;
+      background: var(--lime);
+      color: #080810;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      font-weight: 700;
+      padding: 4px 12px;
+    }
+
+    .plan-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .plan-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 64px;
+      letter-spacing: 2px;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .plan-desc {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 12px 0 28px;
+    }
+
+    .plan-features {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .plan-features li {
+      font-size: 14px;
+      color: rgba(240,238,255,0.6);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .plan-features li::before {
+      content: '\2192';
+      color: var(--lime);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .plan-btn {
+      width: 100%;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      padding: 16px;
+      cursor: pointer;
+      background: var(--lime);
+      color: #080810;
+      border: 1px solid var(--lime);
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      transition: all 0.2s;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+    .plan-btn:hover { box-shadow: 0 8px 24px rgba(198,255,77,0.3); }
+
+    .plan-note {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 20px;
+      letter-spacing: 1px;
+    }
+
+    /* ── CTA BANNER ── */
+    .cta-banner {
+      position: relative;
+      z-index: 1;
+      margin: 0 48px 120px;
+      background: var(--surface);
+      border: 1px solid rgba(198,255,77,0.2);
+      padding: 80px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(198,255,77,0.06), transparent 70%);
+    }
+
+    .cta-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(48px, 6vw, 90px);
+      letter-spacing: 4px;
+      position: relative;
+      z-index: 1;
+    }
+    .cta-title span { color: var(--lime); }
+
+    .cta-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin: 16px 0 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 40px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 2px;
+      color: var(--lime);
+    }
+
+    .footer-copy {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    .footer-links a {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--lime); }
+
+    /* ── MARQUEE ── */
+    .marquee-wrap {
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 0;
+      background: var(--surface2);
+    }
+
+    .marquee {
+      display: flex;
+      gap: 48px;
+      animation: marquee 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    .marquee-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 4px;
+      color: var(--muted);
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+    .marquee-item.accent { color: var(--lime); opacity: 0.7; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 16px 20px; }
+      .nav-links { display: none; }
+      .section, .pricing-section { padding: 80px 20px; }
+      .how-section { padding: 0 20px 80px; }
+      .cta-banner { margin: 0 20px 80px; padding: 48px 24px; }
+      footer { padding: 32px 20px; flex-direction: column; text-align: center; }
+      .steps::before { display: none; }
+      .mcp-section { padding: 60px 20px; }
+      .mcp-inner { grid-template-columns: 1fr; gap: 40px; }
+      .plan-features { grid-template-columns: 1fr; }
+      .plan { padding: 32px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background layers -->
+  <div class="grid-bg"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a class="logo-mark" href="#">
+      <svg class="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="10" height="10" rx="1" fill="#c6ff4d" opacity="0.9"/>
+        <rect x="15" y="2" width="10" height="10" rx="1" fill="#c6ff4d" opacity="0.5"/>
+        <rect x="28" y="2" width="6" height="10" rx="1" fill="#c6ff4d" opacity="0.3"/>
+        <rect x="2" y="16" width="10" height="7" rx="1" fill="#c6ff4d" opacity="0.4"/>
+        <rect x="15" y="16" width="10" height="7" rx="1" fill="#ff3cac" opacity="0.6"/>
+        <rect x="28" y="16" width="6" height="7" rx="1" fill="#00f5d4" opacity="0.4"/>
+        <rect x="2" y="27" width="10" height="7" rx="1" fill="#c6ff4d" opacity="0.2"/>
+        <rect x="15" y="27" width="10" height="7" rx="1" fill="#c6ff4d" opacity="0.2"/>
+        <rect x="28" y="27" width="6" height="7" rx="1" fill="#ff3cac" opacity="0.2"/>
+      </svg>
+      <span class="logo-text">VIBMAPPER</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#mcp">MCP Integration</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+    <a class="nav-cta" href="https://app.vibmapper.io">START FREE</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">NOW IN BETA &mdash; FREE FOR ALL BUILDERS</div>
+    <h1 class="hero-title">
+      <div>MAP YOUR</div>
+      <div class="line-accent">VIBE,</div>
+      <div class="line-pink">SHIP IT</div>
+    </h1>
+    <p class="hero-tagline">AI-Powered User Story Mapping</p>
+    <p class="hero-desc">
+      Describe your app idea and let AI generate a complete user story map. Refine it on a visual canvas, slice your MVP with priority swim lanes, then hand it off to your AI coding assistant.
+    </p>
+    <div class="hero-actions">
+      <a href="https://app.vibmapper.io" class="btn-primary">START MAPPING FREE &rarr;</a>
+      <a href="#how" class="btn-secondary">SEE HOW IT WORKS</a>
+    </div>
+
+    <!-- APP PREVIEW -->
+    <div class="map-preview">
+      <div class="map-preview-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="map-preview-url">app.vibmapper.io &middot; my-saas-app</div>
+      </div>
+      <div class="map-canvas">
+        <div class="map-row-label">Activities</div>
+        <div class="map-epics">
+          <div class="epic epic-1">Onboarding</div>
+          <div class="epic epic-2">Dashboard</div>
+          <div class="epic epic-3">Billing</div>
+          <div class="epic epic-4">Settings</div>
+        </div>
+        <div class="map-row-label">Steps</div>
+        <div class="map-steps">
+          <div class="step-card">Registration</div>
+          <div class="step-card">Analytics</div>
+          <div class="step-card">Payments</div>
+          <div class="step-card">Preferences</div>
+        </div>
+        <div class="map-row-label">Must Have</div>
+        <div class="map-stories">
+          <div class="story-col">
+            <div class="story-card must highlight">Sign up with email</div>
+            <div class="story-card must">Verify email</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card must highlight">View analytics</div>
+            <div class="story-card must">Create project</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card must highlight">Add payment method</div>
+            <div class="story-card must">View invoices</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card must">Edit profile</div>
+            <div class="story-card must highlight">Notifications</div>
+          </div>
+        </div>
+        <hr class="swim-lane-divider" />
+        <div class="map-row-label">Should Have</div>
+        <div class="map-stories">
+          <div class="story-col">
+            <div class="story-card should">Set up profile</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card should">Invite team</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card should">Upgrade plan</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card should">API keys</div>
+          </div>
+        </div>
+        <hr class="swim-lane-divider" />
+        <div class="map-row-label">Could Have</div>
+        <div class="map-stories">
+          <div class="story-col">
+            <div class="story-card could">Social login</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card could">Custom dashboard</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card could">Usage reports</div>
+          </div>
+          <div class="story-col">
+            <div class="story-card could">Integrations</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee">
+      <span class="marquee-item">USER STORIES</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">VIBE CODING</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">STORY MAPPING</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">SHIP FASTER</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">AI-FIRST WORKFLOW</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">MCP INTEGRATION</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">USER STORIES</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">VIBE CODING</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">STORY MAPPING</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">SHIP FASTER</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">AI-FIRST WORKFLOW</span>
+      <span class="marquee-item accent">&#10022;</span>
+      <span class="marquee-item">MCP INTEGRATION</span>
+      <span class="marquee-item accent">&#10022;</span>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="section-label">// features</div>
+    <h2 class="section-title">BUILT FOR HOW<br><span style="color:var(--lime)">VIBERS BUILD</span></h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="14" stroke="#ff3cac" stroke-width="1.5" stroke-dasharray="4 2"/>
+          <path d="M14 20l4 4 8-8" stroke="#ff3cac" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="feature-title">AI STORY GENERATION</div>
+        <p class="feature-desc">Describe your app idea and VibMapper generates a complete user story map with activities, steps, and prioritized story cards.</p>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <rect x="4" y="4" width="14" height="14" rx="2" fill="#c6ff4d" opacity="0.8"/>
+          <rect x="22" y="4" width="14" height="14" rx="2" fill="#c6ff4d" opacity="0.3"/>
+          <rect x="4" y="22" width="14" height="14" rx="2" fill="#c6ff4d" opacity="0.3"/>
+          <rect x="22" y="22" width="14" height="14" rx="2" fill="#c6ff4d" opacity="0.15"/>
+        </svg>
+        <div class="feature-title">VISUAL CANVAS</div>
+        <p class="feature-desc">Drag-and-drop canvas powered by React Flow. Add, edit, and rearrange activities, steps, and stories with an infinite zoomable workspace.</p>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <rect x="6" y="6" width="28" height="28" rx="3" stroke="#00f5d4" stroke-width="1.5"/>
+          <path d="M14 20l4 4 8-8" stroke="#00f5d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="32" cy="8" r="5" fill="#c6ff4d" opacity="0.8"/>
+          <path d="M30 8h4M32 6v4" stroke="#080810" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <div class="feature-title">AI MAP EDITING</div>
+        <p class="feature-desc">Ask AI to make surgical edits to your map. Added and modified nodes are highlighted with diff view so you see exactly what changed.</p>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <path d="M8 32L16 12L24 22L32 8" stroke="#7b2fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="32" cy="8" r="3" fill="#7b2fff"/>
+          <circle cx="16" cy="12" r="3" fill="#7b2fff" opacity="0.5"/>
+        </svg>
+        <div class="feature-title">PRIORITY SWIM LANES</div>
+        <p class="feature-desc">Organize stories into Must-have, Should-have, Could-have, and Won't-have lanes. Slice your MVP scope with zero ambiguity.</p>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <rect x="4" y="12" width="14" height="16" rx="2" stroke="#00f5d4" stroke-width="1.5"/>
+          <path d="M7 18h8M7 22h5" stroke="#00f5d4" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+          <path d="M18 20h4" stroke="#c6ff4d" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 2"/>
+          <rect x="22" y="10" width="14" height="20" rx="2" stroke="#c6ff4d" stroke-width="1.5"/>
+          <path d="M25 16h8M25 20h6M25 24h7" stroke="#c6ff4d" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+        </svg>
+        <div class="feature-title">MCP SERVER</div>
+        <p class="feature-desc">Connect your story map to Claude Code or Cursor via the Model Context Protocol. Your AI coding assistant reads and updates the map directly.</p>
+      </div>
+      <div class="feature-card">
+        <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
+          <circle cx="14" cy="16" r="6" stroke="#ff3cac" stroke-width="1.5"/>
+          <circle cx="26" cy="16" r="6" stroke="#ff3cac" stroke-width="1.5" opacity="0.5"/>
+          <path d="M8 30c0-4 4-6 6-6s4 1 6 3c2-2 4-3 6-3s6 2 6 6" stroke="#ff3cac" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+        </svg>
+        <div class="feature-title">SHARE & COLLABORATE</div>
+        <p class="feature-desc">Invite teammates by email with viewer or editor roles. Share read-only links. Version history lets you snapshot and restore any state.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section" id="how">
+    <div class="how-inner">
+      <div class="section-label">// how it works</div>
+      <h2 class="section-title">FOUR STEPS TO<br><span style="color:var(--pink)">SHIPPING</span></h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-title">DESCRIBE YOUR APP</div>
+          <p class="step-desc">Type what you're building. VibMapper's AI generates your first story map draft with activities, steps, and story cards.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-title">REFINE ON CANVAS</div>
+          <p class="step-desc">Drag stories, add cards, reorganize flows. Edit descriptions and acceptance criteria. Ask AI for surgical edits.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-title">PRIORITIZE YOUR MVP</div>
+          <p class="step-desc">Place stories in swim lanes: Must-have, Should-have, Could-have, Won't-have. Your MVP scope becomes crystal clear.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-title">EXPORT & BUILD</div>
+          <p class="step-desc">Export as Markdown or JSON. Or connect via MCP so your AI IDE reads the map directly. Start building with full context.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MCP INTEGRATION SPOTLIGHT -->
+  <section class="mcp-section" id="mcp">
+    <div class="mcp-inner">
+      <div class="mcp-content">
+        <div class="mcp-badge">Key Differentiator</div>
+        <h2 class="mcp-title">YOUR STORY MAP<br>BECOMES A<br><span style="color:var(--teal)">CODING TOOL</span></h2>
+        <p class="mcp-desc">
+          VibMapper ships with a built-in MCP server. Connect it to Claude Code or Cursor and your AI coding assistant can read, query, and update your story map while it builds your app.
+        </p>
+        <ul class="mcp-features">
+          <li>Read story maps as structured context for code generation</li>
+          <li>Update card status (in-progress, done) as you build</li>
+          <li>Add new stories discovered during development</li>
+          <li>Create entire maps programmatically from AI IDEs</li>
+        </ul>
+      </div>
+      <div class="mcp-code">
+        <div class="mcp-code-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <span>terminal</span>
+        </div>
+        <pre><span class="comment"># Add VibMapper to Claude Code</span>
+<span class="cmd">claude</span> <span class="flag">mcp add</span> <span class="str">vibmapper</span> \
+  <span class="flag">-e</span> USM_BACKEND_URL=<span class="str">https://app.vibmapper.io</span> \
+  <span class="flag">-e</span> USM_API_TOKEN=<span class="str">mcp_your_token</span> \
+  <span class="flag">--</span> node vibmapper-mcp/build/index.js
+
+<span class="comment"># Now your AI assistant can:</span>
+<span class="comment"># - list_projects</span>
+<span class="comment"># - get_story_map</span>
+<span class="comment"># - update_card_status</span>
+<span class="comment"># - add_nodes / update_nodes</span>
+<span class="comment"># - create_story_map</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing-section" id="pricing">
+    <div class="section-label">// pricing</div>
+    <h2 class="section-title">SIMPLE PRICING,<br><span style="color:var(--lime)">ZERO BS</span></h2>
+    <div class="plan">
+      <div class="plan-name">Beta Access</div>
+      <div class="plan-price">$0</div>
+      <div class="plan-desc">Everything included. Bring your own AI API key (OpenRouter).</div>
+      <ul class="plan-features">
+        <li>Unlimited story maps</li>
+        <li>AI story generation</li>
+        <li>AI map editing with diff view</li>
+        <li>Visual drag-and-drop canvas</li>
+        <li>Priority swim lanes</li>
+        <li>MCP server integration</li>
+        <li>Markdown & JSON export</li>
+        <li>Share with email invites</li>
+        <li>Shareable read-only links</li>
+        <li>Version history & snapshots</li>
+        <li>Dark mode</li>
+        <li>Mobile support</li>
+      </ul>
+      <a href="https://app.vibmapper.io" class="plan-btn">START MAPPING FREE</a>
+      <p class="plan-note">Pro plan for teams coming soon.</p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-banner">
+    <h2 class="cta-title">STOP PLANNING.<br><span>START SHIPPING.</span></h2>
+    <p class="cta-sub">Your next app starts with a map.</p>
+    <a href="https://app.vibmapper.io" class="btn-primary">MAP YOUR VIBE FOR FREE &rarr;</a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">VIBMAPPER</div>
+    <div class="footer-copy">&copy; 2025 VibMapper</div>
+    <div class="footer-links">
+      <a href="https://app.vibmapper.io">Open App</a>
+      <a href="https://github.com/jyrivuorinen/user-story-mapper-ai">GitHub</a>
+    </div>
+  </footer>
+
+</body>
+</html>
