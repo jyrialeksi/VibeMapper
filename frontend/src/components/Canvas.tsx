@@ -13,12 +13,16 @@ import { useMapStore } from '../store/useMapStore';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { api } from '../api/client';
 import { nodeTypes } from './nodes';
 import { edgeTypes } from './edges';
 import { Toolbar } from './panels/Toolbar';
+import { MobileToolbar } from './panels/MobileToolbar';
 import { CardEditor } from './panels/CardEditor';
+import { MobileCardEditor } from './panels/MobileCardEditor';
 import { AIPromptBox } from './panels/AIPromptBox';
+import { MobileAIButton } from './panels/MobileAIButton';
 import { VersionHistoryPanel } from './panels/VersionHistoryPanel';
 import { LayoutCorrector } from './LayoutCorrector';
 import { HighlightClearer } from './HighlightClearer';
@@ -52,6 +56,7 @@ interface CanvasProps {
 export function Canvas({ projectId }: CanvasProps) {
   const rfRef = useRef<ReactFlowInstance<Node<StoryCardData>> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
 
   const nodes = useMapStore((s) => s.nodes);
   const edges = useMapStore((s) => s.edges);
@@ -75,15 +80,27 @@ export function Canvas({ projectId }: CanvasProps) {
   const lastAIEditNodeIds = useMapStore((s) => s.lastAIEditNodeIds);
   const projectRole = useMapStore((s) => s.projectRole);
   const setProjectRole = useMapStore((s) => s.setProjectRole);
+  const mobileEditingNodeId = useMapStore((s) => s.mobileEditingNodeId);
+  const setMobileEditingNodeId = useMapStore((s) => s.setMobileEditingNodeId);
   const isReadOnly = projectRole === 'viewer' || isAIEditing;
 
   const visibleNodes = useMemo(() => {
-    if (hiddenPriorities.size === 0) return nodes;
-    return nodes.filter((n) => {
-      if (n.data.cardType !== 'story') return true;
-      return !hiddenPriorities.has(n.data.priority);
-    });
-  }, [nodes, hiddenPriorities]);
+    let filtered = nodes;
+    if (hiddenPriorities.size > 0) {
+      filtered = filtered.filter((n) => {
+        if (n.data.cardType !== 'story') return true;
+        return !hiddenPriorities.has(n.data.priority);
+      });
+    }
+    // On mobile, set per-node draggable based on mobileEditingNodeId
+    if (isMobile) {
+      return filtered.map((n) => ({
+        ...n,
+        draggable: mobileEditingNodeId === n.id,
+      }));
+    }
+    return filtered;
+  }, [nodes, hiddenPriorities, isMobile, mobileEditingNodeId]);
 
   const visibleNodeIds = useMemo(() => {
     if (hiddenPriorities.size === 0) return null;
@@ -192,17 +209,25 @@ export function Canvas({ projectId }: CanvasProps) {
         addNode(newNode);
       } else {
         setSelectedNodeId(null);
+        if (isMobile) {
+          setMobileEditingNodeId(null);
+        }
       }
     },
-    [toolMode, cardTypeToAdd, addNode, setSelectedNodeId]
+    [toolMode, cardTypeToAdd, addNode, setSelectedNodeId, isMobile, setMobileEditingNodeId]
   );
 
   const handleNodeDoubleClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      setSelectedNodeId(node.id);
-      setToolMode('select');
+      if (isMobile) {
+        setMobileEditingNodeId(node.id);
+        setToolMode('select');
+      } else {
+        setSelectedNodeId(node.id);
+        setToolMode('select');
+      }
     },
-    [setSelectedNodeId, setToolMode]
+    [setSelectedNodeId, setToolMode, isMobile, setMobileEditingNodeId]
   );
 
   const handleNodeClick = useCallback(
@@ -271,9 +296,15 @@ export function Canvas({ projectId }: CanvasProps) {
     [projectId, loadCanvas]
   );
 
+  const toolbarProps = { onImport: handleImport, onExport: handleExport, onExportMarkdown: handleExportMarkdown };
+
   return (
     <div className="w-full h-full relative">
-      <Toolbar onImport={handleImport} onExport={handleExport} onExportMarkdown={handleExportMarkdown} />
+      {isMobile ? (
+        <MobileToolbar {...toolbarProps} />
+      ) : (
+        <Toolbar {...toolbarProps} />
+      )}
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
@@ -285,23 +316,26 @@ export function Canvas({ projectId }: CanvasProps) {
         onNodeDoubleClick={isReadOnly ? undefined : handleNodeDoubleClick}
         onNodeClick={isReadOnly ? undefined : handleNodeClick}
         onNodeDragStart={isReadOnly ? undefined : handleNodeDragStart}
-        nodesDraggable={!isReadOnly}
+        nodesDraggable={isMobile ? false : !isReadOnly}
         nodesConnectable={!isReadOnly}
         elementsSelectable={!isReadOnly}
+        panOnDrag={isMobile ? [0] : undefined}
         deleteKeyCode={isReadOnly ? null : 'Delete'}
         selectionKeyCode={isReadOnly ? null : 'Shift'}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
         connectionMode={toolMode === 'line' ? undefined : undefined}
-        className="bg-gray-50 dark:bg-gray-950"
+        className={`bg-gray-50 dark:bg-gray-950 ${isMobile ? 'touch-manipulation' : ''}`}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme === 'dark' ? '#4b5563' : '#d1d5db'} />
-        <Controls />
-        <MiniMap
-          nodeStrokeWidth={3}
-          className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700"
-        />
+        {!isMobile && <Controls />}
+        {!isMobile && (
+          <MiniMap
+            nodeStrokeWidth={3}
+            className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700"
+          />
+        )}
         <LayoutCorrector />
         <HighlightClearer />
       </ReactFlow>
@@ -322,9 +356,15 @@ export function Canvas({ projectId }: CanvasProps) {
           </div>
         </div>
       )}
-      {selectedNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <CardEditor />}
+      {/* Card Editor: mobile bottom sheet vs desktop side panel */}
+      {isMobile ? (
+        mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <MobileCardEditor />
+      ) : (
+        selectedNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <CardEditor />
+      )}
       <VersionHistoryPanel />
-      {projectRole !== 'viewer' && <AIPromptBox />}
+      {/* AI Prompt: mobile FAB vs desktop bottom bar */}
+      {projectRole !== 'viewer' && (isMobile ? <MobileAIButton /> : <AIPromptBox />)}
       <input
         ref={fileInputRef}
         type="file"

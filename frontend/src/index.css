@@ -84,3 +84,17 @@ html, body, #root {
 .dark .react-flow__attribution a {
   color: rgb(156 163 175);
 }
+
+/* Mobile bottom sheet slide-up animation */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 250ms ease-out;
+}
+
+/* Hide React Flow attribution on mobile */
+@media (max-width: 767px) {
+  .react-flow__attribution { display: none; }
+}

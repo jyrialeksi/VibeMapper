@@ -68,6 +68,9 @@ interface MapState {
   // Project role (for sharing permissions)
   projectRole: 'owner' | 'editor' | 'viewer';
 
+  // Mobile state
+  mobileEditingNodeId: string | null;
+
   // Actions
   setNodes: (nodes: Node<StoryCardData>[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -122,6 +125,9 @@ interface MapState {
 
   // Project role actions
   setProjectRole: (role: 'owner' | 'editor' | 'viewer') => void;
+
+  // Mobile actions
+  setMobileEditingNodeId: (id: string | null) => void;
 }
 
 export const useMapStore = create<MapState>((set, get) => ({
@@ -167,6 +173,9 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Project role
   projectRole: 'owner',
+
+  // Mobile state
+  mobileEditingNodeId: null,
 
   setNodes: (nodes) => set({ nodes, isDirty: true }),
   setEdges: (edges) => set({ edges, isDirty: true }),
@@ -465,4 +474,10 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Project role actions
   setProjectRole: (role) => set({ projectRole: role }),
+
+  // Mobile actions
+  setMobileEditingNodeId: (id) => set({
+    mobileEditingNodeId: id,
+    selectedNodeId: id,
+  }),
 }));
