@@ -3,22 +3,19 @@ import { Canvas } from './components/Canvas';
 import { LoginPage } from './components/LoginPage';
 import { api } from './api/client';
 import type { Project } from './types';
-import { ArrowLeft, Moon, Sun, LogOut, Users, Share2, Key, Check, Trash2, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, LogOut, Users, Share2, Settings, ChevronRight } from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 import { useAuth } from './hooks/useAuth';
 import { useMapStore } from './store/useMapStore';
 import { SharePanel } from './components/panels/SharePanel';
-import { McpServerPanel } from './components/panels/McpServerPanel';
+import { SettingsPage } from './components/SettingsPage';
 
-function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
+function ProjectList({ onSelect, onOpenSettings }: { onSelect: (id: string) => void; onOpenSettings: () => void }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [newName, setNewName] = useState('');
   const [loading, setLoading] = useState(true);
   const { theme, toggleTheme } = useTheme();
-  const { user, authEnabled, logout, hasApiKey, refreshApiKeyStatus } = useAuth();
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [apiKeyMsg, setApiKeyMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [apiKeySaving, setApiKeySaving] = useState(false);
+  const { user, authEnabled, logout, hasApiKey, hasMcpToken } = useAuth();
 
   const ownedProjects = projects.filter((p) => p.role === 'owner' || !p.role);
   const sharedProjects = projects.filter((p) => p.role && p.role !== 'owner');
@@ -48,24 +45,6 @@ function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
       console.error('Failed to create project:', err);
     }
   };
-
-  const handleSaveApiKey = async () => {
-    if (!apiKeyInput.trim()) return;
-    setApiKeySaving(true);
-    try {
-      await api.saveApiKey(apiKeyInput.trim());
-      setApiKeyInput('');
-      await refreshApiKeyStatus();
-      setApiKeyMsg({ type: 'success', text: 'API key saved' });
-      setTimeout(() => setApiKeyMsg(null), 3000);
-    } catch (err) {
-      setApiKeyMsg({ type: 'error', text: (err as Error).message });
-      setTimeout(() => setApiKeyMsg(null), 3000);
-    } finally {
-      setApiKeySaving(false);
-    }
-  };
-
 
   if (loading) {
     return (
@@ -130,80 +109,33 @@ function ProjectList({ onSelect }: { onSelect: (id: string) => void }) {
           </button>
         </div>
 
-        {/* API Key settings */}
-        <div className="mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Key size={16} className="text-gray-500 dark:text-gray-400" />
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">OpenRouter API Key</h3>
-            {hasApiKey && (
-              <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 flex items-center gap-1">
-                <Check size={12} />
-                Configured
-              </span>
-            )}
-          </div>
-          {hasApiKey ? (
+        {/* Settings status card */}
+        <button
+          onClick={onOpenSettings}
+          className="w-full mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl px-4 py-3 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm transition-all text-left cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500 dark:text-gray-400 font-mono">••••••••</span>
-              <button
-                onClick={async () => {
-                  try {
-                    await api.deleteApiKey();
-                    await refreshApiKeyStatus();
-                    setApiKeyMsg({ type: 'success', text: 'API key removed' });
-                    setTimeout(() => setApiKeyMsg(null), 3000);
-                  } catch (err) {
-                    setApiKeyMsg({ type: 'error', text: (err as Error).message });
-                    setTimeout(() => setApiKeyMsg(null), 3000);
-                  }
-                }}
-                className="text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1 transition-colors"
-              >
-                <Trash2 size={12} />
-                Remove
-              </button>
+              <Settings size={16} className="text-gray-500 dark:text-gray-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Settings</span>
             </div>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                type="password"
-                value={apiKeyInput}
-                onChange={(e) => setApiKeyInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && apiKeyInput.trim()) {
-                    e.preventDefault();
-                    handleSaveApiKey();
-                  }
-                }}
-                placeholder="Enter your API key..."
-                className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 bg-white dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
-              />
-              <button
-                onClick={handleSaveApiKey}
-                disabled={!apiKeyInput.trim() || apiKeySaving}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-              >
-                Save
-              </button>
+            <ChevronRight size={16} className="text-gray-400 dark:text-gray-500" />
+          </div>
+          <div className="flex items-center gap-4 mt-1.5 ml-6">
+            <div className="flex items-center gap-1.5">
+              <div className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-green-500' : 'bg-amber-500'}`} />
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {hasApiKey ? 'AI Ready' : 'API Key Required'}
+              </span>
             </div>
-          )}
-          {apiKeyMsg && (
-            <p className={`text-xs mt-2 ${apiKeyMsg.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {apiKeyMsg.text}
-            </p>
-          )}
-          {!hasApiKey && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-              Required for AI features.{' '}
-              <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-0.5">
-                Get a key <ExternalLink size={10} />
-              </a>
-            </p>
-          )}
-        </div>
-
-        {/* MCP Server */}
-        <McpServerPanel />
+            <div className="flex items-center gap-1.5">
+              <div className={`w-2 h-2 rounded-full ${hasMcpToken ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {hasMcpToken ? 'MCP Connected' : 'MCP Not Set Up'}
+              </span>
+            </div>
+          </div>
+        </button>
 
         {/* Owned projects */}
         <ProjectSection
@@ -282,6 +214,7 @@ function ProjectSection({
 
 function App() {
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [isSharePanelOpen, setSharePanelOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
@@ -337,8 +270,12 @@ function App() {
     return <LoginPage />;
   }
 
+  if (!projectId && settingsOpen) {
+    return <SettingsPage onBack={() => setSettingsOpen(false)} />;
+  }
+
   if (!projectId) {
-    return <ProjectList onSelect={setProjectId} />;
+    return <ProjectList onSelect={setProjectId} onOpenSettings={() => setSettingsOpen(true)} />;
   }
 
   return (

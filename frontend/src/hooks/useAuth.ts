@@ -24,10 +24,12 @@ interface AuthState {
   loading: boolean;
   authEnabled: boolean;
   hasApiKey: boolean;
+  hasMcpToken: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   getToken: () => Promise<string | null>;
   refreshApiKeyStatus: () => Promise<void>;
+  refreshMcpTokenStatus: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthState>({
@@ -35,10 +37,12 @@ export const AuthContext = createContext<AuthState>({
   loading: true,
   authEnabled: false,
   hasApiKey: false,
+  hasMcpToken: false,
   login: async () => {},
   logout: async () => {},
   getToken: async () => null,
   refreshApiKeyStatus: async () => {},
+  refreshMcpTokenStatus: async () => {},
 });
 
 export function useAuth() {
@@ -50,6 +54,7 @@ export function useAuthProvider(): AuthState {
   const [loading, setLoading] = useState(true);
   const [authEnabled, setAuthEnabled] = useState(false);
   const [hasApiKey, setHasApiKey] = useState(false);
+  const [hasMcpToken, setHasMcpToken] = useState(false);
   const firebaseUserRef = useRef<User | null>(null);
 
   const refreshApiKeyStatus = useCallback(async () => {
@@ -58,6 +63,15 @@ export function useAuthProvider(): AuthState {
       setHasApiKey(hasKey);
     } catch {
       // ignore — will show as no key
+    }
+  }, []);
+
+  const refreshMcpTokenStatus = useCallback(async () => {
+    try {
+      const { hasToken } = await api.getMcpTokenStatus();
+      setHasMcpToken(hasToken);
+    } catch {
+      // ignore
     }
   }, []);
 
@@ -72,6 +86,7 @@ export function useAuthProvider(): AuthState {
           setAuthEnabled(false);
           setUser({ id: 'local-dev', email: 'dev@local', name: 'Local Dev', picture: '' });
           refreshApiKeyStatus();
+          refreshMcpTokenStatus();
           setLoading(false);
           return;
         }
@@ -90,6 +105,7 @@ export function useAuthProvider(): AuthState {
               const me = await meRes.json();
               setUser({ id: me.id, email: me.email, name: me.name, picture: me.picture || '' });
               refreshApiKeyStatus();
+              refreshMcpTokenStatus();
             } else {
               setUser(null);
             }
@@ -103,11 +119,12 @@ export function useAuthProvider(): AuthState {
         // If config fetch fails, assume no auth
         setUser({ id: 'local-dev', email: 'dev@local', name: 'Local Dev', picture: '' });
         refreshApiKeyStatus();
+        refreshMcpTokenStatus();
         setLoading(false);
       });
 
     return () => unsubscribe?.();
-  }, [refreshApiKeyStatus]);
+  }, [refreshApiKeyStatus, refreshMcpTokenStatus]);
 
   const login = useCallback(async () => {
     const auth = getFirebaseAuth();
@@ -129,5 +146,5 @@ export function useAuthProvider(): AuthState {
     return fbUser.getIdToken();
   }, []);
 
-  return { user, loading, authEnabled, hasApiKey, login, logout, getToken, refreshApiKeyStatus };
+  return { user, loading, authEnabled, hasApiKey, hasMcpToken, login, logout, getToken, refreshApiKeyStatus, refreshMcpTokenStatus };
 }

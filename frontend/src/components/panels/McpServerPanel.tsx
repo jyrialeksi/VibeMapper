@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { Terminal, Copy, Check, ChevronDown, ChevronUp, Trash2, AlertTriangle } from 'lucide-react';
 import { api } from '../../api/client';
+import { useAuth } from '../../hooks/useAuth';
 
 const MCP_TOOLS = [
   { group: 'Project management', tools: [
@@ -57,34 +58,18 @@ function CodeBlock({ children }: { children: string }) {
 }
 
 export function McpServerPanel() {
-  const [hasToken, setHasToken] = useState(false);
+  const { hasMcpToken: hasToken, refreshMcpTokenStatus } = useAuth();
   const [rawToken, setRawToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'claude' | 'cursor'>('claude');
 
   const mcpUrl = `${window.location.origin}/mcp`;
 
-  const loadStatus = useCallback(async () => {
-    try {
-      const { hasToken: has } = await api.getMcpTokenStatus();
-      setHasToken(has);
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadStatus();
-  }, [loadStatus]);
-
   const handleGenerate = async () => {
     try {
       const { token } = await api.generateMcpToken();
       setRawToken(token);
-      setHasToken(true);
+      await refreshMcpTokenStatus();
     } catch (err) {
       console.error('Failed to generate token:', err);
     }
@@ -93,14 +78,12 @@ export function McpServerPanel() {
   const handleRevoke = async () => {
     try {
       await api.revokeMcpToken();
-      setHasToken(false);
       setRawToken(null);
+      await refreshMcpTokenStatus();
     } catch (err) {
       console.error('Failed to revoke token:', err);
     }
   };
-
-  if (loading) return null;
 
   return (
     <div className="mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl p-4">
