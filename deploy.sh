@@ -14,7 +14,7 @@ if [ ! -f "$SA_FILE" ]; then
 fi
 
 if [ ! -f "$ENV_FILE" ]; then
-  echo "Error: $ENV_FILE not found. It should contain OPENROUTER_API_KEY=..."
+  echo "Error: $ENV_FILE not found. It should contain ENCRYPTION_KEY=..."
   exit 1
 fi
 
@@ -24,9 +24,9 @@ if ! command -v fly &> /dev/null; then
 fi
 
 # --- Read secrets from files ---
-OPENROUTER_API_KEY=$(grep -E '^OPENROUTER_API_KEY=' "$ENV_FILE" | cut -d'=' -f2-)
-if [ -z "$OPENROUTER_API_KEY" ]; then
-  echo "Error: OPENROUTER_API_KEY not found in $ENV_FILE"
+ENCRYPTION_KEY=$(grep -E '^ENCRYPTION_KEY=' "$ENV_FILE" | cut -d'=' -f2-)
+if [ -z "$ENCRYPTION_KEY" ]; then
+  echo "Error: ENCRYPTION_KEY not found in $ENV_FILE"
   exit 1
 fi
 
@@ -36,7 +36,7 @@ FIREBASE_PRIVATE_KEY=$(node -e "console.log(JSON.parse(require('fs').readFileSyn
 
 echo "==> Setting Fly.io secrets..."
 fly secrets set \
-  OPENROUTER_API_KEY="$OPENROUTER_API_KEY" \
+  ENCRYPTION_KEY="$ENCRYPTION_KEY" \
   FIREBASE_PROJECT_ID="$FIREBASE_PROJECT_ID" \
   FIREBASE_CLIENT_EMAIL="$FIREBASE_CLIENT_EMAIL" \
   FIREBASE_PRIVATE_KEY="$FIREBASE_PRIVATE_KEY" \
