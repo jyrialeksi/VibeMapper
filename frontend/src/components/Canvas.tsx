@@ -219,24 +219,23 @@ export function Canvas({ projectId }: CanvasProps) {
 
   const handleNodeDoubleClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      if (isMobile) {
-        setMobileEditingNodeId(node.id);
-        setToolMode('select');
-      } else {
-        setSelectedNodeId(node.id);
-        setToolMode('select');
-      }
+      setSelectedNodeId(node.id);
+      setToolMode('select');
     },
-    [setSelectedNodeId, setToolMode, isMobile, setMobileEditingNodeId]
+    [setSelectedNodeId, setToolMode]
   );
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      if (toolMode === 'select') {
+      if (isMobile) {
+        // Single tap opens mobile editor on mobile
+        setMobileEditingNodeId(node.id);
+        setToolMode('select');
+      } else if (toolMode === 'select') {
         setSelectedNodeId(node.id);
       }
     },
-    [toolMode, setSelectedNodeId]
+    [toolMode, setSelectedNodeId, isMobile, setMobileEditingNodeId, setToolMode]
   );
 
   const handleNodeDragStart = useCallback(() => {
