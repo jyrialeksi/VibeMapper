@@ -1,11 +1,13 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import type { CanvasState } from '../utils/schemas.js';
 
 export function registerStatusTools(server: McpServer, api: ApiClient) {
-  server.tool(
+  (server as any).tool(
     'update_card_status',
-    'Set the status of story cards. Parameters: project_id (string), node_ids (string - comma-separated story card IDs), status (string - one of: not-started, in-progress, blocked, testing, done)',
+    'Set the status of story cards.',
+    { project_id: z.string(), node_ids: z.string().describe('Comma-separated story card IDs'), status: z.enum(['not-started', 'in-progress', 'blocked', 'testing', 'done']) },
     async (args: Record<string, unknown>) => {
       const validStatuses = ['not-started', 'in-progress', 'blocked', 'testing', 'done'];
       const status = args.status as string;

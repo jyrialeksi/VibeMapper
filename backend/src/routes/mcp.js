@@ -29,6 +29,7 @@ router.post('/', async (req, res) => {
   // Create MCP server with user's token calling back to ourselves
   const token = req.headers.authorization?.slice(7) || '';
   const baseUrl = `http://localhost:${process.env.PORT || 3001}`;
+  console.log(`[MCP] New session: user=${req.user?.id}, email=${req.user?.email}, tokenPrefix=${token.substring(0, 8)}..., baseUrl=${baseUrl}`);
   const apiClient = createApiClient(baseUrl, token);
   const server = createMcpServer(apiClient);
 

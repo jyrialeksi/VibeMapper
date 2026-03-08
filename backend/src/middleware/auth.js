@@ -32,6 +32,7 @@ export function requireAuth(req, res, next) {
 
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
+    console.warn(`[AUTH] Missing/invalid Authorization header for ${req.method} ${req.originalUrl}`);
     return res.status(401).json({ error: 'Missing or invalid Authorization header' });
   }
 
@@ -42,8 +43,10 @@ export function requireAuth(req, res, next) {
     const hash = crypto.createHash('sha256').update(token).digest('hex');
     const user = db.prepare('SELECT * FROM users WHERE mcp_api_token = ?').get(hash);
     if (!user) {
+      console.error(`[AUTH] Invalid MCP API token (hash prefix: ${hash.substring(0, 8)}...) for ${req.method} ${req.originalUrl}`);
       return res.status(401).json({ error: 'Invalid API token' });
     }
+    console.log(`[AUTH] MCP token auth OK: user=${user.id} email=${user.email} for ${req.method} ${req.originalUrl}`);
     req.user = { id: user.id, email: user.email, name: user.name, picture: user.picture };
     return next();
   }
@@ -51,11 +54,12 @@ export function requireAuth(req, res, next) {
   // Firebase token path
   verifyTokenAndGetUser(token)
     .then(user => {
+      console.log(`[AUTH] Firebase auth OK: user=${user.id} email=${user.email} for ${req.method} ${req.originalUrl}`);
       req.user = user;
       next();
     })
     .catch(err => {
-      console.error('Auth token verification failed:', err.message);
+      console.error(`[AUTH] Firebase token verification failed for ${req.method} ${req.originalUrl}:`, err.message);
       res.status(401).json({ error: 'Invalid or expired token' });
     });
 }
@@ -98,15 +102,24 @@ export function requireProjectAccess(minRole = 'viewer') {
 
   return (req, res, next) => {
     const projectId = req.params.projectId || req.params.id;
-    if (!projectId) return res.status(400).json({ error: 'Project ID required' });
+    if (!projectId) {
+      console.warn(`[ACCESS] No project ID in request params for ${req.method} ${req.originalUrl}`);
+      return res.status(400).json({ error: 'Project ID required' });
+    }
 
     const userId = req.user.id;
 
     // Check ownership
     const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
-    if (!project) return res.status(404).json({ error: 'Project not found' });
+    if (!project) {
+      // Extra debug: list all project IDs to see if the project exists under a different form
+      const allProjects = db.prepare('SELECT id, name, owner_id FROM projects').all();
+      console.error(`[ACCESS] Project not found: projectId=${projectId}, userId=${userId}, minRole=${minRole}, existingProjects=${JSON.stringify(allProjects.map(p => ({ id: p.id, name: p.name, owner: p.owner_id })))}`);
+      return res.status(404).json({ error: 'Project not found' });
+    }
 
     if (project.owner_id === userId || (!authEnabled && !project.owner_id)) {
+      console.log(`[ACCESS] Owner access granted: projectId=${projectId}, userId=${userId}`);
       req.projectRole = 'owner';
       req.project = project;
       return next();
@@ -117,14 +130,19 @@ export function requireProjectAccess(minRole = 'viewer') {
       'SELECT role FROM project_shares WHERE project_id = ? AND user_id = ?'
     ).get(projectId, userId);
 
-    if (!share) return res.status(403).json({ error: 'Access denied' });
+    if (!share) {
+      console.warn(`[ACCESS] Access denied: projectId=${projectId}, userId=${userId}, owner_id=${project.owner_id}, minRole=${minRole}, no share found`);
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
     const userLevel = roleLevel[share.role] || 0;
     const requiredLevel = roleLevel[minRole] || 0;
     if (userLevel < requiredLevel) {
+      console.warn(`[ACCESS] Insufficient permissions: projectId=${projectId}, userId=${userId}, shareRole=${share.role}, minRole=${minRole}`);
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
 
+    console.log(`[ACCESS] Share access granted: projectId=${projectId}, userId=${userId}, role=${share.role}`);
     req.projectRole = share.role;
     req.project = project;
     next();

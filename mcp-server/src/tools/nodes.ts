@@ -1,11 +1,13 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import type { CanvasState } from '../utils/schemas.js';
 
 export function registerNodeTools(server: McpServer, api: ApiClient) {
-  server.tool(
+  (server as any).tool(
     'add_nodes',
-    'Add new nodes and/or edges to an existing story map. Parameters: project_id (string), nodes_json (string - JSON array of nodes to add, or "[]"), edges_json (string - JSON array of edges to add, or "[]")',
+    'Add new nodes and/or edges to an existing story map.',
+    { project_id: z.string(), nodes_json: z.string().describe('JSON array of nodes to add, or "[]"'), edges_json: z.string().describe('JSON array of edges to add, or "[]"') },
     async (args: Record<string, unknown>) => {
       const canvas = (await api.get(`/api/canvas/${args.project_id}`)) as CanvasState;
       const newNodes = JSON.parse(args.nodes_json as string);
@@ -22,9 +24,10 @@ export function registerNodeTools(server: McpServer, api: ApiClient) {
     }
   );
 
-  server.tool(
+  (server as any).tool(
     'update_nodes',
-    'Update data on existing nodes (shallow merge). Parameters: project_id (string), updates_json (string - JSON array of [{id: "node-id", data: {field: "value"}}])',
+    'Update data on existing nodes (shallow merge).',
+    { project_id: z.string(), updates_json: z.string().describe('JSON array of [{id: "node-id", data: {field: "value"}}]') },
     async (args: Record<string, unknown>) => {
       const canvas = (await api.get(`/api/canvas/${args.project_id}`)) as CanvasState;
       const updates: Array<{ id: string; data: Record<string, unknown> }> = JSON.parse(args.updates_json as string);
@@ -53,9 +56,10 @@ export function registerNodeTools(server: McpServer, api: ApiClient) {
     }
   );
 
-  server.tool(
+  (server as any).tool(
     'remove_nodes',
-    'Remove nodes and their connected edges from a story map. Parameters: project_id (string), node_ids (string - comma-separated node IDs)',
+    'Remove nodes and their connected edges from a story map.',
+    { project_id: z.string(), node_ids: z.string().describe('Comma-separated node IDs') },
     async (args: Record<string, unknown>) => {
       const canvas = (await api.get(`/api/canvas/${args.project_id}`)) as CanvasState;
       const idsToRemove = (args.node_ids as string).split(',').map((s) => s.trim());

@@ -1,4 +1,5 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import type { CanvasState } from '../utils/schemas.js';
 
@@ -54,9 +55,10 @@ function formatMapAsText(canvas: CanvasState): string {
 }
 
 export function registerCanvasTools(server: McpServer, api: ApiClient) {
-  server.tool(
+  (server as any).tool(
     'get_story_map',
-    'Read a project\'s story map. Returns a human-readable summary and raw JSON. Parameters: project_id (string, required)',
+    'Read a project\'s story map. Returns a human-readable summary and raw JSON.',
+    { project_id: z.string() },
     async (args: Record<string, unknown>) => {
       const canvas = (await api.get(`/api/canvas/${args.project_id}`)) as CanvasState;
       const text = formatMapAsText(canvas);
@@ -70,9 +72,10 @@ export function registerCanvasTools(server: McpServer, api: ApiClient) {
     }
   );
 
-  server.tool(
+  (server as any).tool(
     'set_story_map',
-    'Replace the entire canvas of a project. Parameters: project_id (string), nodes_json (string - JSON array of nodes), edges_json (string - JSON array of edges)',
+    'Replace the entire canvas of a project.',
+    { project_id: z.string(), nodes_json: z.string().describe('JSON array of nodes'), edges_json: z.string().describe('JSON array of edges') },
     async (args: Record<string, unknown>) => {
       const nodes = JSON.parse(args.nodes_json as string);
       const edges = JSON.parse(args.edges_json as string);

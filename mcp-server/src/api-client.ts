@@ -20,6 +20,7 @@ export function createApiClient(baseUrl: string, token: string): ApiClient {
 
     if (!res.ok) {
       const text = await res.text();
+      console.error(`[MCP-API] ${method} ${path} → ${res.status}: ${text}`);
       throw new Error(`API error ${res.status}: ${text}`);
     }
 

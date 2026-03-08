@@ -25,6 +25,7 @@ router.get('/', (req, res) => {
     ${whereClause}
     ORDER BY p.updated_at DESC
   `).all(userId, userId, userId, userId);
+  console.log(`[PROJECTS] List: userId=${userId}, found ${projects.length} projects: ${JSON.stringify(projects.map(p => ({ id: p.id, name: p.name, owner_id: p.owner_id, role: p.role })))}`);
   res.json(projects);
 });
 

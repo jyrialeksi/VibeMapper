@@ -1,21 +1,21 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 import { buildLayout } from '../utils/layout.js';
 import type { ApiClient } from '../api-client.js';
 import type { ActivityInput } from '../utils/schemas.js';
 
 export function registerCreateMapTool(server: McpServer, api: ApiClient) {
-  server.tool(
+  (server as any).tool(
     'create_story_map',
     `Create a new project and populate it with a complete story map. The server handles layout, positioning, IDs, and edges automatically.
 
-Parameters:
-- name (string): Project name
-- description (string): Project description (can be empty)
-- activities_json (string): JSON string with this structure:
-  [{ "title": "Activity", "description": "optional", "steps": [{ "title": "Step", "stories": [{ "title": "Story", "priority": "must-have", "estimate": "M", "acceptanceCriteria": ["..."], "status": "not-started" }] }] }]
-
 Priority values: must-have, should-have, could-have, wont-have
 Status values: not-started, in-progress, blocked, testing, done`,
+    {
+      name: z.string().describe('Project name'),
+      description: z.string().optional().describe('Project description'),
+      activities_json: z.string().describe('JSON array: [{ "title": "Activity", "description": "optional", "steps": [{ "title": "Step", "stories": [{ "title": "Story", "priority": "must-have", "estimate": "M", "acceptanceCriteria": ["..."], "status": "not-started" }] }] }]'),
+    },
     async (args: Record<string, unknown>) => {
       const name = args.name as string;
       const description = (args.description as string) || '';
