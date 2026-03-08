@@ -211,7 +211,7 @@ export function McpServerPanel() {
             <div>
               <span className="font-medium text-gray-700 dark:text-gray-300">2.</span> Run in terminal:
               <div className="mt-1">
-                <CodeBlock>{`claude mcp add user-story-mapper --transport http ${mcpUrl} -H "Authorization: Bearer <your-token>"`}</CodeBlock>
+                <CodeBlock>{`claude mcp add --scope user user-story-mapper --transport http ${mcpUrl} -H "Authorization: Bearer <your-token>"`}</CodeBlock>
               </div>
             </div>
             <div>
@@ -222,7 +222,10 @@ export function McpServerPanel() {
             </div>
             <div>
               <span className="font-medium text-gray-700 dark:text-gray-300">5.</span> To remove:{' '}
-              <code className="font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">claude mcp remove user-story-mapper</code>
+              <code className="font-mono bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">claude mcp remove --scope user user-story-mapper</code>
+            </div>
+            <div className="mt-2 text-[11px] text-gray-400 dark:text-gray-500">
+              This adds the server globally. Use <code className="font-mono bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded">--scope project</code> to limit to the current directory.
             </div>
           </div>
         )}

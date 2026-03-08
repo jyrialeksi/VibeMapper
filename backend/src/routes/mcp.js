@@ -1,78 +1,47 @@
 import { Router } from 'express';
-import { randomUUID } from 'crypto';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createMcpServer } from 'mcp-server/server';
 import { createApiClient } from 'mcp-server/api-client';
 
 const router = Router();
-const sessions = new Map();
 
-router.post('/', async (req, res) => {
-  const sessionId = req.headers['mcp-session-id'];
-
-  if (sessionId) {
-    // Existing session
-    const session = sessions.get(sessionId);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    return session.transport.handleRequest(req, res, req.body);
-  }
-
-  // New session — must be an initialize request
-  const isInit = Array.isArray(req.body)
-    ? req.body.some((msg) => msg.method === 'initialize')
-    : req.body?.method === 'initialize';
-
-  if (!isInit) {
-    return res.status(400).json({ error: 'Missing Mcp-Session-Id header' });
-  }
-
-  // Create MCP server with user's token calling back to ourselves
+async function createTransportAndServer(req) {
   const token = req.headers.authorization?.slice(7) || '';
   const baseUrl = `http://localhost:${process.env.PORT || 3001}`;
-  console.log(`[MCP] New session: user=${req.user?.id}, email=${req.user?.email}, tokenPrefix=${token.substring(0, 8)}..., baseUrl=${baseUrl}`);
   const apiClient = createApiClient(baseUrl, token);
   const server = createMcpServer(apiClient);
-
   const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: () => randomUUID(),
+    sessionIdGenerator: undefined,
   });
-
-  transport.onclose = () => {
-    const sid = transport.sessionId;
-    if (sid) sessions.delete(sid);
-  };
-
   await server.connect(transport);
+  return transport;
+}
 
-  // We need to handle the request first to generate the session ID
-  await transport.handleRequest(req, res, req.body);
-
-  // Store session after initialization (sessionId is set after handleRequest)
-  const sid = transport.sessionId;
-  if (sid) {
-    sessions.set(sid, { transport, server });
+router.post('/', async (req, res) => {
+  try {
+    const transport = await createTransportAndServer(req);
+    await transport.handleRequest(req, res, req.body);
+  } catch (err) {
+    console.error('[MCP] POST error:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 });
 
 router.get('/', async (req, res) => {
-  const sessionId = req.headers['mcp-session-id'];
-  if (!sessionId) {
-    return res.status(400).json({ error: 'Missing Mcp-Session-Id header' });
+  try {
+    const transport = await createTransportAndServer(req);
+    await transport.handleRequest(req, res);
+  } catch (err) {
+    console.error('[MCP] GET error:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
-  const session = sessions.get(sessionId);
-  if (!session) return res.status(404).json({ error: 'Session not found' });
-  return session.transport.handleRequest(req, res);
 });
 
-router.delete('/', async (req, res) => {
-  const sessionId = req.headers['mcp-session-id'];
-  if (!sessionId) {
-    return res.status(400).json({ error: 'Missing Mcp-Session-Id header' });
-  }
-  const session = sessions.get(sessionId);
-  if (!session) return res.status(404).json({ error: 'Session not found' });
-  await session.transport.close();
-  sessions.delete(sessionId);
+router.delete('/', async (_req, res) => {
   res.status(200).json({ success: true });
 });
 
