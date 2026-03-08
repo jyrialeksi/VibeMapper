@@ -5,10 +5,10 @@ import type { CardStatus } from '../../types';
 import { useMapStore } from '../../store/useMapStore';
 
 const PRIORITY_BG: Record<Priority, string> = {
-  'must-have': 'bg-[#FF3CAC]/15 border-[#FF3CAC]/50 dark:bg-[#FF3CAC]/20 dark:border-[#FF3CAC]/40',
-  'should-have': 'bg-[#C6FF4D]/15 border-[#C6FF4D]/50 dark:bg-[#C6FF4D]/20 dark:border-[#C6FF4D]/40',
-  'could-have': 'bg-[#00F5D4]/15 border-[#00F5D4]/50 dark:bg-[#00F5D4]/20 dark:border-[#00F5D4]/40',
-  'wont-have': 'bg-[#7A7A9A]/15 border-[#7A7A9A]/50 dark:bg-[#7A7A9A]/20 dark:border-[#7A7A9A]/40',
+  'must-have': 'bg-[#fff0f8] border-[#FF3CAC]/50 dark:bg-[#1a0a18]/90 dark:border-[#FF3CAC]/40 backdrop-blur-md',
+  'should-have': 'bg-[#f8ffe8] border-[#C6FF4D]/50 dark:bg-[#121a08]/90 dark:border-[#C6FF4D]/40 backdrop-blur-md',
+  'could-have': 'bg-[#e8fffa] border-[#00F5D4]/50 dark:bg-[#081a18]/90 dark:border-[#00F5D4]/40 backdrop-blur-md',
+  'wont-have': 'bg-[#f0f0f4] border-[#7A7A9A]/50 dark:bg-[#121218]/90 dark:border-[#7A7A9A]/40 backdrop-blur-md',
 };
 
 const PRIORITY_BAR_COLOR: Record<Priority, string> = {

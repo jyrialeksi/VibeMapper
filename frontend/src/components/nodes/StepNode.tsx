@@ -11,7 +11,7 @@ export function StepNode({ id, data, selected }: NodeProps<Node<StoryCardData>>)
 
   return (
     <div
-      className={`px-3 py-2.5 rounded-lg shadow-md border-2 w-[260px] bg-[#00F5D4]/10 dark:bg-[#00F5D4]/20 ${
+      className={`px-3 py-2.5 rounded-lg shadow-md border-2 w-[260px] bg-[#e8fffa] dark:bg-[#081a18]/90 backdrop-blur-md ${
         selected ? 'border-[#00F5D4] ring-2 ring-[#00F5D4]/30' : 'border-[#00F5D4]/60'
       } ${highlightClass} ${dimClass}`}
     >

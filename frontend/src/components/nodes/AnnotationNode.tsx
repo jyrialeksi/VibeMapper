@@ -19,10 +19,8 @@ export function AnnotationNode({ id, data, selected }: NodeProps<Node<StoryCardD
         handleClassName="!w-2.5 !h-2.5 !bg-[#C6FF4D] !border-[#C6FF4D]"
       />
       <div
-        className={`w-full h-full rounded-lg border-2 border-dashed p-3 ${
-          selected ? 'border-[#C6FF4D]/60 bg-[#C6FF4D]/15' : 'border-[#C6FF4D]/40 bg-[#C6FF4D]/10'
-        } dark:${
-          selected ? 'border-[#C6FF4D]/60 bg-[#C6FF4D]/15' : 'border-[#C6FF4D]/40 bg-[#C6FF4D]/10'
+        className={`w-full h-full rounded-lg border-2 border-dashed p-3 backdrop-blur-md ${
+          selected ? 'border-[#C6FF4D]/60 bg-[#f8ffe8] dark:bg-[#121a08]/90' : 'border-[#C6FF4D]/40 bg-[#f8ffe8]/80 dark:bg-[#121a08]/80'
         } ${highlightClass} ${dimClass}`}
         style={{ minWidth: data.width || 200, minHeight: data.height || 100 }}
       >
