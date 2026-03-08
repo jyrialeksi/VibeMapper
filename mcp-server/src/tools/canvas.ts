@@ -21,14 +21,14 @@ function formatMapAsText(canvas: CanvasState): string {
   lines.push(`Story Map: ${activities.length} activities, ${steps.length} steps, ${stories.length} stories\n`);
 
   for (const act of activities) {
-    lines.push(`## ${act.data.title as string}`);
+    lines.push(`## [${act.id}] ${act.data.title as string}`);
     if (act.data.description) lines.push(`   ${act.data.description}`);
 
     const actStepIds = childEdges.get(act.id) || [];
     for (const stepId of actStepIds) {
       const step = nodes.find((n) => n.id === stepId);
       if (!step) continue;
-      lines.push(`  ### ${step.data.title as string}`);
+      lines.push(`  ### [${step.id}] ${step.data.title as string}`);
       if (step.data.description) lines.push(`      ${step.data.description}`);
 
       const stepStoryIds = childEdges.get(step.id) || [];
@@ -38,7 +38,7 @@ function formatMapAsText(canvas: CanvasState): string {
         const priority = story.data.priority || 'must-have';
         const estimate = story.data.estimate ? ` [${story.data.estimate}]` : '';
         const status = story.data.status ? ` (${story.data.status})` : '';
-        lines.push(`    - [${priority}]${estimate}${status} ${story.data.title as string}`);
+        lines.push(`    - [${story.id}] [${priority}]${estimate}${status} ${story.data.title as string}`);
         if (story.data.description) lines.push(`      ${story.data.description}`);
         const ac = story.data.acceptanceCriteria as string[] | undefined;
         if (ac && ac.length > 0) {
@@ -57,18 +57,19 @@ function formatMapAsText(canvas: CanvasState): string {
 export function registerCanvasTools(server: McpServer, api: ApiClient) {
   (server as any).tool(
     'get_story_map',
-    'Read a project\'s story map. Returns a human-readable summary and raw JSON.',
-    { project_id: z.string() },
+    'Read a project\'s story map. Returns a human-readable hierarchical summary by default. Set include_json=true to also get raw JSON (needed for set_story_map/add_nodes/update_nodes). For large maps, prefer the summary-only default.',
+    { project_id: z.string(), include_json: z.boolean().optional().describe('Include raw JSON nodes/edges (default: false)') },
     async (args: Record<string, unknown>) => {
       const canvas = (await api.get(`/api/canvas/${args.project_id}`)) as CanvasState;
       const text = formatMapAsText(canvas);
-      const json = JSON.stringify({ nodes: canvas.nodes, edges: canvas.edges }, null, 2);
-      return {
-        content: [
-          { type: 'text' as const, text },
-          { type: 'text' as const, text: `\n---\nRaw JSON:\n${json}` },
-        ],
-      };
+      const content: Array<{ type: 'text'; text: string }> = [
+        { type: 'text' as const, text },
+      ];
+      if (args.include_json) {
+        const json = JSON.stringify({ nodes: canvas.nodes, edges: canvas.edges }, null, 2);
+        content.push({ type: 'text' as const, text: `\n---\nRaw JSON:\n${json}` });
+      }
+      return { content };
     }
   );
 
