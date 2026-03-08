@@ -3,7 +3,6 @@ import {
   ReactFlow,
   Background,
   Controls,
-  MiniMap,
   type ReactFlowInstance,
   type Node,
   BackgroundVariant,
@@ -13,15 +12,11 @@ import { useMapStore } from '../store/useMapStore';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
-import { useIsMobile } from '../hooks/useIsMobile';
 import { api } from '../api/client';
 import { nodeTypes } from './nodes';
 import { edgeTypes } from './edges';
-import { Toolbar } from './panels/Toolbar';
 import { MobileToolbar } from './panels/MobileToolbar';
-import { CardEditor } from './panels/CardEditor';
 import { MobileCardEditor } from './panels/MobileCardEditor';
-import { AIPromptBox } from './panels/AIPromptBox';
 import { MobileAIButton } from './panels/MobileAIButton';
 import { VersionHistoryPanel } from './panels/VersionHistoryPanel';
 import { LayoutCorrector } from './LayoutCorrector';
@@ -56,7 +51,6 @@ interface CanvasProps {
 export function Canvas({ projectId }: CanvasProps) {
   const rfRef = useRef<ReactFlowInstance<Node<StoryCardData>> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isMobile = useIsMobile();
 
   const nodes = useMapStore((s) => s.nodes);
   const edges = useMapStore((s) => s.edges);
@@ -65,7 +59,6 @@ export function Canvas({ projectId }: CanvasProps) {
   const onConnect = useMapStore((s) => s.onConnect);
   const addNode = useMapStore((s) => s.addNode);
   const setSelectedNodeId = useMapStore((s) => s.setSelectedNodeId);
-  const selectedNodeId = useMapStore((s) => s.selectedNodeId);
   const toolMode = useMapStore((s) => s.toolMode);
   const cardTypeToAdd = useMapStore((s) => s.cardTypeToAdd);
   const setToolMode = useMapStore((s) => s.setToolMode);
@@ -92,15 +85,14 @@ export function Canvas({ projectId }: CanvasProps) {
         return !hiddenPriorities.has(n.data.priority);
       });
     }
-    // On mobile, set per-node draggable based on mobileEditingNodeId
-    if (isMobile) {
-      return filtered.map((n) => ({
-        ...n,
-        draggable: mobileEditingNodeId === n.id,
-      }));
+    // Per-node draggable: only the node being edited is draggable
+    if (mobileEditingNodeId) {
+      return filtered.map((n) =>
+        n.id === mobileEditingNodeId ? { ...n, draggable: true } : n
+      );
     }
     return filtered;
-  }, [nodes, hiddenPriorities, isMobile, mobileEditingNodeId]);
+  }, [nodes, hiddenPriorities, mobileEditingNodeId]);
 
   const visibleNodeIds = useMemo(() => {
     if (hiddenPriorities.size === 0) return null;
@@ -209,33 +201,27 @@ export function Canvas({ projectId }: CanvasProps) {
         addNode(newNode);
       } else {
         setSelectedNodeId(null);
-        if (isMobile) {
-          setMobileEditingNodeId(null);
-        }
+        setMobileEditingNodeId(null);
       }
     },
-    [toolMode, cardTypeToAdd, addNode, setSelectedNodeId, isMobile, setMobileEditingNodeId]
+    [toolMode, cardTypeToAdd, addNode, setSelectedNodeId, setMobileEditingNodeId]
   );
 
   const handleNodeDoubleClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      setSelectedNodeId(node.id);
+      setMobileEditingNodeId(node.id);
       setToolMode('select');
     },
-    [setSelectedNodeId, setToolMode]
+    [setMobileEditingNodeId, setToolMode]
   );
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      if (isMobile) {
-        // Single tap opens mobile editor on mobile
-        setMobileEditingNodeId(node.id);
-        setToolMode('select');
-      } else if (toolMode === 'select') {
-        setSelectedNodeId(node.id);
-      }
+      // Single click opens bottom sheet editor
+      setMobileEditingNodeId(node.id);
+      setToolMode('select');
     },
-    [toolMode, setSelectedNodeId, isMobile, setMobileEditingNodeId, setToolMode]
+    [setMobileEditingNodeId, setToolMode]
   );
 
   const handleNodeDragStart = useCallback(() => {
@@ -295,15 +281,9 @@ export function Canvas({ projectId }: CanvasProps) {
     [projectId, loadCanvas]
   );
 
-  const toolbarProps = { onImport: handleImport, onExport: handleExport, onExportMarkdown: handleExportMarkdown };
-
   return (
     <div className="w-full h-full relative">
-      {isMobile ? (
-        <MobileToolbar {...toolbarProps} />
-      ) : (
-        <Toolbar {...toolbarProps} />
-      )}
+      <MobileToolbar onImport={handleImport} onExport={handleExport} onExportMarkdown={handleExportMarkdown} />
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
@@ -315,26 +295,19 @@ export function Canvas({ projectId }: CanvasProps) {
         onNodeDoubleClick={isReadOnly ? undefined : handleNodeDoubleClick}
         onNodeClick={isReadOnly ? undefined : handleNodeClick}
         onNodeDragStart={isReadOnly ? undefined : handleNodeDragStart}
-        nodesDraggable={isMobile ? false : !isReadOnly}
+        nodesDraggable={false}
         nodesConnectable={!isReadOnly}
         elementsSelectable={!isReadOnly}
-        panOnDrag={isMobile ? [0] : undefined}
         deleteKeyCode={isReadOnly ? null : 'Delete'}
         selectionKeyCode={isReadOnly ? null : 'Shift'}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
         connectionMode={toolMode === 'line' ? undefined : undefined}
-        className={`bg-gray-50 dark:bg-gray-950 ${isMobile ? 'touch-manipulation' : ''}`}
+        className="bg-gray-50 dark:bg-gray-950 touch-manipulation"
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme === 'dark' ? '#4b5563' : '#d1d5db'} />
-        {!isMobile && <Controls />}
-        {!isMobile && (
-          <MiniMap
-            nodeStrokeWidth={3}
-            className="!bg-white dark:!bg-gray-800 !border-gray-200 dark:!border-gray-700"
-          />
-        )}
+        <Controls />
         <LayoutCorrector />
         <HighlightClearer />
       </ReactFlow>
@@ -355,15 +328,9 @@ export function Canvas({ projectId }: CanvasProps) {
           </div>
         </div>
       )}
-      {/* Card Editor: mobile bottom sheet vs desktop side panel */}
-      {isMobile ? (
-        mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <MobileCardEditor />
-      ) : (
-        selectedNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <CardEditor />
-      )}
+      {mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <MobileCardEditor />}
       <VersionHistoryPanel />
-      {/* AI Prompt: mobile FAB vs desktop bottom bar */}
-      {projectRole !== 'viewer' && (isMobile ? <MobileAIButton /> : <AIPromptBox />)}
+      {projectRole !== 'viewer' && <MobileAIButton />}
       <input
         ref={fileInputRef}
         type="file"
