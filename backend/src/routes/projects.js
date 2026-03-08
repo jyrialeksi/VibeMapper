@@ -3,11 +3,18 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../db/database.js';
 import { requireProjectAccess } from '../middleware/auth.js';
 
+const authEnabled = process.env.AUTH_ENABLED === 'true';
+
 const router = Router();
 
 // List projects (owned + shared with me)
 router.get('/', (req, res) => {
   const userId = req.user.id;
+  // In dev mode (auth disabled), also show unowned projects.
+  // In production, only show projects owned by the user or shared with them.
+  const whereClause = authEnabled
+    ? 'WHERE p.owner_id = ? OR ps.user_id IS NOT NULL'
+    : 'WHERE p.owner_id = ? OR p.owner_id IS NULL OR ps.user_id IS NOT NULL';
   const projects = db.prepare(`
     SELECT DISTINCT p.*,
       CASE WHEN p.owner_id = ? THEN 'owner' ELSE COALESCE(ps.role, 'owner') END as role,
@@ -15,7 +22,7 @@ router.get('/', (req, res) => {
     FROM projects p
     LEFT JOIN project_shares ps ON ps.project_id = p.id AND ps.user_id = ?
     LEFT JOIN users u ON u.id = p.owner_id
-    WHERE p.owner_id = ? OR p.owner_id IS NULL OR ps.user_id IS NOT NULL
+    ${whereClause}
     ORDER BY p.updated_at DESC
   `).all(userId, userId, userId, userId);
   res.json(projects);

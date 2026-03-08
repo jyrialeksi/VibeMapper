@@ -38,6 +38,11 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const isProd = process.env.NODE_ENV === 'production';
 
+// Trust first proxy (Fly.io, nginx, etc.) so express-rate-limit reads X-Forwarded-For correctly
+if (isProd) {
+  app.set('trust proxy', 1);
+}
+
 app.use(cors({
   origin: isProd ? false : 'http://localhost:5173',
   credentials: true,
