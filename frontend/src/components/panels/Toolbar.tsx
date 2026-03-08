@@ -63,33 +63,37 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
   const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
   const toggleShowLastAIEdit = useMapStore((s) => s.toggleShowLastAIEdit);
   const lastAIEditNodeIds = useMapStore((s) => s.lastAIEditNodeIds);
+  const projectRole = useMapStore((s) => s.projectRole);
+  const isViewer = projectRole === 'viewer';
 
   return (
     <div className={`absolute top-3 left-3 z-50 flex items-center gap-2 flex-wrap max-w-[calc(100vw-24px)] ${isAIEditing ? 'opacity-50 pointer-events-none' : ''}`}>
-      {/* Tool buttons */}
-      <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
-        {tools.map((tool) => {
-          const Icon = tool.icon;
-          return (
-            <button
-              key={tool.mode}
-              onClick={() => setToolMode(tool.mode)}
-              className={`px-3 py-2 text-sm font-medium border-r border-gray-200/30 dark:border-gray-700/30 last:border-r-0 transition-colors duration-150 flex items-center gap-1.5 ${
-                toolMode === tool.mode
-                  ? 'bg-blue-50/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
-              }`}
-              title={tool.label}
-            >
-              <Icon size={16} />
-              {tool.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* Tool buttons (hidden for viewers) */}
+      {!isViewer && (
+        <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+          {tools.map((tool) => {
+            const Icon = tool.icon;
+            return (
+              <button
+                key={tool.mode}
+                onClick={() => setToolMode(tool.mode)}
+                className={`px-3 py-2 text-sm font-medium border-r border-gray-200/30 dark:border-gray-700/30 last:border-r-0 transition-colors duration-150 flex items-center gap-1.5 ${
+                  toolMode === tool.mode
+                    ? 'bg-blue-50/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+                }`}
+                title={tool.label}
+              >
+                <Icon size={16} />
+                {tool.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Card type selector (shown when addCard tool active) */}
-      {toolMode === 'addCard' && (
+      {/* Card type selector (shown when addCard tool active, hidden for viewers) */}
+      {!isViewer && toolMode === 'addCard' && (
         <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
           {cardTypeOptions.map((opt) => (
             <button
@@ -135,25 +139,27 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
         </button>
       </div>
 
-      {/* Undo/Redo */}
-      <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
-        <button
-          onClick={undo}
-          disabled={!canUndo}
-          className="px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 border-r border-gray-200/30 dark:border-gray-700/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
-          title="Undo (Ctrl+Z)"
-        >
-          <Undo2 size={16} />
-        </button>
-        <button
-          onClick={redo}
-          disabled={!canRedo}
-          className="px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
-          title="Redo (Ctrl+Shift+Z)"
-        >
-          <Redo2 size={16} />
-        </button>
-      </div>
+      {/* Undo/Redo (hidden for viewers) */}
+      {!isViewer && (
+        <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+          <button
+            onClick={undo}
+            disabled={!canUndo}
+            className="px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 border-r border-gray-200/30 dark:border-gray-700/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
+            title="Undo (Ctrl+Z)"
+          >
+            <Undo2 size={16} />
+          </button>
+          <button
+            onClick={redo}
+            disabled={!canRedo}
+            className="px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
+            title="Redo (Ctrl+Shift+Z)"
+          >
+            <Redo2 size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Priority filters */}
       <div className="flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
@@ -208,33 +214,37 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
         </button>
       </div>
 
-      {/* History */}
-      <button
-        onClick={() => setVersionPanelOpen(!isVersionPanelOpen)}
-        className={`px-3 py-2 text-sm font-medium bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-colors duration-150 flex items-center gap-1.5 ${
-          isVersionPanelOpen ? 'bg-blue-50/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
-        }`}
-        title="Version History"
-      >
-        <History size={15} />
-        History
-      </button>
+      {/* History (hidden for viewers) */}
+      {!isViewer && (
+        <button
+          onClick={() => setVersionPanelOpen(!isVersionPanelOpen)}
+          className={`px-3 py-2 text-sm font-medium bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-colors duration-150 flex items-center gap-1.5 ${
+            isVersionPanelOpen ? 'bg-blue-50/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+          }`}
+          title="Version History"
+        >
+          <History size={15} />
+          History
+        </button>
+      )}
 
-      {/* AI Diff toggle */}
-      <button
-        onClick={toggleShowLastAIEdit}
-        disabled={lastAIEditNodeIds.size === 0}
-        className={`px-3 py-2 text-sm font-medium bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-colors duration-150 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed ${
-          showLastAIEdit ? 'bg-purple-50/80 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
-        }`}
-        title="Highlight nodes from last AI edit"
-      >
-        <Sparkles size={15} />
-        AI Diff
-      </button>
+      {/* AI Diff toggle (hidden for viewers) */}
+      {!isViewer && (
+        <button
+          onClick={toggleShowLastAIEdit}
+          disabled={lastAIEditNodeIds.size === 0}
+          className={`px-3 py-2 text-sm font-medium bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-colors duration-150 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed ${
+            showLastAIEdit ? 'bg-purple-50/80 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
+          }`}
+          title="Highlight nodes from last AI edit"
+        >
+          <Sparkles size={15} />
+          AI Diff
+        </button>
+      )}
 
-      {/* Save indicator */}
-      {isDirty && (
+      {/* Save indicator (hidden for viewers) */}
+      {!isViewer && isDirty && (
         <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50/80 dark:bg-amber-900/40 backdrop-blur-xl px-2 py-1 rounded-lg border border-amber-200/50 dark:border-amber-700/50">
           Unsaved
         </span>

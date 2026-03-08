@@ -285,9 +285,9 @@ export function Canvas({ projectId }: CanvasProps) {
           </div>
         </div>
       )}
-      {selectedNodeId && !isVersionPanelOpen && !isAIEditing && <CardEditor />}
+      {selectedNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <CardEditor />}
       <VersionHistoryPanel />
-      <AIPromptBox />
+      {projectRole !== 'viewer' && <AIPromptBox />}
       <input
         ref={fileInputRef}
         type="file"
