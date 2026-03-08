@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VibMapper — AI-Powered User Story Mapping for Vibe Coders</title>
-  <meta name="description" content="See your app before it exists. VibMapper turns your idea into a visual story map you can skim in seconds — not a 50-page doc. Plugs into Claude Code & Cursor via MCP." />
+  <title>VibeMapper — See Your App Before You Build It</title>
+  <meta name="description" content="Describe your app, get a visual story map. VibeMapper helps you plan what to build on an interactive canvas, then connects to your AI coding agent via MCP." />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="VibMapper — Map It, Vibe It, Ship It" />
-  <meta property="og:description" content="See your app before it exists. Visual story mapping that plugs into your vibe coding workflow via MCP. The brain codes, VibMapper remembers the plan." />
-  <meta property="og:url" content="https://vibmapper.io" />
-  <meta property="og:site_name" content="VibMapper" />
+  <meta property="og:title" content="VibeMapper — Map It, Vibe It, Ship It" />
+  <meta property="og:description" content="Describe your app, get a visual story map. Plan what to build on a canvas, then connect to your AI coding agent via MCP." />
+  <meta property="og:url" content="https://vibemapper.io" />
+  <meta property="og:site_name" content="VibeMapper" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="VibMapper — Map It, Vibe It, Ship It" />
-  <meta name="twitter:description" content="See your app before it exists. Visual story mapping that plugs into your vibe coding workflow via MCP." />
+  <meta name="twitter:title" content="VibeMapper — Map It, Vibe It, Ship It" />
+  <meta name="twitter:description" content="Describe your app, get a visual story map. Plan what to build on a canvas, connect to your AI coding agent via MCP." />
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -377,16 +377,6 @@
     .story-card.highlight {
       border-color: rgba(198,255,77,0.2);
       color: var(--text);
-    }
-
-    .story-card.must { border-left: 3px solid var(--lime); }
-    .story-card.should { border-left: 3px solid var(--teal); }
-    .story-card.could { border-left: 3px solid var(--purple); }
-
-    .swim-lane-divider {
-      border: none;
-      border-top: 1px dashed rgba(198,255,77,0.2);
-      margin: 8px 0 4px;
     }
 
     /* ── FEATURES ── */
@@ -909,7 +899,7 @@
         <rect x="15" y="27" width="10" height="7" rx="1" fill="#c6ff4d" opacity="0.2"/>
         <rect x="28" y="27" width="6" height="7" rx="1" fill="#ff3cac" opacity="0.2"/>
       </svg>
-      <span class="logo-text">VIBMAPPER</span>
+      <span class="logo-text">VIBEMAPPER</span>
     </a>
     <ul class="nav-links">
       <li><a href="#features">Features</a></li>
@@ -917,7 +907,7 @@
       <li><a href="#mcp">MCP Integration</a></li>
       <li><a href="#pricing">Pricing</a></li>
     </ul>
-    <a class="nav-cta" href="https://app.vibmapper.io">START FREE</a>
+    <a class="nav-cta" href="https://app.vibemapper.io">START FREE</a>
   </nav>
 
   <!-- HERO -->
@@ -930,10 +920,10 @@
     </h1>
     <p class="hero-tagline">User story mapping from vibe coder to vibe coders</p>
     <p class="hero-desc">
-      Your coding agent picks the tech stack. Your job is to decide how the app should actually work. VibMapper lets you visualize every feature before a single line of code exists &mdash; on a canvas you can skim in seconds, not a markdown doc you'll never re-read.
+      AI agents write great code but they need you to tell them what the app should do. VibeMapper turns your idea into a visual story map &mdash; activities, steps, and stories on a canvas you can skim in seconds instead of scrolling through endless documents.
     </p>
     <div class="hero-actions">
-      <a href="https://app.vibmapper.io" class="btn-primary">START MAPPING FREE &rarr;</a>
+      <a href="https://app.vibemapper.io" class="btn-primary">START MAPPING FREE &rarr;</a>
       <a href="#how" class="btn-secondary">SEE HOW IT WORKS</a>
     </div>
 
@@ -943,7 +933,7 @@
         <div class="dot dot-r"></div>
         <div class="dot dot-y"></div>
         <div class="dot dot-g"></div>
-        <div class="map-preview-url">app.vibmapper.io &middot; my-saas-app</div>
+        <div class="map-preview-url">app.vibemapper.io &middot; my-saas-app</div>
       </div>
       <div class="map-canvas">
         <div class="map-row-label">Activities</div>
@@ -960,55 +950,27 @@
           <div class="step-card">Payments</div>
           <div class="step-card">Preferences</div>
         </div>
-        <div class="map-row-label">Must Have</div>
+        <div class="map-row-label">Stories</div>
         <div class="map-stories">
           <div class="story-col">
-            <div class="story-card must highlight">Sign up with email</div>
-            <div class="story-card must">Verify email</div>
+            <div class="story-card highlight">Sign up with email</div>
+            <div class="story-card">Verify email</div>
+            <div class="story-card">Set up profile</div>
           </div>
           <div class="story-col">
-            <div class="story-card must highlight">View analytics</div>
-            <div class="story-card must">Create project</div>
+            <div class="story-card highlight">View analytics</div>
+            <div class="story-card">Create project</div>
+            <div class="story-card">Invite team</div>
           </div>
           <div class="story-col">
-            <div class="story-card must highlight">Add payment method</div>
-            <div class="story-card must">View invoices</div>
+            <div class="story-card highlight">Add payment method</div>
+            <div class="story-card">View invoices</div>
+            <div class="story-card">Upgrade plan</div>
           </div>
           <div class="story-col">
-            <div class="story-card must">Edit profile</div>
-            <div class="story-card must highlight">Notifications</div>
-          </div>
-        </div>
-        <hr class="swim-lane-divider" />
-        <div class="map-row-label">Should Have</div>
-        <div class="map-stories">
-          <div class="story-col">
-            <div class="story-card should">Set up profile</div>
-          </div>
-          <div class="story-col">
-            <div class="story-card should">Invite team</div>
-          </div>
-          <div class="story-col">
-            <div class="story-card should">Upgrade plan</div>
-          </div>
-          <div class="story-col">
-            <div class="story-card should">API keys</div>
-          </div>
-        </div>
-        <hr class="swim-lane-divider" />
-        <div class="map-row-label">Could Have</div>
-        <div class="map-stories">
-          <div class="story-col">
-            <div class="story-card could">Social login</div>
-          </div>
-          <div class="story-col">
-            <div class="story-card could">Custom dashboard</div>
-          </div>
-          <div class="story-col">
-            <div class="story-card could">Usage reports</div>
-          </div>
-          <div class="story-col">
-            <div class="story-card could">Integrations</div>
+            <div class="story-card">Edit profile</div>
+            <div class="story-card highlight">Notifications</div>
+            <div class="story-card">API keys</div>
           </div>
         </div>
       </div>
@@ -1056,7 +1018,7 @@
           <path d="M14 20l4 4 8-8" stroke="#ff3cac" stroke-width="2" stroke-linecap="round"/>
         </svg>
         <div class="feature-title">AI STORY GENERATION</div>
-        <p class="feature-desc">Describe your app in plain words. VibMapper generates a visual map of every activity, step, and story &mdash; so you can see the whole product before writing any code.</p>
+        <p class="feature-desc">Describe what you're building. AI generates a complete story map &mdash; activities, steps, and user stories laid out on a visual canvas.</p>
       </div>
       <div class="feature-card">
         <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
@@ -1066,7 +1028,7 @@
           <rect x="22" y="22" width="14" height="14" rx="2" fill="#c6ff4d" opacity="0.15"/>
         </svg>
         <div class="feature-title">VISUAL CANVAS</div>
-        <p class="feature-desc">Your app's blueprint on an infinite zoomable canvas. Skim the entire product in one glance &mdash; no scrolling through endless docs. Drag, edit, rearrange until it matches your vision.</p>
+        <p class="feature-desc">An infinite zoomable canvas where you see your entire app at a glance. Drag nodes, edit cards, rearrange flows. Easier to skim than any document.</p>
       </div>
       <div class="feature-card">
         <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
@@ -1076,7 +1038,7 @@
           <path d="M30 8h4M32 6v4" stroke="#080810" stroke-width="1.2" stroke-linecap="round"/>
         </svg>
         <div class="feature-title">AI MAP EDITING</div>
-        <p class="feature-desc">Tell AI what to change and it surgically updates your map. Diff highlighting shows exactly what was added or modified &mdash; like a PR review for your product plan.</p>
+        <p class="feature-desc">Ask AI to add features, restructure flows, or break down stories. It updates the map surgically and highlights what changed.</p>
       </div>
       <div class="feature-card">
         <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
@@ -1084,8 +1046,8 @@
           <circle cx="32" cy="8" r="3" fill="#7b2fff"/>
           <circle cx="16" cy="12" r="3" fill="#7b2fff" opacity="0.5"/>
         </svg>
-        <div class="feature-title">PRIORITY SWIM LANES</div>
-        <p class="feature-desc">Slice your vision into Must-have, Should-have, Could-have, and Won't-have. See your MVP scope at a glance &mdash; know exactly what to build first and what to skip.</p>
+        <div class="feature-title">PRIORITIZE & TRACK</div>
+        <p class="feature-desc">Tag stories as must-have, should-have, could-have, or won't-have. Track status from not-started to done. Filter the canvas to focus on what matters.</p>
       </div>
       <div class="feature-card">
         <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
@@ -1096,7 +1058,7 @@
           <path d="M25 16h8M25 20h6M25 24h7" stroke="#c6ff4d" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
         </svg>
         <div class="feature-title">MCP SERVER</div>
-        <p class="feature-desc">Claude Code is the brain, VibMapper is the memory. Connect via MCP and your coding agent can read the plan, update progress, and stay aligned with your vision as it builds.</p>
+        <p class="feature-desc">Connect VibeMapper to Claude Code or Cursor via MCP. Your coding agent reads the story map, picks up tasks, and updates progress as it builds.</p>
       </div>
       <div class="feature-card">
         <svg class="feature-icon" viewBox="0 0 40 40" fill="none">
@@ -1105,7 +1067,7 @@
           <path d="M8 30c0-4 4-6 6-6s4 1 6 3c2-2 4-3 6-3s6 2 6 6" stroke="#ff3cac" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
         </svg>
         <div class="feature-title">SHARE & COLLABORATE</div>
-        <p class="feature-desc">Invite teammates with viewer or editor roles. Share read-only links for feedback. Version history lets you snapshot and restore any state of your product plan.</p>
+        <p class="feature-desc">Invite people by email as viewers or editors. Share read-only links. Save version snapshots and restore them anytime.</p>
       </div>
     </div>
   </section>
@@ -1119,22 +1081,22 @@
         <div class="step">
           <div class="step-num">01</div>
           <div class="step-title">DESCRIBE YOUR APP</div>
-          <p class="step-desc">Type what you're building. AI generates a visual map of the entire product &mdash; every user flow, visible at a glance before any code exists.</p>
+          <p class="step-desc">Tell VibeMapper what you're building. AI generates a story map with activities, steps, and user stories.</p>
         </div>
         <div class="step">
           <div class="step-num">02</div>
           <div class="step-title">REFINE ON CANVAS</div>
-          <p class="step-desc">Drag, edit, rearrange until the canvas matches your mental model. Faster than writing specs &mdash; you see the whole app in one view.</p>
+          <p class="step-desc">Edit cards, drag nodes around, add descriptions and acceptance criteria. Ask AI to make changes or do it yourself.</p>
         </div>
         <div class="step">
           <div class="step-num">03</div>
-          <div class="step-title">PRIORITIZE YOUR MVP</div>
-          <p class="step-desc">Drag stories into priority swim lanes. Your MVP scope becomes obvious &mdash; no second-guessing what to build first.</p>
+          <div class="step-title">SET PRIORITIES</div>
+          <p class="step-desc">Tag each story with a priority. Filter the canvas to see only what matters for your current release.</p>
         </div>
         <div class="step">
           <div class="step-num">04</div>
           <div class="step-title">CONNECT & BUILD</div>
-          <p class="step-desc">Plug VibMapper into Claude Code or Cursor via MCP. Your coding agent reads the map, builds from it, and updates progress as it ships.</p>
+          <p class="step-desc">Export as Markdown or JSON. Or connect via MCP so your coding agent reads the map directly and updates status as it ships.</p>
         </div>
       </div>
     </div>
@@ -1145,15 +1107,15 @@
     <div class="mcp-inner">
       <div class="mcp-content">
         <div class="mcp-badge">Key Differentiator</div>
-        <h2 class="mcp-title">THE BRAIN CODES.<br>VIBMAPPER<br><span style="color:var(--teal)">REMEMBERS.</span></h2>
+        <h2 class="mcp-title">PLUGS INTO YOUR<br><span style="color:var(--teal)">VIBE CODING<br>WORKFLOW</span></h2>
         <p class="mcp-desc">
-          Coding agents are incredible at choosing frameworks and writing code. But they don't know how your app should work &mdash; that's your job. VibMapper is the visualization layer and project memory that plugs directly into your vibe coding workflow via MCP.
+          Coding agents are great at picking frameworks and writing code. But deciding what your app should do is your job. VibeMapper gives you the visualization and your coding agent the context &mdash; connected via MCP.
         </p>
         <ul class="mcp-features">
-          <li>Your coding agent reads the map &mdash; full product context, not a wall of text</li>
-          <li>Card status updates as features get built (in-progress, done)</li>
-          <li>New stories added as they're discovered during development</li>
-          <li>The plan stays alive and in sync &mdash; not a stale doc nobody updates</li>
+          <li>Your agent reads the story map as structured context</li>
+          <li>Status updates as features get built</li>
+          <li>New stories added during development</li>
+          <li>The plan stays in sync with the codebase</li>
         </ul>
       </div>
       <div class="mcp-code">
@@ -1163,11 +1125,11 @@
           <div class="dot dot-g"></div>
           <span>terminal</span>
         </div>
-        <pre><span class="comment"># Add VibMapper to Claude Code</span>
-<span class="cmd">claude</span> <span class="flag">mcp add</span> <span class="str">vibmapper</span> \
-  <span class="flag">-e</span> USM_BACKEND_URL=<span class="str">https://app.vibmapper.io</span> \
+        <pre><span class="comment"># Add VibeMapper to Claude Code</span>
+<span class="cmd">claude</span> <span class="flag">mcp add</span> <span class="str">vibemapper</span> \
+  <span class="flag">-e</span> USM_BACKEND_URL=<span class="str">https://app.vibemapper.io</span> \
   <span class="flag">-e</span> USM_API_TOKEN=<span class="str">mcp_your_token</span> \
-  <span class="flag">--</span> node vibmapper-mcp/build/index.js
+  <span class="flag">--</span> node vibemapper-mcp/build/index.js
 
 <span class="comment"># Now your AI assistant can:</span>
 <span class="comment"># - list_projects</span>
@@ -1192,7 +1154,7 @@
         <li>AI story generation</li>
         <li>AI map editing with diff view</li>
         <li>Visual drag-and-drop canvas</li>
-        <li>Priority swim lanes</li>
+        <li>Priority tagging & filtering</li>
         <li>MCP server integration</li>
         <li>Markdown & JSON export</li>
         <li>Share with email invites</li>
@@ -1201,7 +1163,7 @@
         <li>Dark mode</li>
         <li>Mobile support</li>
       </ul>
-      <a href="https://app.vibmapper.io" class="plan-btn">START MAPPING FREE</a>
+      <a href="https://app.vibemapper.io" class="plan-btn">START MAPPING FREE</a>
       <p class="plan-note">Pro plan for teams coming soon.</p>
     </div>
   </section>
@@ -1210,15 +1172,15 @@
   <div class="cta-banner">
     <h2 class="cta-title">SEE IT BEFORE<br><span>YOU BUILD IT.</span></h2>
     <p class="cta-sub">Your next app starts as a map, not a markdown file.</p>
-    <a href="https://app.vibmapper.io" class="btn-primary">MAP YOUR VIBE FOR FREE &rarr;</a>
+    <a href="https://app.vibemapper.io" class="btn-primary">MAP YOUR VIBE FOR FREE &rarr;</a>
   </div>
 
   <!-- FOOTER -->
   <footer>
-    <div class="footer-logo">VIBMAPPER</div>
-    <div class="footer-copy">&copy; 2025 VibMapper</div>
+    <div class="footer-logo">VIBEMAPPER</div>
+    <div class="footer-copy">&copy; 2025 VibeMapper</div>
     <div class="footer-links">
-      <a href="https://app.vibmapper.io">Open App</a>
+      <a href="https://app.vibemapper.io">Open App</a>
       <a href="https://github.com/jyrivuorinen/user-story-mapper-ai">GitHub</a>
     </div>
   </footer>
