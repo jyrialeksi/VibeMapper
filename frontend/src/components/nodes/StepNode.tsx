@@ -15,7 +15,7 @@ export function StepNode({ id, data, selected }: NodeProps<Node<StoryCardData>>)
         selected ? 'border-[#00F5D4] ring-2 ring-[#00F5D4]/30' : 'border-[#00F5D4]/60'
       } ${highlightClass} ${dimClass}`}
     >
-      <div className="font-mono-brand text-[8px] font-bold uppercase tracking-wider text-[#00F5D4] mb-1">
+      <div className="font-mono-brand text-[8px] font-bold uppercase tracking-wider text-[#007a6a] mb-1">
         Step
       </div>
       <div className="font-semibold text-[11px] text-[#080810] leading-snug">{data.title}</div>
