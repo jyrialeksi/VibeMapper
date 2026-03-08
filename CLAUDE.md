@@ -32,7 +32,7 @@ Monorepo (npm workspaces) with two packages: `frontend/` and `backend/`.
 
 **AI robustness:** `backend/src/ai/client.js` includes JSON extraction fallback (regex for first `{...}` or `[...]` block), shape validation, and auto-retry with conversational correction when models return prose instead of JSON.
 
-**Local auto-arrange:** Auto-arrange is a local algorithm (not AI-based) — triggered via `arrangeLocal` in the store, with height-aware positioning by `LayoutCorrector.tsx`.
+**Local auto-arrange:** Auto-arrange is a local algorithm (not AI-based) — triggered via the "Arrange" button in the top toolbar or `arrangeLocal` in the store, with height-aware positioning by `LayoutCorrector.tsx`.
 
 ## Canvas Data Model
 
@@ -94,3 +94,4 @@ Lessons learned during development — add new entries as they arise.
 - **Left color bar on cards via inset box-shadow**: Overlay divs cause double-border artifacts or kill corner radius with `overflow-hidden`. Thick `border-l` makes inner corners square. Fix: set `--tw-inset-shadow` inline style (`inset 6px 0 0 0 <color>`) which respects `border-radius` and composes with Tailwind v4's `shadow-md` and `ring-*` layers automatically.
 - **Visibility toggle + LayoutCorrector timing**: Setting `pendingLayout: 'fullArrange'` in the same Zustand `set()` as a visibility change fails — the LayoutCorrector's no-dep-array effect gets its timer cancelled by re-renders from the visibility change propagating to node components. Fix: LayoutCorrector watches `showDescriptions`/`showAcceptanceCriteria` in a dedicated `useEffect` with a proper dependency array, waits 220ms for content CSS transitions to finish and React Flow to re-measure DOM heights, then runs `fullArrange` with real measured heights. Using `estimateHeight` (empty nodeLookup) produces inaccurate positions at scale.
 - **Animating card content show/hide**: Conditional rendering (`{show && <div>...}`) can't be animated — element is removed from DOM instantly. Fix: always render the content, wrap in a CSS grid container with `grid-template-rows: 0fr`/`1fr` transition. The inner div has `overflow: hidden`. This animates height from 0 to auto smoothly. Position animation uses a temporary `.layout-animating` CSS class on the React Flow container to add `transition: transform` only during rearrange (not during drag).
+- **Node.js `decipher.update()` needs explicit encoding**: `decipher.update(data)` returns a Buffer; concatenating via `+` with a string relies on implicit `Buffer.toString()` which can be unreliable. Always specify output encoding explicitly: `decipher.update(data, null, 'utf8')`.
