@@ -307,6 +307,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
+        minZoom={0.2}
         connectionMode={toolMode === 'line' ? undefined : undefined}
         className="bg-gray-50 dark:bg-gray-950 touch-manipulation"
       >
