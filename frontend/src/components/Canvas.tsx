@@ -297,6 +297,7 @@ export function Canvas({ projectId }: CanvasProps) {
         onNodeDragStart={isReadOnly ? undefined : handleNodeDragStart}
         nodesDraggable={false}
         nodesConnectable={!isReadOnly}
+        proOptions={{ hideAttribution: true }}
         elementsSelectable={!isReadOnly}
         deleteKeyCode={isReadOnly ? null : 'Delete'}
         selectionKeyCode={isReadOnly ? null : 'Shift'}
