@@ -110,7 +110,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown }: MobileTo
   const btnBase = 'min-h-[44px] px-3 py-2 text-sm font-medium transition-colors duration-150 flex items-center gap-2 rounded-lg w-full';
   const btnInactive = 'text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80';
   const btnActive = 'bg-blue-50/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
-  const btnDisabled = 'opacity-40 cursor-not-allowed';
+  const btnDisabled = 'text-gray-300 dark:text-gray-600 cursor-not-allowed';
 
   return (
     <div ref={popoverRef} className={`absolute top-3 left-3 z-50 ${isAIEditing ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -129,7 +129,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown }: MobileTo
 
       {/* Popover */}
       {open && (
-        <div className="absolute top-13 left-0 w-64 max-h-[70vh] overflow-y-auto bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-2 space-y-1">
+        <div className="absolute top-13 left-0 w-64 max-h-[calc(100vh-5rem)] overflow-y-auto bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 p-2 pb-3 space-y-1">
 
           {/* Tools section */}
           {!isViewer && (

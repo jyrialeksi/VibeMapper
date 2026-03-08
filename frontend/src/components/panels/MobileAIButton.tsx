@@ -35,9 +35,9 @@ export function MobileAIButton() {
 
       {/* Bottom sheet */}
       {open && (
-        <div className="absolute bottom-0 left-0 right-0 z-50 animate-slide-up">
+        <div className="absolute bottom-0 left-0 right-0 z-50 animate-slide-up flex justify-center">
           <div
-            className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-t-2xl shadow-lg border-t border-gray-200/50 dark:border-gray-700/50 px-4 pt-3"
+            className="w-full max-w-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-t-2xl shadow-lg border-t border-x border-gray-200/50 dark:border-gray-700/50 px-4 pt-3"
             style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
           >
             {/* Drag handle + close */}
