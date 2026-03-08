@@ -83,7 +83,7 @@ interface MapState {
   setCardTypeToAdd: (type: CardType) => void;
   setProjectId: (id: string | null) => void;
   setDirty: (dirty: boolean) => void;
-  loadCanvas: (nodes: Node<StoryCardData>[], edges: Edge[], viewport: Viewport) => void;
+  loadCanvas: (nodes: Node<StoryCardData>[], edges: Edge[], viewport: Viewport, visibility?: { showDescriptions?: boolean; showAcceptanceCriteria?: boolean }) => void;
   mergeNodes: (newNodes: Node<StoryCardData>[], newEdges: Edge[]) => void;
   applyArrangement: (positions: { id: string; position: { x: number; y: number } }[]) => void;
   applyOperations: (operations: EditOperation[]) => void;
@@ -114,6 +114,7 @@ interface MapState {
   // Card content visibility actions
   toggleShowDescriptions: () => void;
   toggleShowAcceptanceCriteria: () => void;
+  applyVisibility: (showDescriptions: boolean, showAcceptanceCriteria: boolean) => void;
 
   // Version actions
   setPendingSaveLabel: (label: string | null) => void;
@@ -223,8 +224,13 @@ export const useMapStore = create<MapState>((set, get) => ({
   setProjectId: (id) => set({ projectId: id }),
   setDirty: (dirty) => set({ isDirty: dirty }),
 
-  loadCanvas: (nodes, edges, viewport) => {
-    set({ nodes, edges, viewport, isDirty: false, highlightedNodes: new Map(), lastAIEditNodeIds: new Set(), showLastAIEdit: false });
+  loadCanvas: (nodes, edges, viewport, visibility) => {
+    set({
+      nodes, edges, viewport, isDirty: false,
+      highlightedNodes: new Map(), lastAIEditNodeIds: new Set(), showLastAIEdit: false,
+      ...(visibility?.showDescriptions !== undefined && { showDescriptions: visibility.showDescriptions }),
+      ...(visibility?.showAcceptanceCriteria !== undefined && { showAcceptanceCriteria: visibility.showAcceptanceCriteria }),
+    });
     get().clearHistory();
   },
 
@@ -451,6 +457,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   // Card content visibility actions
   toggleShowDescriptions: () => set((s) => ({ showDescriptions: !s.showDescriptions })),
   toggleShowAcceptanceCriteria: () => set((s) => ({ showAcceptanceCriteria: !s.showAcceptanceCriteria })),
+  applyVisibility: (showDescriptions, showAcceptanceCriteria) => set({ showDescriptions, showAcceptanceCriteria }),
 
   // Version actions
   setPendingSaveLabel: (label) => set({ pendingSaveLabel: label }),

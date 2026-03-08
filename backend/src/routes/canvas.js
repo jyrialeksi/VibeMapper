@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import db from '../db/database.js';
 import { createVersion, listVersions, getVersion } from '../db/versions.js';
-import { requireProjectAccess } from '../middleware/auth.js';
+import { requireProjectAccess, verifyTokenAndGetUser } from '../middleware/auth.js';
+import { addClient, broadcast } from '../sse/connections.js';
 
 const router = Router();
 
@@ -16,6 +17,8 @@ router.get('/:projectId', requireProjectAccess('viewer'), (req, res) => {
     viewport: JSON.parse(canvas.viewport),
     updated_at: canvas.updated_at,
     role: req.projectRole,
+    showDescriptions: canvas.show_descriptions !== 0,
+    showAcceptanceCriteria: canvas.show_acceptance_criteria !== 0,
   });
 });
 
@@ -174,6 +177,73 @@ router.post('/:projectId/versions', requireProjectAccess('editor'), (req, res) =
   const version = createVersion(projectId, nodes, edges, viewport, label);
 
   res.json({ success: true, version });
+});
+
+// Save visibility settings (editor-only)
+router.put('/:projectId/visibility', requireProjectAccess('editor'), (req, res) => {
+  const { showDescriptions, showAcceptanceCriteria } = req.body;
+  const { projectId } = req.params;
+
+  const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(projectId);
+  if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
+
+  db.prepare(
+    "UPDATE canvas_states SET show_descriptions = ?, show_acceptance_criteria = ?, updated_at = datetime('now') WHERE project_id = ?"
+  ).run(showDescriptions ? 1 : 0, showAcceptanceCriteria ? 1 : 0, projectId);
+
+  // Broadcast to other connected clients
+  broadcast(projectId, 'visibility', { showDescriptions, showAcceptanceCriteria }, req.user.id);
+
+  res.json({ success: true });
+});
+
+// SSE endpoint for live updates
+router.get('/:projectId/events', async (req, res) => {
+  const { projectId } = req.params;
+  const token = req.query.token;
+
+  // Auth via query param token
+  let user;
+  try {
+    user = await verifyTokenAndGetUser(token);
+  } catch {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+
+  // Check project access inline (viewer or above)
+  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
+  if (!project) return res.status(404).json({ error: 'Project not found' });
+
+  const authEnabled = process.env.AUTH_ENABLED === 'true';
+  const isOwner = project.owner_id === user.id || (!authEnabled && !project.owner_id);
+  if (!isOwner) {
+    const share = db.prepare(
+      'SELECT role FROM project_shares WHERE project_id = ? AND user_id = ?'
+    ).get(projectId, user.id);
+    if (!share) return res.status(403).json({ error: 'Access denied' });
+  }
+
+  // Set SSE headers
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+  });
+  res.flushHeaders();
+
+  // Send initial keepalive
+  res.write(':ok\n\n');
+
+  // Keepalive every 30s
+  const keepalive = setInterval(() => {
+    res.write(':keepalive\n\n');
+  }, 30000);
+
+  res.on('close', () => {
+    clearInterval(keepalive);
+  });
+
+  addClient(projectId, user.id, res);
 });
 
 export default router;

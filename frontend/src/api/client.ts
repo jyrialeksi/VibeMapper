@@ -105,6 +105,13 @@ export const api = {
     }),
   getAIHistory: (projectId: string) => request<unknown[]>(`/ai/history/${projectId}`),
 
+  // Visibility
+  saveVisibility: (projectId: string, showDescriptions: boolean, showAcceptanceCriteria: boolean) =>
+    request<{ success: boolean }>(`/canvas/${projectId}/visibility`, {
+      method: 'PUT',
+      body: JSON.stringify({ showDescriptions, showAcceptanceCriteria }),
+    }),
+
   // Shares
   listShares: (projectId: string) =>
     request<Share[]>(`/projects/${projectId}/shares`),

@@ -12,6 +12,7 @@ import { Loader2, X } from 'lucide-react';
 import { useMapStore } from '../store/useMapStore';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useTheme } from '../hooks/useTheme';
+import { useAuth } from '../hooks/useAuth';
 import { api } from '../api/client';
 import { nodeTypes } from './nodes';
 import { edgeTypes } from './edges';
@@ -108,14 +109,50 @@ export function Canvas({ projectId }: CanvasProps) {
   useAutoSave();
   useKeyboardShortcuts();
 
+  const { getToken } = useAuth();
+  const applyVisibility = useMapStore((s) => s.applyVisibility);
+
   // Load canvas state on mount
   useEffect(() => {
     setProjectId(projectId);
     api.loadCanvas(projectId).then((state) => {
-      loadCanvas(state.nodes, state.edges, state.viewport);
+      loadCanvas(state.nodes, state.edges, state.viewport, {
+        showDescriptions: state.showDescriptions,
+        showAcceptanceCriteria: state.showAcceptanceCriteria,
+      });
       if (state.role) setProjectRole(state.role);
     }).catch(console.error);
   }, [projectId, loadCanvas, setProjectId, setProjectRole]);
+
+  // SSE subscription for live visibility sync
+  useEffect(() => {
+    if (!projectId) return;
+
+    let es: EventSource | null = null;
+
+    const connect = async () => {
+      const token = await getToken();
+      const url = `/api/canvas/${projectId}/events${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+      es = new EventSource(url);
+
+      es.addEventListener('visibility', (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          applyVisibility(data.showDescriptions, data.showAcceptanceCriteria);
+        } catch { /* ignore parse errors */ }
+      });
+
+      es.onerror = () => {
+        // EventSource auto-reconnects; no action needed
+      };
+    };
+
+    connect();
+
+    return () => {
+      es?.close();
+    };
+  }, [projectId, getToken, applyVisibility]);
 
   const handlePaneClick = useCallback(
     (event: React.MouseEvent) => {

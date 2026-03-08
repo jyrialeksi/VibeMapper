@@ -45,6 +45,24 @@ html, body, #root {
   transition: opacity 0.3s ease;
 }
 
+/* Smooth node position transitions during visibility-triggered rearrange */
+.layout-animating .react-flow__node {
+  transition: transform 250ms ease-out !important;
+}
+
+/* Collapsible card content sections */
+.card-section-collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 200ms ease-out;
+}
+.card-section-collapsible.card-section-open {
+  grid-template-rows: 1fr;
+}
+.card-section-collapsible > div {
+  overflow: hidden;
+}
+
 /* React Flow dark mode overrides */
 .dark .react-flow {
   background-color: rgb(3 7 18);

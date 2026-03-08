@@ -82,4 +82,13 @@ export function runMigrations() {
     db.exec(`ALTER TABLE projects ADD COLUMN owner_id TEXT DEFAULT NULL`);
     db.exec(`CREATE INDEX IF NOT EXISTS idx_projects_owner ON projects(owner_id)`);
   }
+
+  // Add visibility columns to canvas_states if not present
+  const canvasCols = db.prepare("PRAGMA table_info(canvas_states)").all();
+  if (!canvasCols.some(c => c.name === 'show_descriptions')) {
+    db.exec(`ALTER TABLE canvas_states ADD COLUMN show_descriptions INTEGER DEFAULT 1`);
+  }
+  if (!canvasCols.some(c => c.name === 'show_acceptance_criteria')) {
+    db.exec(`ALTER TABLE canvas_states ADD COLUMN show_acceptance_criteria INTEGER DEFAULT 1`);
+  }
 }

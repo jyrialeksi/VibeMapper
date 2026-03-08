@@ -281,10 +281,13 @@ function fullArrange(
 export function LayoutCorrector() {
   const pendingLayout = useMapStore((s) => s.pendingLayout);
   const setPendingLayout = useMapStore((s) => s.setPendingLayout);
+  const showDescriptions = useMapStore((s) => s.showDescriptions);
+  const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
   const nodeLookup = useStore(nodeLookupSelector);
   const nodeLookupRef = useRef(nodeLookup);
   nodeLookupRef.current = nodeLookup;
   const actionRef = useRef<string | null>(null);
+  const initialVisibilityRef = useRef({ showDescriptions, showAcceptanceCriteria });
 
   // Capture the action in a ref, then clear the store flag
   if (pendingLayout !== 'none' && actionRef.current === null) {
@@ -319,6 +322,44 @@ export function LayoutCorrector() {
 
     return () => clearTimeout(timer);
   });
+
+  // Watch visibility changes and trigger a two-phase animated rearrange:
+  //   Phase 1: Card content collapses/expands via CSS grid-template-rows (200ms)
+  //   Phase 2: Once content is settled and DOM heights are final, slide nodes
+  //            to correct positions using real measured heights (250ms)
+  useEffect(() => {
+    // Skip the initial render
+    if (
+      initialVisibilityRef.current.showDescriptions === showDescriptions &&
+      initialVisibilityRef.current.showAcceptanceCriteria === showAcceptanceCriteria
+    ) {
+      return;
+    }
+    initialVisibilityRef.current = { showDescriptions, showAcceptanceCriteria };
+
+    // Wait for content CSS transition to finish so measured heights are final
+    const arrangeTimer = setTimeout(() => {
+      const { nodes, edges } = useMapStore.getState();
+      if (nodes.length === 0) return;
+
+      // Enable position transition animation on nodes
+      const rfEl = document.querySelector('.react-flow');
+      rfEl?.classList.add('layout-animating');
+
+      // Run fullArrange with real measured heights
+      fullArrange(nodes, edges, nodeLookupRef.current);
+
+      // Remove animation class after position transitions complete
+      setTimeout(() => {
+        rfEl?.classList.remove('layout-animating');
+      }, 300);
+    }, 220);
+
+    return () => {
+      clearTimeout(arrangeTimer);
+      document.querySelector('.react-flow')?.classList.remove('layout-animating');
+    };
+  }, [showDescriptions, showAcceptanceCriteria]);
 
   return null;
 }

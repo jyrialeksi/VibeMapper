@@ -44,6 +44,8 @@ export interface CanvasState {
   viewport: { x: number; y: number; zoom: number };
   updated_at?: string;
   role?: 'owner' | 'editor' | 'viewer';
+  showDescriptions?: boolean;
+  showAcceptanceCriteria?: boolean;
 }
 
 export interface AIModel {

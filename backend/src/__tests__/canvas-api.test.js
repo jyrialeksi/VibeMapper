@@ -13,6 +13,7 @@ function createTestDb() {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       description TEXT DEFAULT '',
+      owner_id TEXT DEFAULT NULL,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
@@ -23,6 +24,8 @@ function createTestDb() {
       nodes TEXT DEFAULT '[]',
       edges TEXT DEFAULT '[]',
       viewport TEXT DEFAULT '{"x":0,"y":0,"zoom":1}',
+      show_descriptions INTEGER DEFAULT 1,
+      show_acceptance_criteria INTEGER DEFAULT 1,
       updated_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
     );
@@ -41,12 +44,38 @@ function createTestDb() {
 
     CREATE INDEX IF NOT EXISTS idx_canvas_versions_project
       ON canvas_versions(project_id, version_number DESC);
+
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      name TEXT NOT NULL,
+      picture TEXT DEFAULT '',
+      created_at TEXT DEFAULT (datetime('now')),
+      last_login TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS project_shares (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      user_id TEXT,
+      invited_email TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'viewer',
+      share_token TEXT UNIQUE,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+    );
   `);
 
   db.prepare("INSERT INTO projects (id, name, description) VALUES ('proj-1', 'Test Project', '')").run();
   db.prepare("INSERT INTO canvas_states (id, project_id, nodes, edges, viewport) VALUES ('cs-1', 'proj-1', '[]', '[]', '{\"x\":0,\"y\":0,\"zoom\":1}')").run();
 
   return db;
+}
+
+/** Middleware that injects a fake user (simulates requireAuth in dev mode) */
+function fakeAuth(req, _res, next) {
+  req.user = { id: 'test-user', email: 'test@test.com', name: 'Test User' };
+  next();
 }
 
 describe('Canvas API endpoints', () => {
@@ -62,6 +91,7 @@ describe('Canvas API endpoints', () => {
 
     app = express();
     app.use(express.json());
+    app.use(fakeAuth);
     app.use('/api/canvas', canvasModule.default);
   });
 

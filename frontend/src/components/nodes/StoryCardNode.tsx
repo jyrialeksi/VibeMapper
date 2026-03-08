@@ -59,22 +59,30 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
         </div>
       </div>
       <div className="font-semibold text-[11px] text-gray-900 leading-snug">{data.title}</div>
-      {showDescriptions && data.description && (
-        <div className="text-[10px] text-gray-600 mt-1 leading-snug">{data.description}</div>
-      )}
-      {showAcceptanceCriteria && data.acceptanceCriteria && data.acceptanceCriteria.length > 0 && (
-        <div className="mt-1.5 pt-1.5 border-t border-gray-200/60">
-          <div className="text-[8px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5">
-            Acceptance Criteria
+      {data.description && (
+        <div className={`card-section-collapsible ${showDescriptions ? 'card-section-open' : ''}`}>
+          <div>
+            <div className="text-[10px] text-gray-600 mt-1 leading-snug">{data.description}</div>
           </div>
-          <ul className="space-y-0.5">
-            {data.acceptanceCriteria.map((ac, i) => (
-              <li key={i} className="text-[9px] text-gray-500 leading-snug flex gap-1">
-                <span className="text-gray-400 shrink-0">•</span>
-                <span>{ac}</span>
-              </li>
-            ))}
-          </ul>
+        </div>
+      )}
+      {data.acceptanceCriteria && data.acceptanceCriteria.length > 0 && (
+        <div className={`card-section-collapsible ${showAcceptanceCriteria ? 'card-section-open' : ''}`}>
+          <div>
+            <div className="mt-1.5 pt-1.5 border-t border-gray-200/60">
+              <div className="text-[8px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5">
+                Acceptance Criteria
+              </div>
+              <ul className="space-y-0.5">
+                {data.acceptanceCriteria.map((ac, i) => (
+                  <li key={i} className="text-[9px] text-gray-500 leading-snug flex gap-1">
+                    <span className="text-gray-400 shrink-0">•</span>
+                    <span>{ac}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       )}
       <Handle type="target" position={Position.Top} className="!bg-emerald-500 !w-3 !h-3" />

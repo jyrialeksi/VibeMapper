@@ -6,6 +6,21 @@ const authEnabled = process.env.AUTH_ENABLED === 'true';
 const DEV_USER = { id: 'local-dev', email: 'dev@local', name: 'Local Dev', picture: '' };
 
 /**
+ * Verify a token and return the user object. Works in both auth-enabled and dev mode.
+ * Returns the user or throws an error.
+ */
+export async function verifyTokenAndGetUser(token) {
+  if (!authEnabled) {
+    return DEV_USER;
+  }
+
+  if (!token) throw new Error('No token provided');
+
+  const decoded = await admin.auth().verifyIdToken(token);
+  return upsertUser(decoded);
+}
+
+/**
  * Require authentication. If AUTH_ENABLED !== 'true', injects a synthetic dev user.
  */
 export function requireAuth(req, res, next) {
@@ -20,9 +35,8 @@ export function requireAuth(req, res, next) {
   }
 
   const token = header.slice(7);
-  admin.auth().verifyIdToken(token)
-    .then(decoded => {
-      const user = upsertUser(decoded);
+  verifyTokenAndGetUser(token)
+    .then(user => {
       req.user = user;
       next();
     })
