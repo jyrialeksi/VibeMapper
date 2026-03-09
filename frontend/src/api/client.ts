@@ -76,8 +76,10 @@ export const api = {
   exportCanvas: (projectId: string) => request<unknown>(`/canvas/${projectId}/export`),
 
   // Versions
-  listVersions: (projectId: string, limit = 50, offset = 0) =>
-    request<VersionSummary[]>(`/canvas/${projectId}/versions?limit=${limit}&offset=${offset}`),
+  listVersions: async (projectId: string, limit = 50, offset = 0) => {
+    const data = await request<{ versions: VersionSummary[] }>(`/canvas/${projectId}/versions?limit=${limit}&offset=${offset}`);
+    return data.versions;
+  },
   getVersion: (projectId: string, versionId: string) =>
     request<VersionDetail>(`/canvas/${projectId}/versions/${versionId}`),
   restoreVersion: (projectId: string, versionId: string) =>
