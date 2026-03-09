@@ -30,6 +30,28 @@ export async function waitForCanvas(page: Page): Promise<void> {
 }
 
 /**
+ * Seed nodes and edges into a project's canvas via API.
+ */
+export async function seedNodes(
+  projectId: string,
+  nodes: Record<string, unknown>[],
+  edges: Record<string, unknown>[] = [],
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/canvas/${projectId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nodes,
+      edges,
+      viewport: { x: 0, y: 0, zoom: 1 },
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`seedNodes failed: ${res.status} ${await res.text()}`);
+  }
+}
+
+/**
  * Get all project names from the project list page.
  */
 export async function getProjectNames(page: Page): Promise<string[]> {

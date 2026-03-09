@@ -9,3 +9,4 @@ backend/data/
 .DS_Store
 *.local
 firebase-service-account.json
+test-results/
