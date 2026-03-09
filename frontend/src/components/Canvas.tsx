@@ -353,6 +353,8 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color={theme === 'dark' ? '#7A7A9A' : '#7B2FFF33'} />
         <LayoutCorrector />
         <HighlightClearer />
+        {/* NodeContextBar must be inside ReactFlow for useReactFlow() */}
+        {isMobile && selectedNodeId && !mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <NodeContextBar />}
       </ReactFlow>
       {isAIEditing && (
         <div className={MODAL_OVERLAY}>
@@ -419,8 +421,6 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
       {!isMobile && activePanel === 'cardEditor' && selectedNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <CardEditor />}
       {/* Mobile: bottom sheet editor */}
       {isMobile && mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <MobileCardEditor />}
-      {/* Mobile: context bar near selected node */}
-      {isMobile && selectedNodeId && !mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <NodeContextBar />}
       <VersionHistoryPanel />
       {/* AI prompt: desktop bottom bar vs mobile FAB */}
       {projectRole !== 'viewer' && (isMobile ? <MobileAIButton /> : <AIPromptBox />)}
