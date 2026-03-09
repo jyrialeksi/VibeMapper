@@ -185,7 +185,7 @@ export function MobileCardEditor() {
                     className={`min-h-[44px] px-3 text-sm rounded-lg border transition-colors duration-150 ${
                       data.status === s
                         ? 'border-current'
-                        : 'bg-white/50 dark:bg-[#16162A]/50 border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)]'
+                        : 'bg-white/50 dark:bg-[#16162A]/50 border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] text-[#080810]/70 dark:text-[#F0EEFF]/70'
                     }`}
                     style={data.status === s ? { backgroundColor: STATUS_COLORS[s] + '20', color: STATUS_COLORS[s], borderColor: STATUS_COLORS[s] } : undefined}
                   >
