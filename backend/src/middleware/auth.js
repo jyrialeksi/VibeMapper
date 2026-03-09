@@ -112,9 +112,11 @@ export function requireProjectAccess(minRole = 'viewer') {
     // Check ownership
     const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
     if (!project) {
-      // Extra debug: list all project IDs to see if the project exists under a different form
-      const allProjects = db.prepare('SELECT id, name, owner_id FROM projects').all();
-      console.error(`[ACCESS] Project not found: projectId=${projectId}, userId=${userId}, minRole=${minRole}, existingProjects=${JSON.stringify(allProjects.map(p => ({ id: p.id, name: p.name, owner: p.owner_id })))}`);
+      console.error(`[ACCESS] Project not found: projectId=${projectId}, userId=${userId}, minRole=${minRole}`);
+      if (process.env.NODE_ENV !== 'production') {
+        const allProjects = db.prepare('SELECT id, name, owner_id FROM projects').all();
+        console.debug(`[ACCESS] Existing projects: ${JSON.stringify(allProjects.map(p => ({ id: p.id, name: p.name, owner: p.owner_id })))}`);
+      }
       return res.status(404).json({ error: 'Project not found' });
     }
 

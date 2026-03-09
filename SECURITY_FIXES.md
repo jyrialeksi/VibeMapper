@@ -21,7 +21,7 @@ Identified during pre-public security review. Work through top-to-bottom by prio
   - Raw `err.message` sent to client — may leak OpenRouter API details or DB errors
   - Fix: Return generic error message, log full error server-side only
 
-- [ ] **4. Remove verbose project dump from auth middleware**
+- [x] **4. Remove verbose project dump from auth middleware**
   - File: `backend/src/middleware/auth.js:117`
   - On 404, logs all project IDs/names via `JSON.stringify(allProjects...)`
   - Fix: Remove or gate behind `NODE_ENV !== 'production'`
