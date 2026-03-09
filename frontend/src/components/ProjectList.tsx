@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import type { Project } from '../types';
-import { Moon, Sun, LogOut, Users, Settings, ChevronRight, Server, FileText, Sparkles } from 'lucide-react';
+import { Moon, Sun, LogOut, Users, Settings, ChevronRight } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 
@@ -142,61 +142,7 @@ export function ProjectList() {
 
       <div className="max-w-2xl mx-auto pt-16 px-4">
         <h1 className="font-display text-5xl text-[#080810] dark:text-[#F0EEFF] mb-2 tracking-wide">VIBEMAPPER</h1>
-        <p className="text-[#7A7A9A] mb-4">Create and manage user story maps with AI assistance</p>
-
-        {/* Badges */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-[#00F5D4]/10 dark:bg-[#00F5D4]/15 text-[#00F5D4] border border-[#00F5D4]/20">
-            <Server size={12} />
-            MCP Server
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-[#7B2FFF]/10 dark:bg-[#7B2FFF]/15 text-[#7B2FFF] dark:text-[#B794FF] border border-[#7B2FFF]/20">
-            <FileText size={12} />
-            Export as Markdown
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-[#C6FF4D]/10 dark:bg-[#C6FF4D]/15 text-[#7A9A2A] dark:text-[#C6FF4D] border border-[#C6FF4D]/20">
-            <Sparkles size={12} />
-            Free to use
-          </span>
-        </div>
-
-        {/* AI options info */}
-        <div className="mb-8 bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-xl p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-[#080810] dark:text-[#F0EEFF]">Two ways to use AI</h2>
-
-          <div className="space-y-3">
-            <div>
-              <h3 className="text-sm font-medium text-[#00F5D4] flex items-center gap-1.5">
-                <Server size={14} />
-                Use via MCP with your own AI agent
-              </h3>
-              <p className="text-xs text-[#7A7A9A] mt-1 leading-relaxed">
-                Connect VIBEmapper as an MCP server to Claude Code, Cursor, or any MCP-compatible AI agent. Your agent gets full access to create and edit story maps — you stay in your own workflow.
-              </p>
-            </div>
-
-            <div className="border-t border-[rgba(123,47,255,0.08)] dark:border-[rgba(198,255,77,0.08)]" />
-
-            <div>
-              <h3 className="text-sm font-medium text-[#C6FF4D] flex items-center gap-1.5">
-                <Sparkles size={14} />
-                Use built-in AI with an OpenRouter API key
-              </h3>
-              <p className="text-xs text-[#7A7A9A] mt-1 leading-relaxed">
-                Provide your own OpenRouter API key in Settings to generate and edit story maps directly inside the app.{' '}
-                <a
-                  href="https://openrouter.ai"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#7B2FFF] dark:text-[#B794FF] hover:underline"
-                >
-                  OpenRouter
-                </a>{' '}
-                is a unified API gateway that gives you access to many AI models (Claude, GPT, Gemini, and more) through a single API key — you only pay for what you use.
-              </p>
-            </div>
-          </div>
-        </div>
+        <p className="text-[#7A7A9A] mb-8">Create and manage user story maps with AI assistance</p>
 
         {/* Create new project */}
         <div className="flex gap-2 mb-6">
