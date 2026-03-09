@@ -1,9 +1,9 @@
 import { useRef, useEffect, useState } from 'react';
 import { useMapStore } from '../../store/useMapStore';
-import { api } from '../../api/client';
 import type { ToolMode, CardType, Priority } from '../../types';
 import { PRIORITY_COLORS } from '../../types';
 import { GLASS_PANEL, GLASS_BORDER, GLASS_BORDER_SUBTLE, BTN_ACTIVE } from '../../styles/shared';
+import { useVisibilityToggle } from '../../hooks/useVisibilityToggle';
 import {
   Menu,
   X,
@@ -69,16 +69,12 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
   const setVersionPanelOpen = useMapStore((s) => s.setVersionPanelOpen);
   const hiddenPriorities = useMapStore((s) => s.hiddenPriorities);
   const togglePriority = useMapStore((s) => s.togglePriority);
-  const showDescriptions = useMapStore((s) => s.showDescriptions);
-  const toggleShowDescriptions = useMapStore((s) => s.toggleShowDescriptions);
-  const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
-  const toggleShowAcceptanceCriteria = useMapStore((s) => s.toggleShowAcceptanceCriteria);
+  const { showDescriptions, showAcceptanceCriteria, handleToggleDescriptions, handleToggleAC } = useVisibilityToggle();
   const isAIEditing = useMapStore((s) => s.isAIEditing);
   const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
   const toggleShowLastAIEdit = useMapStore((s) => s.toggleShowLastAIEdit);
   const lastAIEditNodeIds = useMapStore((s) => s.lastAIEditNodeIds);
   const projectRole = useMapStore((s) => s.projectRole);
-  const projectId = useMapStore((s) => s.projectId);
   const arrangeLocal = useMapStore((s) => s.arrangeLocal);
   const hasNodes = useMapStore((s) => s.nodes.length > 0);
   const isViewer = projectRole === 'viewer';
@@ -94,22 +90,6 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
-
-  const handleToggleDescriptions = () => {
-    toggleShowDescriptions();
-    if (!isViewer && projectId) {
-      const next = !showDescriptions;
-      api.saveVisibility(projectId, next, showAcceptanceCriteria).catch(console.error);
-    }
-  };
-
-  const handleToggleAC = () => {
-    toggleShowAcceptanceCriteria();
-    if (!isViewer && projectId) {
-      const next = !showAcceptanceCriteria;
-      api.saveVisibility(projectId, showDescriptions, next).catch(console.error);
-    }
-  };
 
   // Helper: close popover for mode-changing actions
   const withClose = (fn: () => void) => () => { fn(); setActivePanel('none'); };
