@@ -49,7 +49,7 @@ Monorepo (npm workspaces) with three packages: `frontend/`, `backend/`, and `mcp
 
 Four node types: `activity`, `step`, `storyCard`, `annotation`. Two edge types: `default` (built-in bezier), `line` (custom straight). Node components in `frontend/src/components/nodes/`, edge components in `frontend/src/components/edges/`. Story cards have optional `status` field (`CardStatus` type) with colored badge display.
 
-**Layout grid** (y-axis): Activities at 0, Steps at 200, Must-have stories at 400, Should-have at 600, Could-have at 800, Won't-have at 1000. Horizontal spacing: 300px. Full spec in `docs/JSON_FORMAT.md`.
+**Layout grid** (y-axis): Activities at 0, Steps at 200, Must-have stories at 400, Should-have at 600, Could-have at 800, Won't-have at 1000. Horizontal spacing: 300px. Full spec available as MCP resource `storymap://format`.
 
 **ID convention:** `activity-{N}`, `step-{actN}-{stepN}`, `story-{actN}-{stepN}-{storyN}`, `annotation-{N}`, `edge-{sourceId}-{targetId}`.
 
