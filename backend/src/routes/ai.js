@@ -8,6 +8,15 @@ import { GENERATE_SYSTEM_PROMPT, EDIT_SYSTEM_PROMPT, ARRANGE_SYSTEM_PROMPT } fro
 import { requireProjectAccess } from '../middleware/auth.js';
 import { decrypt } from '../utils/encryption.js';
 
+function mapAIError(err, context) {
+  const clientMessage = err.status === 401 || err.status === 403
+    ? 'Invalid API key. Please check your OpenRouter API key.'
+    : err.status === 429
+      ? 'Rate limit exceeded. Please wait a moment and try again.'
+      : `An error occurred while ${context}. Please try again or use a different model.`;
+  return { status: err.status || 500, message: clientMessage };
+}
+
 const router = Router();
 
 const allowedModelIds = new Set(availableModels.map(m => m.id));
@@ -136,23 +145,19 @@ router.post('/generate', async (req, res) => {
     if (isEditMode) {
       const ops = result.operations;
       if (!Array.isArray(ops)) {
-        return res.status(502).json({ error: 'AI returned an unexpected format. Try rephrasing your request or using a different model.' });
+        return res.status(422).json({ error: 'AI returned an unexpected format. Try rephrasing your request or using a different model.' });
       }
       res.json({ mode: 'edit', operations: ops });
     } else {
       if (!Array.isArray(result.nodes)) {
-        return res.status(502).json({ error: 'AI returned an unexpected format. Try rephrasing your request or using a different model.' });
+        return res.status(422).json({ error: 'AI returned an unexpected format. Try rephrasing your request or using a different model.' });
       }
       res.json({ mode: 'generate', nodes: result.nodes, edges: result.edges || [] });
     }
   } catch (err) {
     console.error('AI generate error:', err);
-    const clientMessage = err.status === 401 || err.status === 403
-      ? 'Invalid API key. Please check your OpenRouter API key.'
-      : err.status === 429
-        ? 'Rate limit exceeded. Please wait a moment and try again.'
-        : 'An error occurred while generating. Please try again or use a different model.';
-    res.status(err.status || 500).json({ error: clientMessage });
+    const { status, message } = mapAIError(err, 'generating');
+    res.status(status).json({ error: message });
   }
 });
 
@@ -180,12 +185,8 @@ router.post('/arrange', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('AI arrange error:', err);
-    const clientMessage = err.status === 401 || err.status === 403
-      ? 'Invalid API key. Please check your OpenRouter API key.'
-      : err.status === 429
-        ? 'Rate limit exceeded. Please wait a moment and try again.'
-        : 'An error occurred while arranging. Please try again or use a different model.';
-    res.status(err.status || 500).json({ error: clientMessage });
+    const { status, message } = mapAIError(err, 'arranging');
+    res.status(status).json({ error: message });
   }
 });
 
