@@ -134,7 +134,7 @@ router.post('/arrange', async (req, res) => {
 });
 
 // AI interaction history
-router.get('/history/:projectId', (req, res) => {
+router.get('/history/:projectId', requireProjectAccess('viewer'), (req, res) => {
   const history = db.prepare(
     'SELECT * FROM ai_history WHERE project_id = ? ORDER BY created_at DESC'
   ).all(req.params.projectId);
