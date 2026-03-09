@@ -1,6 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
+import { textResponse } from '../utils/helpers.js';
 
 export function registerProjectTools(server: McpServer, api: ApiClient) {
   server.tool(
@@ -8,7 +9,7 @@ export function registerProjectTools(server: McpServer, api: ApiClient) {
     'List all story map projects',
     async () => {
       const projects = await api.get('/api/projects');
-      return { content: [{ type: 'text' as const, text: JSON.stringify(projects, null, 2) }] };
+      return textResponse(projects);
     }
   );
 
@@ -20,7 +21,7 @@ export function registerProjectTools(server: McpServer, api: ApiClient) {
       const name = args.name as string;
       const description = (args.description as string) || '';
       const project = await api.post('/api/projects', { name, description });
-      return { content: [{ type: 'text' as const, text: JSON.stringify(project, null, 2) }] };
+      return textResponse(project);
     }
   );
 
@@ -30,7 +31,7 @@ export function registerProjectTools(server: McpServer, api: ApiClient) {
     { project_id: z.string() },
     async (args: Record<string, unknown>) => {
       const project = await api.get(`/api/projects/${args.project_id}`);
-      return { content: [{ type: 'text' as const, text: JSON.stringify(project, null, 2) }] };
+      return textResponse(project);
     }
   );
 
