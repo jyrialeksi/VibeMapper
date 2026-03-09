@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, Moon, Sun, LogOut, Share2 } from 'lucide-react';
 import { Canvas } from '../components/Canvas';
@@ -12,10 +12,16 @@ export function ProjectPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const [isSharePanelOpen, setSharePanelOpen] = useState(false);
+  const [projectName, setProjectName] = useState('');
   const { theme, toggleTheme } = useTheme();
   const { user, authEnabled, logout } = useAuth();
   const setProjectRole = useMapStore((s) => s.setProjectRole);
   const projectRole = useMapStore((s) => s.projectRole);
+
+  useEffect(() => {
+    if (!projectId) return;
+    api.getProject(projectId).then((p) => setProjectName(p.name)).catch(() => {});
+  }, [projectId]);
 
   const handleDeleteProject = useCallback(async () => {
     if (!projectId) return;
@@ -46,7 +52,12 @@ export function ProjectPage() {
           <ArrowLeft size={14} />
           Projects
         </button>
-        <span className="text-sm font-medium text-[#080810]/80 dark:text-[#F0EEFF]/80">Story Map</span>
+        <span className="font-display text-lg leading-none text-[#080810] dark:text-[#F0EEFF] tracking-wide">VIBEMAPPER</span>
+        {projectName && (
+          <span className="ml-2 text-sm font-medium text-[#080810]/60 dark:text-[#F0EEFF]/60 truncate max-w-[200px]">
+            / {projectName}
+          </span>
+        )}
         {projectRole === 'viewer' && (
           <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-[#7B2FFF]/10 dark:bg-[#7B2FFF]/20 text-[#7B2FFF] dark:text-[#C6FF4D]">
             View only
