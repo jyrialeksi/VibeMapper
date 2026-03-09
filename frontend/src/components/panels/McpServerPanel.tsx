@@ -173,6 +173,9 @@ export function McpServerPanel() {
                 </div>
               </div>
             ))}
+            <div className="pt-2 border-t border-[rgba(123,47,255,0.08)] dark:border-[rgba(198,255,77,0.08)] text-[11px] text-[#7A7A9A]/70">
+              Rate limit: 100 requests/min across all MCP tools. Exceeding the limit returns HTTP 429.
+            </div>
           </div>
         )}
       </div>
