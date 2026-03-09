@@ -36,17 +36,6 @@ html, body, #root {
   font-family: 'Space Mono', monospace;
 }
 
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(123, 47, 255, 0.12);
-}
-
-.dark .glass-panel {
-  background: rgba(15, 15, 30, 0.85);
-  border-color: rgba(198, 255, 77, 0.12);
-}
-
 .btn-primary {
   background-color: #C6FF4D;
   color: #080810;
