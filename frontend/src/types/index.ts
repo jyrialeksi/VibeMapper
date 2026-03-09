@@ -37,6 +37,7 @@ export interface Share {
   role: 'viewer' | 'editor';
   share_token: string | null;
   created_at: string;
+  expires_at: string | null;
   user_name?: string;
 }
 

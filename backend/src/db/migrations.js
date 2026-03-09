@@ -101,6 +101,12 @@ export function runMigrations() {
     db.exec(`ALTER TABLE users ADD COLUMN mcp_api_token TEXT DEFAULT NULL`);
   }
 
+  // Add expires_at column to project_shares for link expiration
+  const shareCols = db.prepare("PRAGMA table_info(project_shares)").all();
+  if (!shareCols.some(c => c.name === 'expires_at')) {
+    db.exec(`ALTER TABLE project_shares ADD COLUMN expires_at TEXT DEFAULT NULL`);
+  }
+
   // Ensure local-dev user exists for non-auth mode
   db.prepare(`INSERT OR IGNORE INTO users (id, email, name, picture) VALUES (?, ?, ?, ?)`)
     .run('local-dev', 'dev@local', 'Local Dev', '');

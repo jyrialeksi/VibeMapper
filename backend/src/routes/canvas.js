@@ -6,6 +6,25 @@ import { addClient, broadcast } from '../sse/connections.js';
 
 const router = Router();
 
+// --- Safe JSON parse for DB values ---
+function safeParseJSON(value, fallback = null) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function parseCanvasFields(record) {
+  const nodes = safeParseJSON(record.nodes);
+  const edges = safeParseJSON(record.edges);
+  const viewport = safeParseJSON(record.viewport);
+  if (nodes === null || edges === null || viewport === null) {
+    return null;
+  }
+  return { nodes, edges, viewport };
+}
+
 // --- Input validation helpers ---
 const MAX_NODES = 2000;
 const MAX_EDGES = 5000;
@@ -84,10 +103,13 @@ router.get('/:projectId', requireProjectAccess('viewer'), (req, res) => {
   const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(req.params.projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
+  const parsed = parseCanvasFields(canvas);
+  if (!parsed) return res.status(500).json({ error: 'Corrupt canvas data in database' });
+
   res.json({
-    nodes: JSON.parse(canvas.nodes),
-    edges: JSON.parse(canvas.edges),
-    viewport: JSON.parse(canvas.viewport),
+    nodes: parsed.nodes,
+    edges: parsed.edges,
+    viewport: parsed.viewport,
     updated_at: canvas.updated_at,
     role: req.projectRole,
     showDescriptions: canvas.show_descriptions !== 0,
@@ -163,6 +185,9 @@ router.get('/:projectId/export', requireProjectAccess('viewer'), (req, res) => {
   const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(req.params.projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
+  const parsed = parseCanvasFields(canvas);
+  if (!parsed) return res.status(500).json({ error: 'Corrupt canvas data in database' });
+
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.projectId);
 
   const exportData = {
@@ -172,9 +197,9 @@ router.get('/:projectId/export', requireProjectAccess('viewer'), (req, res) => {
       exported_at: new Date().toISOString(),
     },
     canvas: {
-      nodes: JSON.parse(canvas.nodes),
-      edges: JSON.parse(canvas.edges),
-      viewport: JSON.parse(canvas.viewport),
+      nodes: parsed.nodes,
+      edges: parsed.edges,
+      viewport: parsed.viewport,
     },
   };
 
@@ -200,13 +225,16 @@ router.get('/:projectId/versions/:versionId', requireProjectAccess('viewer'), (r
   const version = getVersion(projectId, versionId);
   if (!version) return res.status(404).json({ error: 'Version not found' });
 
+  const parsed = parseCanvasFields(version);
+  if (!parsed) return res.status(500).json({ error: 'Corrupt version data in database' });
+
   res.json({
     id: version.id,
     version_number: version.version_number,
     label: version.label,
-    nodes: JSON.parse(version.nodes),
-    edges: JSON.parse(version.edges),
-    viewport: JSON.parse(version.viewport),
+    nodes: parsed.nodes,
+    edges: parsed.edges,
+    viewport: parsed.viewport,
     created_at: version.created_at,
   });
 });
@@ -218,9 +246,9 @@ router.post('/:projectId/versions/:versionId/restore', requireProjectAccess('edi
   const version = getVersion(projectId, versionId);
   if (!version) return res.status(404).json({ error: 'Version not found' });
 
-  const nodes = JSON.parse(version.nodes);
-  const edges = JSON.parse(version.edges);
-  const viewport = JSON.parse(version.viewport);
+  const parsed = parseCanvasFields(version);
+  if (!parsed) return res.status(500).json({ error: 'Corrupt version data in database' });
+  const { nodes, edges, viewport } = parsed;
 
   const restoreTransaction = db.transaction(() => {
     db.prepare(
@@ -253,9 +281,9 @@ router.post('/:projectId/versions', requireProjectAccess('editor'), (req, res) =
   const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
-  const nodes = JSON.parse(canvas.nodes);
-  const edges = JSON.parse(canvas.edges);
-  const viewport = JSON.parse(canvas.viewport);
+  const parsed = parseCanvasFields(canvas);
+  if (!parsed) return res.status(500).json({ error: 'Corrupt canvas data in database' });
+  const { nodes, edges, viewport } = parsed;
 
   const version = createVersion(projectId, nodes, edges, viewport, label);
 

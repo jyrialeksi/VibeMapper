@@ -22,6 +22,7 @@ interface AuthConfig {
 interface AuthState {
   user: AuthUser | null;
   loading: boolean;
+  error: string | null;
   authEnabled: boolean;
   hasApiKey: boolean;
   hasMcpToken: boolean;
@@ -35,6 +36,7 @@ interface AuthState {
 export const AuthContext = createContext<AuthState>({
   user: null,
   loading: true,
+  error: null,
   authEnabled: false,
   hasApiKey: false,
   hasMcpToken: false,
@@ -53,6 +55,7 @@ export function useAuthProvider(): AuthState {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [authEnabled, setAuthEnabled] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [hasApiKey, setHasApiKey] = useState(false);
   const [hasMcpToken, setHasMcpToken] = useState(false);
   const firebaseUserRef = useRef<User | null>(null);
@@ -116,11 +119,17 @@ export function useAuthProvider(): AuthState {
         });
       })
       .catch(() => {
-        // If config fetch fails, assume no auth
-        setUser({ id: 'local-dev', email: 'dev@local', name: 'Local Dev', picture: '' });
-        refreshApiKeyStatus();
-        refreshMcpTokenStatus();
-        setLoading(false);
+        if (import.meta.env.PROD) {
+          // Fail closed in production — do not fall back to unauthenticated dev user
+          setError('Unable to load authentication configuration. Please try again later.');
+          setLoading(false);
+        } else {
+          // Dev mode only: fall back to synthetic dev user
+          setUser({ id: 'local-dev', email: 'dev@local', name: 'Local Dev', picture: '' });
+          refreshApiKeyStatus();
+          refreshMcpTokenStatus();
+          setLoading(false);
+        }
       });
 
     return () => unsubscribe?.();
@@ -146,5 +155,5 @@ export function useAuthProvider(): AuthState {
     return fbUser.getIdToken();
   }, []);
 
-  return { user, loading, authEnabled, hasApiKey, hasMcpToken, login, logout, getToken, refreshApiKeyStatus, refreshMcpTokenStatus };
+  return { user, loading, error, authEnabled, hasApiKey, hasMcpToken, login, logout, getToken, refreshApiKeyStatus, refreshMcpTokenStatus };
 }

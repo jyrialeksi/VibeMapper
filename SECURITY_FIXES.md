@@ -48,40 +48,41 @@ Identified during pre-public security review. Work through top-to-bottom by prio
   - Only `/api/auth` and `/api/ai` have rate limits — projects, canvas, shares do not
   - Fix: Add general rate limiter for all API routes
 
-- [ ] **9. Add expiration to share link tokens**
+- [x] **9. Add expiration to share link tokens**
   - File: `backend/src/routes/shares.js`, `backend/src/db/migrations.js`
   - Share tokens are valid forever once created
   - Fix: Add `expires_at` column, check on acceptance
 
-- [ ] **10. Rate limit MCP endpoint**
+- [x] **10. Rate limit MCP endpoint**
   - File: `backend/src/routes/mcp.js`
   - Each request creates a new MCP server instance — resource exhaustion vector
   - Fix: Add rate limiting, consider connection pooling
 
-- [ ] **11. Reduce JSON body limit**
+- [x] **11. Reduce JSON body limit**
   - File: `backend/src/server.js:50`
   - Currently 10MB — generous for this app
   - Fix: Reduce to 1-2MB
 
-- [ ] **12. Fail closed on auth config failure (frontend)**
+- [x] **12. Fail closed on auth config failure (frontend)**
   - File: `frontend/src/hooks/useAuth.ts:118-123`
   - If `/api/auth/config` fetch fails, falls back to unauthenticated dev user
   - Fix: In production builds, show error instead of falling back
 
 ## Low
 
-- [ ] **13. Move Firebase API key from deploy.sh to env var**
+- [x] **13. Move Firebase API key from deploy.sh to env var**
   - File: `deploy.sh:61`
   - Hardcoded `AIzaSy...` — public by design but cleaner as env var
 
-- [ ] **14. Add `**/.env` and `firebase-service-account.json` to .dockerignore**
+- [x] **14. Add `**/.env` and `firebase-service-account.json` to .dockerignore**
   - File: `.dockerignore`
   - Current patterns work but could be more explicit
 
-- [ ] **15. Add try-catch around JSON.parse on DB values**
+- [x] **15. Add try-catch around JSON.parse on DB values**
   - File: `backend/src/routes/canvas.js` (multiple locations)
   - Malformed JSON in DB would crash request handler
 
-- [ ] **16. Add canvas version pruning**
-  - File: `backend/src/routes/canvas.js`
+- [x] **16. Add canvas version pruning**
+  - File: `backend/src/db/versions.js`
   - Every auto-save creates a version with no cleanup — unbounded growth
+  - Fixed: `createVersion()` prunes versions beyond MAX_VERSIONS_PER_PROJECT (100) after each save

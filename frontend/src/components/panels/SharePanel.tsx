@@ -198,7 +198,11 @@ export function SharePanel({ projectId, isOpen, onClose }: SharePanelProps) {
                   <div className="flex items-center gap-1.5">
                     <Link size={10} className="text-[#7A7A9A]" />
                     <span className="text-[10px] text-[#7A7A9A]">
-                      {share.role} &middot; {new Date(share.created_at).toLocaleDateString()}
+                      {share.role} &middot; {share.expires_at
+                        ? (new Date(share.expires_at) < new Date()
+                          ? <span className="text-red-400">expired</span>
+                          : <>expires {new Date(share.expires_at).toLocaleDateString()}</>)
+                        : <>created {new Date(share.created_at).toLocaleDateString()}</>}
                     </span>
                   </div>
                   <button

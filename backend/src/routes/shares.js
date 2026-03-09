@@ -97,12 +97,15 @@ router.post('/:projectId/shares/link', requireProjectAccess('owner'), (req, res)
   const token = crypto.randomBytes(32).toString('hex');
   const id = uuidv4();
 
+  // Share links expire after 30 days by default
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
   db.prepare(
-    'INSERT INTO project_shares (id, project_id, invited_email, role, share_token) VALUES (?, ?, ?, ?, ?)'
-  ).run(id, req.params.projectId, 'link-share', role, token);
+    'INSERT INTO project_shares (id, project_id, invited_email, role, share_token, expires_at) VALUES (?, ?, ?, ?, ?, ?)'
+  ).run(id, req.params.projectId, 'link-share', role, token, expiresAt);
 
   const baseUrl = req.headers.origin || `${req.protocol}://${req.get('host')}`;
-  res.json({ token, url: `${baseUrl}/share/${token}` });
+  res.json({ token, url: `${baseUrl}/share/${token}`, expiresAt });
 });
 
 // Accept a shareable link (authenticated user)
@@ -112,6 +115,11 @@ router.post('/accept/:token', (req, res) => {
   ).get(req.params.token);
 
   if (!share) return res.status(404).json({ error: 'Invalid or expired share link' });
+
+  // Check if the share link has expired
+  if (share.expires_at && new Date(share.expires_at) < new Date()) {
+    return res.status(410).json({ error: 'This share link has expired' });
+  }
 
   // Create a personal share entry for this user
   const userId = req.user.id;
