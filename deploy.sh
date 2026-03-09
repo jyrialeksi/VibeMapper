@@ -51,13 +51,14 @@ if [ "$deploy_app" = true ]; then
   FIREBASE_CLIENT_EMAIL=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SA_FILE','utf8')).client_email)")
   FIREBASE_PRIVATE_KEY=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SA_FILE','utf8')).private_key)")
 
-  # Firebase client-side config (public by design, but kept as env vars for cleanliness)
-  if [ -z "${VITE_FIREBASE_API_KEY:-}" ]; then
-    echo "Error: VITE_FIREBASE_API_KEY env var is not set"
+  VITE_FIREBASE_API_KEY=$(grep -E '^VITE_FIREBASE_API_KEY=' "$ENV_FILE" | cut -d'=' -f2-)
+  VITE_FIREBASE_AUTH_DOMAIN=$(grep -E '^VITE_FIREBASE_AUTH_DOMAIN=' "$ENV_FILE" | cut -d'=' -f2-)
+  if [ -z "$VITE_FIREBASE_API_KEY" ]; then
+    echo "Error: VITE_FIREBASE_API_KEY not found in $ENV_FILE"
     exit 1
   fi
-  if [ -z "${VITE_FIREBASE_AUTH_DOMAIN:-}" ]; then
-    echo "Error: VITE_FIREBASE_AUTH_DOMAIN env var is not set"
+  if [ -z "$VITE_FIREBASE_AUTH_DOMAIN" ]; then
+    echo "Error: VITE_FIREBASE_AUTH_DOMAIN not found in $ENV_FILE"
     exit 1
   fi
 
