@@ -69,6 +69,7 @@ app.use(express.json({ limit: '10mb' }));
 // Rate limiters
 const authLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
 const aiLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
+const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false });
 
 // Health check (public) with DB connectivity check
 app.get('/api/health', (req, res) => {
@@ -83,8 +84,8 @@ app.get('/api/health', (req, res) => {
 // Auth routes (public — config endpoint must be accessible without token)
 app.use('/api/auth', authLimiter, authRouter);
 
-// All other API routes require auth
-app.use('/api', requireAuth);
+// All other API routes require auth + general rate limit
+app.use('/api', requireAuth, apiLimiter);
 
 // Routes
 app.use('/api/projects', projectsRouter);
@@ -94,7 +95,7 @@ app.use('/api/projects', sharesRouter);
 app.use('/api/shares', sharesRouter);
 
 // MCP endpoint (requires auth via Bearer token)
-app.use('/mcp', requireAuth, mcpRouter);
+app.use('/mcp', requireAuth, apiLimiter, mcpRouter);
 
 // Serve frontend static files in production
 const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');

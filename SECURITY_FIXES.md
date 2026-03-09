@@ -43,7 +43,7 @@ Identified during pre-public security review. Work through top-to-bottom by prio
 
 ## Medium
 
-- [ ] **8. Add rate limiting to remaining CRUD endpoints**
+- [x] **8. Add rate limiting to remaining CRUD endpoints**
   - File: `backend/src/server.js`
   - Only `/api/auth` and `/api/ai` have rate limits — projects, canvas, shares do not
   - Fix: Add general rate limiter for all API routes
