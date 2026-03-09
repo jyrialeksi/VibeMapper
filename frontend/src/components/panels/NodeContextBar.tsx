@@ -4,33 +4,51 @@ import { useMapStore } from '../../store/useMapStore';
 import { Pencil, Trash2 } from 'lucide-react';
 import { GLASS_PANEL } from '../../styles/shared';
 
+const BAR_HEIGHT = 40; // approximate height of the context bar
+const TOP_MARGIN = 90; // clearance for the top nav/toolbar area
+
 export function NodeContextBar() {
   const selectedNodeId = useMapStore((s) => s.selectedNodeId);
   const setMobileEditingNodeId = useMapStore((s) => s.setMobileEditingNodeId);
   const deleteNode = useMapStore((s) => s.deleteNode);
   const { getNode, flowToScreenPosition } = useReactFlow();
 
-  const screenPos = useMemo(() => {
+  const position = useMemo(() => {
     if (!selectedNodeId) return null;
     const node = getNode(selectedNodeId);
     if (!node) return null;
-    // Position above the node center
-    const pos = flowToScreenPosition({
-      x: node.position.x + (node.measured?.width ?? 200) / 2,
+
+    const nodeWidth = node.measured?.width ?? 200;
+    const nodeHeight = node.measured?.height ?? 80;
+
+    const topCenter = flowToScreenPosition({
+      x: node.position.x + nodeWidth / 2,
       y: node.position.y,
     });
-    return pos;
+
+    // If placing above would be hidden under the top bar, place below instead
+    const placeBelow = topCenter.y - BAR_HEIGHT - 12 < TOP_MARGIN;
+
+    if (placeBelow) {
+      const bottomCenter = flowToScreenPosition({
+        x: node.position.x + nodeWidth / 2,
+        y: node.position.y + nodeHeight,
+      });
+      return { x: bottomCenter.x, y: bottomCenter.y + 12, below: true };
+    }
+
+    return { x: topCenter.x, y: topCenter.y - 12, below: false };
   }, [selectedNodeId, getNode, flowToScreenPosition]);
 
-  if (!screenPos) return null;
+  if (!position) return null;
 
   return (
     <div
       className={`fixed z-50 ${GLASS_PANEL} rounded-xl shadow-lg flex items-center gap-1 p-1`}
       style={{
-        left: screenPos.x,
-        top: screenPos.y - 12,
-        transform: 'translate(-50%, -100%)',
+        left: position.x,
+        top: position.y,
+        transform: position.below ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
       }}
     >
       <button
