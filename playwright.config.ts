@@ -4,8 +4,7 @@ export default defineConfig({
   testDir: 'e2e',
   timeout: 30000,
   retries: 0,
-  // Run tests serially to avoid rate limiting on the backend API
-  workers: 1,
+  workers: 2,
   use: {
     baseURL: 'http://localhost:5173',
     headless: true,

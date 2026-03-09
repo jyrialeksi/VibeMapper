@@ -101,10 +101,11 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '2mb' }));
 
-// Rate limiters
-const authLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
-const aiLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
-const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false });
+// Rate limiters — disabled in dev mode to avoid issues with tests and HMR
+const noopLimiter = (_req, _res, next) => next();
+const authLimiter = isProd ? rateLimit({ windowMs: 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false }) : noopLimiter;
+const aiLimiter = isProd ? rateLimit({ windowMs: 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false }) : noopLimiter;
+const apiLimiter = isProd ? rateLimit({ windowMs: 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }) : noopLimiter;
 
 // Health check (public) with DB connectivity check
 app.get('/api/health', (req, res) => {
