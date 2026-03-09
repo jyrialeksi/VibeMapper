@@ -22,6 +22,9 @@ router.get('/:projectId/shares', requireProjectAccess('owner'), (req, res) => {
 router.post('/:projectId/shares', requireProjectAccess('owner'), (req, res) => {
   const { email, role = 'viewer' } = req.body;
   if (!email) return res.status(400).json({ error: 'Email is required' });
+  if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
   if (!['viewer', 'editor'].includes(role)) {
     return res.status(400).json({ error: 'Role must be viewer or editor' });
   }
