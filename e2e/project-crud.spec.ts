@@ -5,20 +5,27 @@ test.describe('Project CRUD', () => {
   test('create project via UI', async ({ page }) => {
     await page.goto('/');
 
-    // Click the new project button
-    const newProjectBtn = page.locator('button:has-text("New"), button:has-text("Create"), [data-testid="new-project"]').first();
-    await newProjectBtn.click();
+    // Fill in the project name first (Create button is disabled when empty)
+    const nameInput = page.locator('input[placeholder="New project name..."]');
+    await nameInput.fill('E2E Create Test');
 
-    // Fill in the project name
-    const nameInput = page.locator('input[placeholder*="name" i], input[type="text"]').first();
-    await nameInput.fill('E2E Test Project');
+    // Now click Create
+    const createBtn = page.locator('button:has-text("Create")');
+    await createBtn.click();
 
-    // Submit
-    const submitBtn = page.locator('button:has-text("Create"), button[type="submit"]').first();
-    await submitBtn.click();
+    // Project should appear in the list (handleCreate adds it without navigating)
+    await expect(page.locator('text=E2E Create Test')).toBeVisible({ timeout: 5000 });
 
-    // Should navigate to canvas or show the project
-    await expect(page).toHaveURL(/\/(canvas|projects)\//);
+    // Click on the project to navigate
+    await page.locator('text=E2E Create Test').first().click();
+    await expect(page).toHaveURL(/\/project\//, { timeout: 5000 });
+
+    // Clean up — extract project ID from URL and delete
+    const url = page.url();
+    const match = url.match(/\/project\/([^/]+)/);
+    if (match) {
+      await deleteProject(match[1]);
+    }
   });
 
   test('navigate to canvas and back', async ({ page }) => {
@@ -27,14 +34,14 @@ test.describe('Project CRUD', () => {
     try {
       await page.goto('/');
       // Click on the project
-      await page.locator(`text=Nav Test`).first().click();
+      await page.locator('text=Nav Test').first().click();
 
-      // Should show canvas
+      // Should show canvas (route is /project/:id)
+      await expect(page).toHaveURL(`/project/${projectId}`, { timeout: 5000 });
       await page.waitForSelector('.react-flow', { timeout: 10000 });
 
-      // Navigate back
-      const backBtn = page.locator('a[href="/"], button:has-text("Back"), [data-testid="back-button"]').first();
-      await backBtn.click();
+      // Navigate back via "Projects" button in header
+      await page.locator('button:has-text("Projects")').click();
 
       await expect(page).toHaveURL('/');
     } finally {

@@ -24,15 +24,17 @@ test.describe('Import/Export', () => {
       }),
     });
 
-    // Export
+    // Export — response wraps data in { project, canvas: { nodes, edges, viewport } }
     const res = await fetch(`http://localhost:3001/api/canvas/${projectId}/export`);
     const data = await res.json();
 
-    expect(data.nodes).toBeDefined();
-    expect(data.nodes).toHaveLength(1);
-    expect(data.nodes[0].data.title).toBe('Export Test');
-    expect(data.edges).toBeDefined();
-    expect(data.viewport).toBeDefined();
+    expect(data.canvas).toBeDefined();
+    expect(data.canvas.nodes).toHaveLength(1);
+    expect(data.canvas.nodes[0].data.title).toBe('Export Test');
+    expect(data.canvas.edges).toBeDefined();
+    expect(data.canvas.viewport).toBeDefined();
+    expect(data.project).toBeDefined();
+    expect(data.project.name).toBe('Import Export Test');
   });
 
   test('import canvas from JSON via API', async () => {
