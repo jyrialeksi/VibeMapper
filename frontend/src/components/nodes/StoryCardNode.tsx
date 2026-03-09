@@ -3,6 +3,7 @@ import type { StoryCardData, Priority } from '../../types';
 import { STATUS_COLORS, STATUS_LABELS } from '../../types';
 import type { CardStatus } from '../../types';
 import { useMapStore } from '../../store/useMapStore';
+import { useNodeHighlight } from '../../hooks/useNodeHighlight';
 
 const PRIORITY_BG: Record<Priority, string> = {
   'must-have': 'bg-[#fff0f8] border-[#FF3CAC]/50 dark:bg-[#f0b3d4] dark:border-[#FF3CAC]/50',
@@ -26,13 +27,9 @@ const PRIORITY_LABEL_STYLE: Record<Priority, string> = {
 };
 
 export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardData>>) {
-  const highlightType = useMapStore((s) => s.highlightedNodes.get(id));
+  const { highlightClass, dimClass } = useNodeHighlight(id);
   const showDescriptions = useMapStore((s) => s.showDescriptions);
   const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
-  const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
-  const isInLastAIEdit = useMapStore((s) => s.lastAIEditNodeIds.has(id));
-  const highlightClass = highlightType === 'added' ? 'node-highlight-added' : highlightType === 'modified' ? 'node-highlight-modified' : '';
-  const dimClass = showLastAIEdit && !isInLastAIEdit ? 'node-dimmed-not-ai' : '';
   const priorityBg = PRIORITY_BG[data.priority] || PRIORITY_BG['must-have'];
   const barColor = selected ? '#C6FF4D' : (PRIORITY_BAR_COLOR[data.priority] || '#FF3CAC');
 
