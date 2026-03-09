@@ -42,12 +42,19 @@ COPY --from=builder /build/frontend/dist frontend/dist
 # Copy built mcp-server
 COPY --from=builder /build/mcp-server/build mcp-server/build
 
-# Create data directory
-RUN mkdir -p backend/data
+# Create non-root user and data directory
+RUN addgroup --system --gid 1001 appgroup && \
+    adduser --system --uid 1001 --ingroup appgroup appuser && \
+    mkdir -p backend/data && \
+    chown -R appuser:appgroup backend/data
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENV NODE_ENV=production
 ENV PORT=3001
 
 EXPOSE 3001
 
-CMD ["node", "backend/src/server.js"]
+ENTRYPOINT ["docker-entrypoint.sh"]

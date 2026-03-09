@@ -31,7 +31,7 @@ Identified during pre-public security review. Work through top-to-bottom by prio
   - No security headers set (CSP, HSTS, X-Frame-Options, X-Content-Type-Options)
   - Fix: Add `helmet` middleware
 
-- [ ] **6. Add non-root user to Dockerfile**
+- [x] **6. Add non-root user to Dockerfile**
   - File: `Dockerfile`
   - Production stage runs as root
   - Fix: Add `adduser` + `USER` directive
