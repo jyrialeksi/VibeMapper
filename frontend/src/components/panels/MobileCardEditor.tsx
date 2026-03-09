@@ -1,14 +1,10 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useMapStore } from '../../store/useMapStore';
-import type { Priority, CardType, CardStatus } from '../../types';
+import type { Priority, CardType } from '../../types';
 import { STATUS_COLORS, STATUS_LABELS } from '../../types';
 import { X, Plus, Trash2, GripHorizontal } from 'lucide-react';
-
-const statuses: CardStatus[] = ['not-started', 'in-progress', 'blocked', 'testing', 'done'];
-
-const priorities: Priority[] = ['must-have', 'should-have', 'could-have', 'wont-have'];
-const estimates = ['XS', 'S', 'M', 'L', 'XL'];
-const cardTypes: CardType[] = ['activity', 'step', 'story', 'annotation'];
+import { GLASS_BORDER, INPUT_BASE, FORM_LABEL, BTN_INACTIVE } from '../../styles/shared';
+import { CARD_STATUSES, PRIORITIES, ESTIMATES, CARD_TYPES } from '../../constants/cardOptions';
 
 export function MobileCardEditor() {
   const mobileEditingNodeId = useMapStore((s) => s.mobileEditingNodeId);
@@ -68,7 +64,7 @@ export function MobileCardEditor() {
     <div className="absolute bottom-0 left-0 right-0 z-50 animate-slide-up flex justify-center" style={{ height: '60vh' }}>
       <div
         ref={sheetRef}
-        className="h-full w-full max-w-3xl bg-white/95 dark:bg-[#0F0F1E]/95 backdrop-blur-xl rounded-t-2xl shadow-lg border-t border-x border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] flex flex-col"
+        className={`h-full w-full max-w-3xl bg-white/95 dark:bg-[#0F0F1E]/95 backdrop-blur-xl rounded-t-2xl shadow-lg border-t border-x ${GLASS_BORDER} flex flex-col`}
         style={{ willChange: 'transform' }}
       >
         {/* Handle area - swipe zone */}
@@ -96,45 +92,45 @@ export function MobileCardEditor() {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-4 pb-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
           {/* Card Type */}
-          <label className="block text-xs font-medium text-[#7A7A9A] mb-1 mt-2">Card Type</label>
+          <label className={`${FORM_LABEL} mt-2`}>Card Type</label>
           <select
             value={data.cardType}
             onChange={(e) => updateNodeData(node.id, { cardType: e.target.value as CardType })}
-            className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-3 py-2.5 text-sm mb-3 dark:text-[#F0EEFF] focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150"
+            className={`w-full ${INPUT_BASE} px-3 py-2.5 mb-3`}
           >
-            {cardTypes.map((ct) => (
+            {CARD_TYPES.map((ct) => (
               <option key={ct} value={ct}>{ct}</option>
             ))}
           </select>
 
           {/* Title */}
-          <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Title</label>
+          <label className={FORM_LABEL}>Title</label>
           <textarea
             value={data.title}
             onChange={(e) => updateNodeData(node.id, { title: e.target.value })}
-            className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-3 py-2.5 text-sm mb-3 dark:text-[#F0EEFF] focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150 placeholder:text-[#7A7A9A] resize-none"
+            className={`w-full ${INPUT_BASE} px-3 py-2.5 mb-3 placeholder:text-[#7A7A9A] resize-none`}
             rows={2}
           />
 
           {/* Description */}
-          <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Description</label>
+          <label className={FORM_LABEL}>Description</label>
           <textarea
             value={data.description}
             onChange={(e) => updateNodeData(node.id, { description: e.target.value })}
-            className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-3 py-2.5 text-sm mb-3 dark:text-[#F0EEFF] resize-y focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150 placeholder:text-[#7A7A9A]"
+            className={`w-full ${INPUT_BASE} px-3 py-2.5 mb-3 resize-y placeholder:text-[#7A7A9A]`}
             rows={3}
           />
 
           {/* Priority */}
           {data.cardType !== 'annotation' && (
             <>
-              <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Priority</label>
+              <label className={FORM_LABEL}>Priority</label>
               <select
                 value={data.priority}
                 onChange={(e) => updateNodeData(node.id, { priority: e.target.value as Priority })}
-                className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-3 py-2.5 text-sm mb-3 dark:text-[#F0EEFF] focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150"
+                className={`w-full ${INPUT_BASE} px-3 py-2.5 mb-3`}
               >
-                {priorities.map((p) => (
+                {PRIORITIES.map((p) => (
                   <option key={p} value={p}>{p}</option>
                 ))}
               </select>
@@ -144,16 +140,16 @@ export function MobileCardEditor() {
           {/* Estimate (stories only) */}
           {data.cardType === 'story' && (
             <>
-              <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Estimate</label>
+              <label className={FORM_LABEL}>Estimate</label>
               <div className="flex gap-1.5 mb-3">
-                {estimates.map((est) => (
+                {ESTIMATES.map((est) => (
                   <button
                     key={est}
                     onClick={() => updateNodeData(node.id, { estimate: est })}
                     className={`flex-1 min-h-[44px] text-sm rounded-lg border transition-colors duration-150 ${
                       data.estimate === est
                         ? 'bg-[#C6FF4D]/20 border-[#C6FF4D]/40 text-[#080810] dark:text-[#C6FF4D]'
-                        : 'bg-white/50 dark:bg-[#16162A]/50 border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] text-[#080810]/70 dark:text-[#F0EEFF]/70'
+                        : `bg-white/50 dark:bg-[#16162A]/50 ${GLASS_BORDER} ${BTN_INACTIVE}`
                     }`}
                   >
                     {est}
@@ -166,26 +162,26 @@ export function MobileCardEditor() {
           {/* Status (stories only) */}
           {data.cardType === 'story' && (
             <>
-              <label className="block text-xs font-medium text-[#7A7A9A] mb-1">Status</label>
+              <label className={FORM_LABEL}>Status</label>
               <div className="flex flex-wrap gap-1.5 mb-3">
                 <button
                   onClick={() => updateNodeData(node.id, { status: undefined })}
                   className={`min-h-[44px] px-3 text-sm rounded-lg border transition-colors duration-150 ${
                     !data.status
                       ? 'bg-[#7A7A9A]/20 border-[#7A7A9A]/40 text-[#080810] dark:text-[#F0EEFF]'
-                      : 'bg-white/50 dark:bg-[#16162A]/50 border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] text-[#080810]/70 dark:text-[#F0EEFF]/70'
+                      : `bg-white/50 dark:bg-[#16162A]/50 ${GLASS_BORDER} ${BTN_INACTIVE}`
                   }`}
                 >
                   None
                 </button>
-                {statuses.map((s) => (
+                {CARD_STATUSES.map((s) => (
                   <button
                     key={s}
                     onClick={() => updateNodeData(node.id, { status: s })}
                     className={`min-h-[44px] px-3 text-sm rounded-lg border transition-colors duration-150 ${
                       data.status === s
                         ? 'border-current'
-                        : 'bg-white/50 dark:bg-[#16162A]/50 border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] text-[#080810]/70 dark:text-[#F0EEFF]/70'
+                        : `bg-white/50 dark:bg-[#16162A]/50 ${GLASS_BORDER} ${BTN_INACTIVE}`
                     }`}
                     style={data.status === s ? { backgroundColor: STATUS_COLORS[s] + '20', color: STATUS_COLORS[s], borderColor: STATUS_COLORS[s] } : undefined}
                   >
@@ -199,7 +195,7 @@ export function MobileCardEditor() {
           {/* Acceptance Criteria */}
           {data.cardType === 'story' && (
             <>
-              <label className="block text-xs font-medium text-[#7A7A9A] mb-1">
+              <label className={FORM_LABEL}>
                 Acceptance Criteria
               </label>
               {(data.acceptanceCriteria || []).map((ac, i) => (
@@ -211,7 +207,7 @@ export function MobileCardEditor() {
                       updated[i] = e.target.value;
                       updateNodeData(node.id, { acceptanceCriteria: updated });
                     }}
-                    className="flex-1 rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-3 py-2 text-sm dark:text-[#F0EEFF] focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150 placeholder:text-[#7A7A9A] resize-none"
+                    className={`flex-1 ${INPUT_BASE} px-3 py-2 placeholder:text-[#7A7A9A] resize-none`}
                     rows={2}
                   />
                   <button

@@ -2,6 +2,7 @@ import { useAI } from '../../hooks/useAI';
 import { useMapStore } from '../../store/useMapStore';
 import { useAuth } from '../../hooks/useAuth';
 import { Sparkles, Send, Loader2, X } from 'lucide-react';
+import { INPUT_BASE } from '../../styles/shared';
 
 export function MobileAIButton() {
   const { models, selectedModel, setSelectedModel, loading, error, generate } = useAI();
@@ -68,7 +69,7 @@ export function MobileAIButton() {
             <select
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-3 py-2.5 text-sm dark:text-[#F0EEFF] mb-2 focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150"
+              className={`w-full ${INPUT_BASE} px-3 py-2.5 mb-2`}
             >
               {models.map((m) => (
                 <option key={m.id} value={m.id}>{m.name}</option>
@@ -80,7 +81,7 @@ export function MobileAIButton() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder={hasNodes ? 'Describe changes to your story map...' : 'Describe your product or feature...'}
-              className="w-full rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-3 py-2.5 text-sm dark:text-[#F0EEFF] focus:outline-none focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150 placeholder:text-[#7A7A9A] resize-none"
+              className={`w-full ${INPUT_BASE} px-3 py-2.5 focus:outline-none placeholder:text-[#7A7A9A] resize-none`}
               rows={3}
               disabled={loading}
             />

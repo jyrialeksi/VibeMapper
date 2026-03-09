@@ -2,6 +2,7 @@ import { useMapStore } from '../../store/useMapStore';
 import { api } from '../../api/client';
 import type { ToolMode, CardType, Priority } from '../../types';
 import { PRIORITY_COLORS } from '../../types';
+import { GLASS_PANEL, GLASS_BORDER_SUBTLE, BTN_ACTIVE, BTN_INACTIVE } from '../../styles/shared';
 import {
   MousePointer2,
   Plus,
@@ -37,8 +38,8 @@ const cardTypeOptions: { type: CardType; label: string }[] = [
   { type: 'annotation', label: 'Note' },
 ];
 
-const glass = 'bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)]';
-const glassInner = 'border-[rgba(123,47,255,0.08)] dark:border-[rgba(198,255,77,0.08)]';
+const glass = GLASS_PANEL;
+const glassInner = GLASS_BORDER_SUBTLE;
 
 interface ToolbarProps {
   onImport: () => void;
@@ -103,8 +104,8 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
                 onClick={() => setToolMode(tool.mode)}
                 className={`font-mono-brand px-3 py-2 text-sm font-medium border-r ${glassInner} last:border-r-0 transition-colors duration-150 flex items-center gap-1.5 ${
                   toolMode === tool.mode
-                    ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]'
-                    : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
+                    ? BTN_ACTIVE
+                    : BTN_INACTIVE
                 }`}
                 title={tool.label}
               >
@@ -256,7 +257,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
         <button
           onClick={() => setVersionPanelOpen(!isVersionPanelOpen)}
           className={`px-3 py-2 text-sm font-medium rounded-xl shadow-sm transition-colors duration-150 flex items-center gap-1.5 ${glass} ${
-            isVersionPanelOpen ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]' : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
+            isVersionPanelOpen ? BTN_ACTIVE : BTN_INACTIVE
           }`}
           title="Version History"
         >
@@ -271,7 +272,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
           onClick={toggleShowLastAIEdit}
           disabled={lastAIEditNodeIds.size === 0}
           className={`px-3 py-2 text-sm font-medium rounded-xl shadow-sm transition-colors duration-150 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed ${glass} ${
-            showLastAIEdit ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]' : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
+            showLastAIEdit ? BTN_ACTIVE : BTN_INACTIVE
           }`}
           title="Highlight nodes from last AI edit"
         >
