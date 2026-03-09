@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import db from '../db/database.js';
+import { isValidRole } from '../db/queries.js';
 import { requireProjectAccess } from '../middleware/auth.js';
 
 const router = Router();
@@ -22,7 +23,10 @@ router.get('/:projectId/shares', requireProjectAccess('owner'), (req, res) => {
 router.post('/:projectId/shares', requireProjectAccess('owner'), (req, res) => {
   const { email, role = 'viewer' } = req.body;
   if (!email) return res.status(400).json({ error: 'Email is required' });
-  if (!['viewer', 'editor'].includes(role)) {
+  if (typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+  if (!isValidRole(role)) {
     return res.status(400).json({ error: 'Role must be viewer or editor' });
   }
 
@@ -56,7 +60,7 @@ router.post('/:projectId/shares', requireProjectAccess('owner'), (req, res) => {
 // Update share role (owner only)
 router.patch('/:projectId/shares/:shareId', requireProjectAccess('owner'), (req, res) => {
   const { role } = req.body;
-  if (!['viewer', 'editor'].includes(role)) {
+  if (!isValidRole(role)) {
     return res.status(400).json({ error: 'Role must be viewer or editor' });
   }
 
@@ -90,7 +94,7 @@ router.delete('/:projectId/shares/:shareId', requireProjectAccess('owner'), (req
 // Generate shareable link (owner only)
 router.post('/:projectId/shares/link', requireProjectAccess('owner'), (req, res) => {
   const { role = 'viewer' } = req.body;
-  if (!['viewer', 'editor'].includes(role)) {
+  if (!isValidRole(role)) {
     return res.status(400).json({ error: 'Role must be viewer or editor' });
   }
 

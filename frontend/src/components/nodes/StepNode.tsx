@@ -1,13 +1,9 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
 import type { StoryCardData } from '../../types';
-import { useMapStore } from '../../store/useMapStore';
+import { useNodeHighlight } from '../../hooks/useNodeHighlight';
 
 export function StepNode({ id, data, selected }: NodeProps<Node<StoryCardData>>) {
-  const highlightType = useMapStore((s) => s.highlightedNodes.get(id));
-  const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
-  const isInLastAIEdit = useMapStore((s) => s.lastAIEditNodeIds.has(id));
-  const highlightClass = highlightType === 'added' ? 'node-highlight-added' : highlightType === 'modified' ? 'node-highlight-modified' : '';
-  const dimClass = showLastAIEdit && !isInLastAIEdit ? 'node-dimmed-not-ai' : '';
+  const { highlightClass, dimClass } = useNodeHighlight(id);
 
   return (
     <div

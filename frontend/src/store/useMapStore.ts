@@ -73,6 +73,9 @@ interface MapState {
   isCanvasLoading: boolean;
   canvasLoadError: string | null;
 
+  // Auto-save error
+  saveError: string | null;
+
   // Mobile state
   mobileEditingNodeId: string | null;
   activePanel: ActivePanel;
@@ -95,6 +98,7 @@ interface MapState {
   setDirty: (dirty: boolean) => void;
   startLoadingProject: (projectId: string) => void;
   setCanvasLoadError: (error: string | null) => void;
+  setSaveError: (error: string | null) => void;
   loadCanvas: (nodes: Node<StoryCardData>[], edges: Edge[], viewport: Viewport, visibility?: { showDescriptions?: boolean; showAcceptanceCriteria?: boolean }) => void;
   mergeNodes: (newNodes: Node<StoryCardData>[], newEdges: Edge[]) => void;
   applyArrangement: (positions: { id: string; position: { x: number; y: number } }[]) => void;
@@ -188,6 +192,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   // Canvas loading state
   isCanvasLoading: false,
   canvasLoadError: null,
+  saveError: null,
 
   // Mobile state
   mobileEditingNodeId: null,
@@ -272,6 +277,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   }),
 
   setCanvasLoadError: (error) => set({ canvasLoadError: error, isCanvasLoading: false }),
+  setSaveError: (error) => set({ saveError: error }),
 
   loadCanvas: (nodes, edges, viewport, visibility) => {
     set({

@@ -12,6 +12,7 @@ export function useAutoSave() {
   const isCanvasLoading = useMapStore((s) => s.isCanvasLoading);
   const setDirty = useMapStore((s) => s.setDirty);
   const setPendingSaveLabel = useMapStore((s) => s.setPendingSaveLabel);
+  const setSaveError = useMapStore((s) => s.setSaveError);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -24,14 +25,16 @@ export function useAutoSave() {
         const label = useMapStore.getState().pendingSaveLabel;
         await api.saveCanvas(projectId, { nodes, edges, viewport, label: label || undefined });
         setDirty(false);
+        setSaveError(null);
         if (label) setPendingSaveLabel(null);
       } catch (err) {
         console.error('Auto-save failed:', err);
+        setSaveError(err instanceof Error ? err.message : 'Failed to save');
       }
     }, 2000);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [isDirty, nodes, edges, viewport, projectId, projectRole, isCanvasLoading, setDirty, setPendingSaveLabel]);
+  }, [isDirty, nodes, edges, viewport, projectId, projectRole, isCanvasLoading, setDirty, setPendingSaveLabel, setSaveError]);
 }

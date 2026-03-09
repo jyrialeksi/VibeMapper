@@ -1,7 +1,8 @@
 import { useMapStore } from '../../store/useMapStore';
-import { api } from '../../api/client';
 import type { ToolMode, CardType, Priority } from '../../types';
 import { PRIORITY_COLORS } from '../../types';
+import { GLASS_PANEL, GLASS_BORDER_SUBTLE, BTN_ACTIVE, BTN_INACTIVE } from '../../styles/shared';
+import { useVisibilityToggle } from '../../hooks/useVisibilityToggle';
 import {
   MousePointer2,
   Plus,
@@ -37,8 +38,8 @@ const cardTypeOptions: { type: CardType; label: string }[] = [
   { type: 'annotation', label: 'Note' },
 ];
 
-const glass = 'bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)]';
-const glassInner = 'border-[rgba(123,47,255,0.08)] dark:border-[rgba(198,255,77,0.08)]';
+const glass = GLASS_PANEL;
+const glassInner = GLASS_BORDER_SUBTLE;
 
 interface ToolbarProps {
   onImport: () => void;
@@ -52,6 +53,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
   const cardTypeToAdd = useMapStore((s) => s.cardTypeToAdd);
   const setCardTypeToAdd = useMapStore((s) => s.setCardTypeToAdd);
   const isDirty = useMapStore((s) => s.isDirty);
+  const saveError = useMapStore((s) => s.saveError);
   const canUndo = useMapStore((s) => s.canUndo);
   const canRedo = useMapStore((s) => s.canRedo);
   const undo = useMapStore((s) => s.undo);
@@ -60,35 +62,15 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
   const setVersionPanelOpen = useMapStore((s) => s.setVersionPanelOpen);
   const hiddenPriorities = useMapStore((s) => s.hiddenPriorities);
   const togglePriority = useMapStore((s) => s.togglePriority);
-  const showDescriptions = useMapStore((s) => s.showDescriptions);
-  const toggleShowDescriptions = useMapStore((s) => s.toggleShowDescriptions);
-  const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
-  const toggleShowAcceptanceCriteria = useMapStore((s) => s.toggleShowAcceptanceCriteria);
+  const { showDescriptions, showAcceptanceCriteria, handleToggleDescriptions, handleToggleAC } = useVisibilityToggle();
   const isAIEditing = useMapStore((s) => s.isAIEditing);
   const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
   const toggleShowLastAIEdit = useMapStore((s) => s.toggleShowLastAIEdit);
   const lastAIEditNodeIds = useMapStore((s) => s.lastAIEditNodeIds);
   const projectRole = useMapStore((s) => s.projectRole);
-  const projectId = useMapStore((s) => s.projectId);
   const arrangeLocal = useMapStore((s) => s.arrangeLocal);
   const hasNodes = useMapStore((s) => s.nodes.length > 0);
   const isViewer = projectRole === 'viewer';
-
-  const handleToggleDescriptions = () => {
-    toggleShowDescriptions();
-    if (!isViewer && projectId) {
-      const next = !showDescriptions;
-      api.saveVisibility(projectId, next, showAcceptanceCriteria).catch(console.error);
-    }
-  };
-
-  const handleToggleAC = () => {
-    toggleShowAcceptanceCriteria();
-    if (!isViewer && projectId) {
-      const next = !showAcceptanceCriteria;
-      api.saveVisibility(projectId, showDescriptions, next).catch(console.error);
-    }
-  };
 
   return (
     <div className={`absolute top-3 left-3 z-50 flex items-center gap-2 flex-wrap max-w-[calc(100vw-24px)] ${isAIEditing ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -103,8 +85,8 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
                 onClick={() => setToolMode(tool.mode)}
                 className={`font-mono-brand px-3 py-2 text-sm font-medium border-r ${glassInner} last:border-r-0 transition-colors duration-150 flex items-center gap-1.5 ${
                   toolMode === tool.mode
-                    ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]'
-                    : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
+                    ? BTN_ACTIVE
+                    : BTN_INACTIVE
                 }`}
                 title={tool.label}
               >
@@ -256,7 +238,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
         <button
           onClick={() => setVersionPanelOpen(!isVersionPanelOpen)}
           className={`px-3 py-2 text-sm font-medium rounded-xl shadow-sm transition-colors duration-150 flex items-center gap-1.5 ${glass} ${
-            isVersionPanelOpen ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]' : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
+            isVersionPanelOpen ? BTN_ACTIVE : BTN_INACTIVE
           }`}
           title="Version History"
         >
@@ -271,7 +253,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
           onClick={toggleShowLastAIEdit}
           disabled={lastAIEditNodeIds.size === 0}
           className={`px-3 py-2 text-sm font-medium rounded-xl shadow-sm transition-colors duration-150 flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed ${glass} ${
-            showLastAIEdit ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]' : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
+            showLastAIEdit ? BTN_ACTIVE : BTN_INACTIVE
           }`}
           title="Highlight nodes from last AI edit"
         >
@@ -281,7 +263,12 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
       )}
 
       {/* Save indicator (hidden for viewers) */}
-      {!isViewer && isDirty && (
+      {!isViewer && saveError && (
+        <span className="text-xs text-red-600 dark:text-red-400 bg-red-50/80 dark:bg-red-900/30 backdrop-blur-xl px-2 py-1 rounded-lg border border-red-200/50 dark:border-red-700/50" title={saveError}>
+          Save failed
+        </span>
+      )}
+      {!isViewer && isDirty && !saveError && (
         <span className="text-xs text-[#C6FF4D] bg-[#C6FF4D]/10 dark:bg-[#C6FF4D]/15 backdrop-blur-xl px-2 py-1 rounded-lg border border-[#C6FF4D]/20">
           Unsaved
         </span>

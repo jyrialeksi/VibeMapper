@@ -3,6 +3,7 @@ import { useMapStore } from '../../store/useMapStore';
 import { api } from '../../api/client';
 import type { VersionSummary } from '../../types';
 import { X, Save, RotateCcw } from 'lucide-react';
+import { SIDEBAR_PANEL, INPUT_BASE, GLASS_BORDER, GLASS_BORDER_SUBTLE } from '../../styles/shared';
 
 function getLabelColor(label: string): string {
   const lower = label.toLowerCase();
@@ -68,9 +69,9 @@ export function VersionHistoryPanel() {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute right-0 top-0 h-full w-80 bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border-l border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] shadow-lg z-50 flex flex-col">
+    <div className={`${SIDEBAR_PANEL} flex flex-col`}>
       {/* Header */}
-      <div className="p-4 border-b border-[rgba(123,47,255,0.08)] dark:border-[rgba(198,255,77,0.08)]">
+      <div className={`p-4 border-b ${GLASS_BORDER_SUBTLE}`}>
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-[#080810] dark:text-[#F0EEFF]">Version History</h3>
           <button
@@ -83,14 +84,14 @@ export function VersionHistoryPanel() {
       </div>
 
       {/* Create snapshot */}
-      <div className="p-4 border-b border-[rgba(123,47,255,0.08)] dark:border-[rgba(198,255,77,0.08)]">
+      <div className={`p-4 border-b ${GLASS_BORDER_SUBTLE}`}>
         <div className="flex gap-2">
           <input
             type="text"
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             placeholder="Snapshot name..."
-            className="flex-1 rounded-lg bg-white/50 dark:bg-[#16162A]/50 border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-2 py-1.5 text-sm dark:text-[#F0EEFF] focus:ring-2 focus:ring-[#7B2FFF]/20 focus:border-[#7B2FFF]/40 transition-colors duration-150 placeholder:text-[#7A7A9A]"
+            className={`flex-1 ${INPUT_BASE} placeholder:text-[#7A7A9A]`}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
           />
           <button
@@ -113,7 +114,7 @@ export function VersionHistoryPanel() {
           <div className="p-4 text-center text-[#7A7A9A] text-sm">No versions yet</div>
         )}
         {versions.map((v) => (
-          <div key={v.id} className="p-3 border-b border-[rgba(123,47,255,0.05)] dark:border-[rgba(198,255,77,0.05)] hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 transition-colors duration-150">
+          <div key={v.id} className={`p-3 border-b ${GLASS_BORDER} hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10 transition-colors duration-150`}>
             <div className="flex items-center justify-between mb-1">
               <span
                 className={`text-xs px-2 py-0.5 rounded-full font-medium ${getLabelColor(v.label)}`}

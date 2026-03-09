@@ -49,7 +49,7 @@ function resetCleanupTimer(uid) {
 }
 
 async function getOrCreateTransport(req) {
-  const uid = req.user.uid;
+  const uid = req.user.id;
 
   // Reuse existing session for this user
   if (userSessions.has(uid)) {
@@ -82,7 +82,7 @@ router.post('/', async (req, res) => {
   } catch (err) {
     console.error('[MCP] POST error:', err);
     // If the transport is broken, clean up so the next request creates a fresh one
-    if (req.user?.uid) {
+    if (req.user?.id) {
       cleanupSession(req.user.uid);
     }
     if (!res.headersSent) {
@@ -97,7 +97,7 @@ router.get('/', async (req, res) => {
     await transport.handleRequest(req, res);
   } catch (err) {
     console.error('[MCP] GET error:', err);
-    if (req.user?.uid) {
+    if (req.user?.id) {
       cleanupSession(req.user.uid);
     }
     if (!res.headersSent) {
@@ -107,7 +107,7 @@ router.get('/', async (req, res) => {
 });
 
 router.delete('/', async (req, res) => {
-  if (req.user?.uid) {
+  if (req.user?.id) {
     cleanupSession(req.user.uid);
   }
   res.status(200).json({ success: true });

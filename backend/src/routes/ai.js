@@ -1,11 +1,21 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db/database.js';
+import { getUserById, getProjectById, getProjectShare } from '../db/queries.js';
 import { chatCompletion } from '../ai/client.js';
 import { availableModels } from '../ai/models.js';
 import { GENERATE_SYSTEM_PROMPT, EDIT_SYSTEM_PROMPT, ARRANGE_SYSTEM_PROMPT } from '../ai/prompts.js';
 import { requireProjectAccess } from '../middleware/auth.js';
 import { decrypt } from '../utils/encryption.js';
+
+function mapAIError(err, context) {
+  const clientMessage = err.status === 401 || err.status === 403
+    ? 'Invalid API key. Please check your OpenRouter API key.'
+    : err.status === 429
+      ? 'Rate limit exceeded. Please wait a moment and try again.'
+      : `An error occurred while ${context}. Please try again or use a different model.`;
+  return { status: err.status || 500, message: clientMessage };
+}
 
 const router = Router();
 
@@ -37,18 +47,16 @@ function validateAIInput({ prompt, model, projectId, existingNodes, existingEdge
 }
 
 function getUserApiKey(userId) {
-  const row = db.prepare('SELECT openrouter_api_key FROM users WHERE id = ?').get(userId);
+  const row = getUserById(userId);
   if (!row?.openrouter_api_key) return null;
   return decrypt(row.openrouter_api_key);
 }
 
 function verifyProjectAccess(userId, projectId) {
-  const project = db.prepare('SELECT owner_id FROM projects WHERE id = ?').get(projectId);
+  const project = getProjectById(projectId);
   if (!project) return false;
   if (project.owner_id === userId) return true;
-  const share = db.prepare(
-    'SELECT role FROM project_shares WHERE project_id = ? AND user_id = ?'
-  ).get(projectId, userId);
+  const share = getProjectShare(projectId, userId);
   return share && (share.role === 'editor' || share.role === 'owner');
 }
 
@@ -137,23 +145,19 @@ router.post('/generate', async (req, res) => {
     if (isEditMode) {
       const ops = result.operations;
       if (!Array.isArray(ops)) {
-        return res.status(502).json({ error: 'AI returned an unexpected format. Try rephrasing your request or using a different model.' });
+        return res.status(422).json({ error: 'AI returned an unexpected format. Try rephrasing your request or using a different model.' });
       }
       res.json({ mode: 'edit', operations: ops });
     } else {
       if (!Array.isArray(result.nodes)) {
-        return res.status(502).json({ error: 'AI returned an unexpected format. Try rephrasing your request or using a different model.' });
+        return res.status(422).json({ error: 'AI returned an unexpected format. Try rephrasing your request or using a different model.' });
       }
       res.json({ mode: 'generate', nodes: result.nodes, edges: result.edges || [] });
     }
   } catch (err) {
     console.error('AI generate error:', err);
-    const clientMessage = err.status === 401 || err.status === 403
-      ? 'Invalid API key. Please check your OpenRouter API key.'
-      : err.status === 429
-        ? 'Rate limit exceeded. Please wait a moment and try again.'
-        : 'An error occurred while generating. Please try again or use a different model.';
-    res.status(err.status || 500).json({ error: clientMessage });
+    const { status, message } = mapAIError(err, 'generating');
+    res.status(status).json({ error: message });
   }
 });
 
@@ -181,12 +185,8 @@ router.post('/arrange', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('AI arrange error:', err);
-    const clientMessage = err.status === 401 || err.status === 403
-      ? 'Invalid API key. Please check your OpenRouter API key.'
-      : err.status === 429
-        ? 'Rate limit exceeded. Please wait a moment and try again.'
-        : 'An error occurred while arranging. Please try again or use a different model.';
-    res.status(err.status || 500).json({ error: clientMessage });
+    const { status, message } = mapAIError(err, 'arranging');
+    res.status(status).json({ error: message });
   }
 });
 

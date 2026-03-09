@@ -1,8 +1,9 @@
 import { useRef, useEffect, useState } from 'react';
 import { useMapStore } from '../../store/useMapStore';
-import { api } from '../../api/client';
 import type { ToolMode, CardType, Priority } from '../../types';
 import { PRIORITY_COLORS } from '../../types';
+import { GLASS_PANEL, GLASS_BORDER, GLASS_BORDER_SUBTLE, BTN_ACTIVE } from '../../styles/shared';
+import { useVisibilityToggle } from '../../hooks/useVisibilityToggle';
 import {
   Menu,
   X,
@@ -68,16 +69,12 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
   const setVersionPanelOpen = useMapStore((s) => s.setVersionPanelOpen);
   const hiddenPriorities = useMapStore((s) => s.hiddenPriorities);
   const togglePriority = useMapStore((s) => s.togglePriority);
-  const showDescriptions = useMapStore((s) => s.showDescriptions);
-  const toggleShowDescriptions = useMapStore((s) => s.toggleShowDescriptions);
-  const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
-  const toggleShowAcceptanceCriteria = useMapStore((s) => s.toggleShowAcceptanceCriteria);
+  const { showDescriptions, showAcceptanceCriteria, handleToggleDescriptions, handleToggleAC } = useVisibilityToggle();
   const isAIEditing = useMapStore((s) => s.isAIEditing);
   const showLastAIEdit = useMapStore((s) => s.showLastAIEdit);
   const toggleShowLastAIEdit = useMapStore((s) => s.toggleShowLastAIEdit);
   const lastAIEditNodeIds = useMapStore((s) => s.lastAIEditNodeIds);
   const projectRole = useMapStore((s) => s.projectRole);
-  const projectId = useMapStore((s) => s.projectId);
   const arrangeLocal = useMapStore((s) => s.arrangeLocal);
   const hasNodes = useMapStore((s) => s.nodes.length > 0);
   const isViewer = projectRole === 'viewer';
@@ -94,28 +91,11 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const handleToggleDescriptions = () => {
-    toggleShowDescriptions();
-    if (!isViewer && projectId) {
-      const next = !showDescriptions;
-      api.saveVisibility(projectId, next, showAcceptanceCriteria).catch(console.error);
-    }
-  };
-
-  const handleToggleAC = () => {
-    toggleShowAcceptanceCriteria();
-    if (!isViewer && projectId) {
-      const next = !showAcceptanceCriteria;
-      api.saveVisibility(projectId, showDescriptions, next).catch(console.error);
-    }
-  };
-
   // Helper: close popover for mode-changing actions
   const withClose = (fn: () => void) => () => { fn(); setActivePanel('none'); };
 
   const btnBase = 'min-h-[44px] px-3 py-2 text-sm font-medium transition-colors duration-150 flex items-center gap-2 rounded-lg w-full';
   const btnInactive = 'text-[#080810]/80 dark:text-[#F0EEFF]/80 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10';
-  const btnActive = 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]';
   const btnDisabled = 'text-[#7A7A9A]/50 cursor-not-allowed';
 
   return (
@@ -123,7 +103,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
       {/* Toggle button */}
       <button
         onClick={() => setActivePanel(open ? 'none' : 'toolbar')}
-        className="w-11 h-11 flex items-center justify-center bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl rounded-xl shadow-sm border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] text-[#080810]/80 dark:text-[#F0EEFF]/80"
+        className={`w-11 h-11 flex items-center justify-center ${GLASS_PANEL} rounded-xl shadow-sm text-[#080810]/80 dark:text-[#F0EEFF]/80`}
       >
         {open ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -135,7 +115,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
 
       {/* Popover */}
       {open && (
-        <div className="absolute top-13 left-0 w-64 max-h-[calc(100vh-5rem)] overflow-y-auto bg-white/95 dark:bg-[#0F0F1E]/95 backdrop-blur-xl rounded-2xl shadow-lg border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] p-2 pb-3 space-y-1">
+        <div className={`absolute top-13 left-0 w-64 max-h-[calc(100vh-5rem)] overflow-y-auto bg-white/95 dark:bg-[#0F0F1E]/95 backdrop-blur-xl rounded-2xl shadow-lg border ${GLASS_BORDER} p-2 pb-3 space-y-1`}>
 
           {/* Tools section */}
           {!isViewer && (
@@ -147,7 +127,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
                   <button
                     key={tool.mode}
                     onClick={withClose(() => setToolMode(tool.mode))}
-                    className={`${btnBase} ${toolMode === tool.mode ? btnActive : btnInactive}`}
+                    className={`${btnBase} ${toolMode === tool.mode ? BTN_ACTIVE : btnInactive}`}
                   >
                     <Icon size={18} />
                     {tool.label}
@@ -164,7 +144,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
                       onClick={withClose(() => setCardTypeToAdd(opt.type))}
                       className={`min-h-[40px] px-2 py-1.5 text-xs font-medium rounded-lg transition-colors duration-150 ${
                         cardTypeToAdd === opt.type
-                          ? 'bg-[#7B2FFF]/10 text-[#7B2FFF] dark:bg-[#7B2FFF]/20 dark:text-[#C6FF4D]'
+                          ? BTN_ACTIVE
                           : 'text-[#080810]/70 dark:text-[#F0EEFF]/70 hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
                       }`}
                     >
@@ -227,14 +207,14 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
               </button>
               <button
                 onClick={withClose(() => setVersionPanelOpen(!isVersionPanelOpen))}
-                className={`${btnBase} ${isVersionPanelOpen ? btnActive : btnInactive}`}
+                className={`${btnBase} ${isVersionPanelOpen ? BTN_ACTIVE : btnInactive}`}
               >
                 <History size={18} /> History
               </button>
               <button
                 onClick={() => toggleShowLastAIEdit()}
                 disabled={lastAIEditNodeIds.size === 0}
-                className={`${btnBase} ${lastAIEditNodeIds.size === 0 ? btnDisabled : showLastAIEdit ? btnActive : btnInactive}`}
+                className={`${btnBase} ${lastAIEditNodeIds.size === 0 ? btnDisabled : showLastAIEdit ? BTN_ACTIVE : btnInactive}`}
               >
                 <Sparkles size={18} /> AI Diff
               </button>
@@ -256,7 +236,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
           {/* Delete Project (owner only) */}
           {onDeleteProject && (
             <>
-              <div className="border-t border-[rgba(123,47,255,0.08)] dark:border-[rgba(198,255,77,0.08)] my-2" />
+              <div className={`border-t ${GLASS_BORDER_SUBTLE} my-2`} />
               <button
                 onClick={() => { setActivePanel('none'); setShowDeleteConfirm(true); }}
                 className={`${btnBase} text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30`}
@@ -272,7 +252,7 @@ export function MobileToolbar({ onImport, onExport, onExportMarkdown, onDeletePr
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 dark:bg-[#080810]/60 backdrop-blur-[2px]" onClick={() => !deleting && setShowDeleteConfirm(false)}>
           <div
-            className="bg-white dark:bg-[#0F0F1E] rounded-2xl shadow-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] p-6 mx-4 max-w-sm w-full"
+            className={`bg-white dark:bg-[#0F0F1E] rounded-2xl shadow-xl border ${GLASS_BORDER} p-6 mx-4 max-w-sm w-full`}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-semibold text-[#080810] dark:text-[#F0EEFF] mb-2">Delete Project</h3>

@@ -25,6 +25,7 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useNavigate } from 'react-router-dom';
 import type { StoryCardData, CardType } from '../types';
 import { exportToMarkdown } from '../utils/exportToMarkdown';
+import { MODAL_OVERLAY, MODAL_CONTENT } from '../styles/shared';
 
 function getNodeTypeForCard(cardType: CardType): string {
   switch (cardType) {
@@ -337,8 +338,8 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         <HighlightClearer />
       </ReactFlow>
       {isAIEditing && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 dark:bg-[#080810]/60 backdrop-blur-[2px]">
-          <div className="bg-white/90 dark:bg-[#0F0F1E]/90 backdrop-blur-xl rounded-2xl shadow-lg border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-8 py-6 flex flex-col items-center gap-4">
+        <div className={MODAL_OVERLAY}>
+          <div className={MODAL_CONTENT}>
             <Loader2 size={32} className="animate-spin text-[#7B2FFF]" />
             <p className="text-sm font-medium text-[#080810] dark:text-[#F0EEFF]">AI is editing the map...</p>
             {cancelAIEdit && (
@@ -354,16 +355,16 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         </div>
       )}
       {isCanvasLoading && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 dark:bg-[#080810]/60 backdrop-blur-[2px]">
-          <div className="bg-white/90 dark:bg-[#0F0F1E]/90 backdrop-blur-xl rounded-2xl shadow-lg border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-8 py-6 flex flex-col items-center gap-4">
+        <div className={MODAL_OVERLAY}>
+          <div className={MODAL_CONTENT}>
             <Loader2 size={32} className="animate-spin text-[#7B2FFF]" />
             <p className="text-sm font-medium text-[#080810] dark:text-[#F0EEFF]">Loading project...</p>
           </div>
         </div>
       )}
       {canvasLoadError && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 dark:bg-[#080810]/60 backdrop-blur-[2px]">
-          <div className="bg-white/90 dark:bg-[#0F0F1E]/90 backdrop-blur-xl rounded-2xl shadow-lg border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-8 py-6 flex flex-col items-center gap-4 max-w-sm">
+        <div className={MODAL_OVERLAY}>
+          <div className={`${MODAL_CONTENT} max-w-sm`}>
             <AlertTriangle size={32} className="text-amber-500" />
             <p className="text-sm font-medium text-[#080810] dark:text-[#F0EEFF]">Failed to load project</p>
             <p className="text-xs text-[#080810]/60 dark:text-[#F0EEFF]/60 text-center">{canvasLoadError}</p>
