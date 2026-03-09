@@ -183,6 +183,51 @@
       animation: pulse 2s ease infinite;
     }
 
+    .hero-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s 0.15s ease both;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid;
+    }
+
+    .hero-pill--teal {
+      color: var(--teal);
+      border-color: rgba(0,245,212,0.25);
+      background: rgba(0,245,212,0.06);
+    }
+
+    .hero-pill--purple {
+      color: #b794ff;
+      border-color: rgba(123,47,255,0.25);
+      background: rgba(123,47,255,0.06);
+    }
+
+    .hero-pill--lime {
+      color: var(--lime);
+      border-color: rgba(198,255,77,0.25);
+      background: rgba(198,255,77,0.06);
+    }
+
+    .hero-pill svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
     .hero-title {
       font-family: 'Bebas Neue', sans-serif;
       font-size: clamp(72px, 12vw, 160px);
@@ -402,6 +447,114 @@
       font-size: 14px;
       line-height: 1.7;
       color: rgba(240,238,255,0.45);
+    }
+
+    /* ── TWO WAYS TO USE AI ── */
+    .ai-ways {
+      position: relative;
+      z-index: 1;
+      padding: 120px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .ai-ways-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 64px;
+    }
+
+    .ai-way {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 40px;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .ai-way:hover { background: var(--surface2); }
+
+    .ai-way-icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 24px;
+      background: var(--bg);
+    }
+
+    .ai-way-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 2px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .ai-way-label--teal {
+      color: var(--teal);
+      border: 1px solid rgba(0,245,212,0.25);
+    }
+
+    .ai-way-label--lime {
+      color: var(--lime);
+      border: 1px solid rgba(198,255,77,0.25);
+    }
+
+    .ai-way-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    .ai-way-desc {
+      font-size: 15px;
+      line-height: 1.8;
+      color: rgba(240,238,255,0.5);
+    }
+
+    .ai-way-desc a {
+      color: var(--lime);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(198,255,77,0.3);
+      transition: border-color 0.2s;
+    }
+    .ai-way-desc a:hover { border-color: var(--lime); }
+
+    .ai-way-or {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      position: absolute;
+      right: -18px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg);
+      padding: 8px 6px;
+      z-index: 2;
+    }
+
+    @media (max-width: 768px) {
+      .ai-ways { padding: 80px 20px; }
+      .ai-ways-grid { grid-template-columns: 1fr; }
+      .ai-way-or {
+        right: auto;
+        left: 50%;
+        top: auto;
+        bottom: -14px;
+        transform: translateX(-50%);
+      }
     }
 
     /* ── MCP SPOTLIGHT ── */
@@ -805,6 +958,23 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-badge">NOW IN BETA &mdash; FREE FOR ALL BUILDERS</div>
+
+    <!-- Feature pills -->
+    <div class="hero-pills">
+      <span class="hero-pill hero-pill--teal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1"/><circle cx="6" cy="18" r="1"/></svg>
+        MCP Server
+      </span>
+      <span class="hero-pill hero-pill--purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Export as Markdown
+      </span>
+      <span class="hero-pill hero-pill--lime">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26z"/></svg>
+        Free to use
+      </span>
+    </div>
+
     <h1 class="hero-title">
       <div>USER STORY MAPPING</div>
       <div class="line-accent">FOR VIBE CODERS</div>
@@ -944,6 +1114,35 @@
           <div class="step-title">CONNECT & BUILD</div>
           <p class="step-desc">Export as Markdown or JSON. Or connect via MCP so your coding agent reads the map directly and updates status as it ships.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TWO WAYS TO USE AI -->
+  <section class="ai-ways" id="ai-ways">
+    <div class="section-label">// ai integration</div>
+    <h2 class="section-title">TWO WAYS TO<br><span style="color:var(--teal)">USE AI</span></h2>
+    <div class="ai-ways-grid">
+      <div class="ai-way">
+        <div class="ai-way-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00f5d4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1"/><circle cx="6" cy="18" r="1"/></svg>
+        </div>
+        <div class="ai-way-label ai-way-label--teal">Option A</div>
+        <div class="ai-way-title">USE VIA MCP WITH YOUR OWN AI AGENT</div>
+        <p class="ai-way-desc">
+          Connect VibeMapper as an MCP server to <strong style="color:var(--text)">Claude Code</strong>, <strong style="color:var(--text)">Cursor</strong>, or any MCP-compatible AI agent. Your agent gets full access to create and edit story maps, update card statuses, and add new stories &mdash; you stay in your own workflow and your agent does the heavy lifting.
+        </p>
+        <span class="ai-way-or">OR</span>
+      </div>
+      <div class="ai-way">
+        <div class="ai-way-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c6ff4d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26z"/></svg>
+        </div>
+        <div class="ai-way-label ai-way-label--lime">Option B</div>
+        <div class="ai-way-title">USE BUILT-IN AI WITH AN OPENROUTER KEY</div>
+        <p class="ai-way-desc">
+          Add your own <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer">OpenRouter</a> API key in Settings and use AI directly inside the app to generate and edit story maps. OpenRouter is a unified API gateway that gives you access to many AI models &mdash; Claude, GPT, Gemini, and more &mdash; through a single API key. You only pay for what you use, with no subscription required.
+        </p>
       </div>
     </div>
   </section>
