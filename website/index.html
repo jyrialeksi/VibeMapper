@@ -915,6 +915,21 @@
       .cta-banner { margin: 0 20px 80px; padding: 48px 24px; }
       footer { padding: 32px 20px; flex-direction: column; text-align: center; }
       .steps::before { display: none; }
+      .steps { gap: 24px; }
+      .step {
+        display: grid;
+        grid-template-columns: 56px 1fr;
+        grid-template-rows: auto auto;
+        column-gap: 16px;
+        row-gap: 4px;
+        padding: 0;
+      }
+      .step-num {
+        grid-row: 1 / 3;
+        margin-bottom: 0;
+        align-self: center;
+      }
+      .step-title { margin-bottom: 0; }
       .mcp-section { padding: 60px 20px; }
       .mcp-inner { grid-template-columns: 1fr; gap: 40px; }
       .plan-features { grid-template-columns: 1fr; }
@@ -957,8 +972,6 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-badge">NOW IN BETA &mdash; FREE FOR ALL BUILDERS</div>
-
     <!-- Feature pills -->
     <div class="hero-pills">
       <span class="hero-pill hero-pill--teal">
@@ -1214,7 +1227,7 @@
 
   <!-- CTA -->
   <div class="cta-banner">
-    <h2 class="cta-title">SEE IT BEFORE<br><span>YOU BUILD IT.</span></h2>
+    <h2 class="cta-title">FEEL IT BEFORE<br><span>YOU BUILD IT.</span></h2>
     <p class="cta-sub">Your next app starts as a map, not a markdown file.</p>
     <a href="https://app.vibemapper.io" class="btn-primary">MAP YOUR VIBE FOR FREE &rarr;</a>
   </div>
