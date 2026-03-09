@@ -118,7 +118,12 @@ router.post('/generate', async (req, res) => {
     }
   } catch (err) {
     console.error('AI generate error:', err);
-    res.status(500).json({ error: err.message });
+    const clientMessage = err.status === 401 || err.status === 403
+      ? 'Invalid API key. Please check your OpenRouter API key.'
+      : err.status === 429
+        ? 'Rate limit exceeded. Please wait a moment and try again.'
+        : 'An error occurred while generating. Please try again or use a different model.';
+    res.status(err.status || 500).json({ error: clientMessage });
   }
 });
 
@@ -143,7 +148,12 @@ router.post('/arrange', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('AI arrange error:', err);
-    res.status(500).json({ error: err.message });
+    const clientMessage = err.status === 401 || err.status === 403
+      ? 'Invalid API key. Please check your OpenRouter API key.'
+      : err.status === 429
+        ? 'Rate limit exceeded. Please wait a moment and try again.'
+        : 'An error occurred while arranging. Please try again or use a different model.';
+    res.status(err.status || 500).json({ error: clientMessage });
   }
 });
 

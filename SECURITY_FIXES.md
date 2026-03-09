@@ -16,7 +16,7 @@ Identified during pre-public security review. Work through top-to-bottom by prio
 
 ## High
 
-- [ ] **3. Sanitize error messages returned to clients**
+- [x] **3. Sanitize error messages returned to clients**
   - File: `backend/src/routes/ai.js:107,131`
   - Raw `err.message` sent to client — may leak OpenRouter API details or DB errors
   - Fix: Return generic error message, log full error server-side only

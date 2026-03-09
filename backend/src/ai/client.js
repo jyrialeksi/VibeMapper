@@ -26,8 +26,10 @@ async function callOpenRouter(apiKey, model, messages, { jsonMode, temperature }
   });
 
   if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`OpenRouter API error (${response.status}): ${err}`);
+    const errBody = await response.text();
+    const err = new Error(`OpenRouter API error (${response.status}): ${errBody}`);
+    err.status = response.status;
+    throw err;
   }
 
   const data = await response.json();
