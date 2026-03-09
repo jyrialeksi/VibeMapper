@@ -26,7 +26,7 @@ Identified during pre-public security review. Work through top-to-bottom by prio
   - On 404, logs all project IDs/names via `JSON.stringify(allProjects...)`
   - Fix: Remove or gate behind `NODE_ENV !== 'production'`
 
-- [ ] **5. Add security headers (helmet)**
+- [x] **5. Add security headers (helmet)**
   - File: `backend/src/server.js`
   - No security headers set (CSP, HSTS, X-Frame-Options, X-Content-Type-Options)
   - Fix: Add `helmet` middleware

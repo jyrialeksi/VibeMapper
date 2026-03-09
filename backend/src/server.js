@@ -7,6 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import admin from 'firebase-admin';
 import db from './db/database.js';
@@ -42,6 +43,22 @@ const isProd = process.env.NODE_ENV === 'production';
 if (isProd) {
   app.set('trust proxy', 1);
 }
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: isProd ? {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://apis.google.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://www.googleapis.com"],
+      frameSrc: ["'self'", "https://accounts.google.com"],
+    },
+  } : false,
+  crossOriginEmbedderPolicy: false,
+}));
 
 app.use(cors({
   origin: isProd ? false : 'http://localhost:5173',
