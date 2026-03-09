@@ -17,7 +17,7 @@ router.get('/config', (req, res) => {
     authEnabled: true,
     firebaseConfig: {
       apiKey: process.env.VITE_FIREBASE_API_KEY || '',
-      authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN || process.env.VITE_FIREBASE_AUTH_DOMAIN || '',
       projectId: process.env.FIREBASE_PROJECT_ID || '',
     },
   });

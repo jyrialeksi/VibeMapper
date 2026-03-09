@@ -44,6 +44,41 @@ if (isProd) {
   app.set('trust proxy', 1);
 }
 
+// Firebase Auth reverse proxy — before helmet so Firebase responses pass through unmodified
+if (process.env.FIREBASE_PROJECT_ID) {
+  const firebaseHost = `${process.env.FIREBASE_PROJECT_ID}.firebaseapp.com`;
+  app.all('/__/*', async (req, res) => {
+    const targetUrl = `https://${firebaseHost}${req.originalUrl}`;
+    try {
+      const headers = { ...req.headers, host: firebaseHost };
+      delete headers['accept-encoding'];
+
+      const fetchOptions = { method: req.method, headers, redirect: 'manual' };
+
+      if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        fetchOptions.body = Buffer.concat(chunks);
+      }
+
+      const upstream = await fetch(targetUrl, fetchOptions);
+      res.status(upstream.status);
+
+      for (const [key, value] of upstream.headers.entries()) {
+        const lower = key.toLowerCase();
+        if (['content-encoding', 'content-length', 'transfer-encoding'].includes(lower)) continue;
+        res.setHeader(key, value);
+      }
+
+      const body = await upstream.arrayBuffer();
+      res.end(Buffer.from(body));
+    } catch (err) {
+      console.error('[AUTH PROXY] Firebase proxy error:', err.message);
+      res.status(502).send('Auth proxy error');
+    }
+  });
+}
+
 // Security headers
 app.use(helmet({
   contentSecurityPolicy: isProd ? {
@@ -54,7 +89,7 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https://*.googleusercontent.com", "https://*.googleapis.com"],
       connectSrc: ["'self'", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://www.googleapis.com"],
-      frameSrc: ["'self'", "https://accounts.google.com"],
+      frameSrc: ["'self'", "https://accounts.google.com", "https://*.firebaseapp.com"],
     },
   } : false,
   crossOriginEmbedderPolicy: false,
