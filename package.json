@@ -12,9 +12,12 @@
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",
     "build": "npm run build --workspace=frontend && npm run build --workspace=mcp-server",
-    "test": "npm run test --workspaces"
+    "test": "npm run test --workspaces",
+    "test:e2e": "npx playwright test",
+    "test:all": "npm run test && npm run test:e2e"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "concurrently": "^9.1.0"
   }
 }
