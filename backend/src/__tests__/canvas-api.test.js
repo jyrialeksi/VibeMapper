@@ -243,4 +243,100 @@ describe('Canvas API endpoints', () => {
 
     expect(res.status).toBe(404);
   });
+
+  // --- Input validation tests ---
+
+  it('PUT /:projectId rejects non-array nodes', async () => {
+    const res = await request(app)
+      .put('/api/canvas/proj-1')
+      .send({ nodes: 'not-an-array', edges: [], viewport: { x: 0, y: 0, zoom: 1 } });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Invalid canvas data');
+    expect(res.body.details).toContain('nodes must be an array');
+  });
+
+  it('PUT /:projectId rejects non-array edges', async () => {
+    const res = await request(app)
+      .put('/api/canvas/proj-1')
+      .send({ nodes: [], edges: 'bad', viewport: { x: 0, y: 0, zoom: 1 } });
+
+    expect(res.status).toBe(400);
+    expect(res.body.details).toContain('edges must be an array');
+  });
+
+  it('PUT /:projectId rejects invalid viewport', async () => {
+    const res = await request(app)
+      .put('/api/canvas/proj-1')
+      .send({ nodes: [], edges: [], viewport: { x: 'a', y: 0, zoom: 1 } });
+
+    expect(res.status).toBe(400);
+    expect(res.body.details).toContain('viewport must have numeric x, y, and zoom');
+  });
+
+  it('PUT /:projectId rejects missing viewport', async () => {
+    const res = await request(app)
+      .put('/api/canvas/proj-1')
+      .send({ nodes: [], edges: [], viewport: null });
+
+    expect(res.status).toBe(400);
+    expect(res.body.details).toContain('viewport must be an object');
+  });
+
+  it('PUT /:projectId rejects node with invalid type', async () => {
+    const res = await request(app)
+      .put('/api/canvas/proj-1')
+      .send({
+        nodes: [{ id: 'n1', type: 'malicious' }],
+        edges: [],
+        viewport: { x: 0, y: 0, zoom: 1 },
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.details[0]).toContain('not valid');
+  });
+
+  it('PUT /:projectId rejects node without id', async () => {
+    const res = await request(app)
+      .put('/api/canvas/proj-1')
+      .send({
+        nodes: [{ type: 'storyCard' }],
+        edges: [],
+        viewport: { x: 0, y: 0, zoom: 1 },
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.details[0]).toContain('nodes[0].id');
+  });
+
+  it('PUT /:projectId rejects edge without source/target', async () => {
+    const res = await request(app)
+      .put('/api/canvas/proj-1')
+      .send({
+        nodes: [],
+        edges: [{ id: 'e1' }],
+        viewport: { x: 0, y: 0, zoom: 1 },
+      });
+
+    expect(res.status).toBe(400);
+    expect(res.body.details[0]).toContain('source and target');
+  });
+
+  it('POST /:projectId/import rejects invalid data', async () => {
+    const res = await request(app)
+      .post('/api/canvas/proj-1/import')
+      .send({ nodes: 'bad', edges: [], viewport: { x: 0, y: 0, zoom: 1 } });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Invalid canvas data');
+  });
+
+  it('POST /:projectId/import allows empty body (defaults)', async () => {
+    const res = await request(app)
+      .post('/api/canvas/proj-1/import')
+      .send({});
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+  });
 });

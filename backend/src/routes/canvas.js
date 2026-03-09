@@ -6,6 +6,79 @@ import { addClient, broadcast } from '../sse/connections.js';
 
 const router = Router();
 
+// --- Input validation helpers ---
+const MAX_NODES = 2000;
+const MAX_EDGES = 5000;
+const MAX_STRING_LENGTH = 10000; // per node text field
+const VALID_NODE_TYPES = ['activity', 'step', 'storyCard', 'annotation'];
+
+function validateCanvasPayload(nodes, edges, viewport) {
+  const errors = [];
+
+  // nodes must be an array within size limits
+  if (!Array.isArray(nodes)) {
+    errors.push('nodes must be an array');
+  } else {
+    if (nodes.length > MAX_NODES) {
+      errors.push(`nodes exceeds maximum count of ${MAX_NODES} (got ${nodes.length})`);
+    }
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      if (!n || typeof n !== 'object') {
+        errors.push(`nodes[${i}] must be an object`);
+        continue;
+      }
+      if (typeof n.id !== 'string' || n.id.length === 0 || n.id.length > 200) {
+        errors.push(`nodes[${i}].id must be a non-empty string (max 200 chars)`);
+      }
+      if (n.type && !VALID_NODE_TYPES.includes(n.type)) {
+        errors.push(`nodes[${i}].type "${n.type}" is not valid`);
+      }
+      if (n.data) {
+        if (typeof n.data.title === 'string' && n.data.title.length > MAX_STRING_LENGTH) {
+          errors.push(`nodes[${i}].data.title exceeds ${MAX_STRING_LENGTH} chars`);
+        }
+        if (typeof n.data.description === 'string' && n.data.description.length > MAX_STRING_LENGTH) {
+          errors.push(`nodes[${i}].data.description exceeds ${MAX_STRING_LENGTH} chars`);
+        }
+      }
+    }
+  }
+
+  // edges must be an array within size limits
+  if (!Array.isArray(edges)) {
+    errors.push('edges must be an array');
+  } else {
+    if (edges.length > MAX_EDGES) {
+      errors.push(`edges exceeds maximum count of ${MAX_EDGES} (got ${edges.length})`);
+    }
+    for (let i = 0; i < edges.length; i++) {
+      const e = edges[i];
+      if (!e || typeof e !== 'object') {
+        errors.push(`edges[${i}] must be an object`);
+        continue;
+      }
+      if (typeof e.id !== 'string' || e.id.length === 0) {
+        errors.push(`edges[${i}].id must be a non-empty string`);
+      }
+      if (typeof e.source !== 'string' || typeof e.target !== 'string') {
+        errors.push(`edges[${i}] must have source and target strings`);
+      }
+    }
+  }
+
+  // viewport must be an object with x, y, zoom numbers
+  if (!viewport || typeof viewport !== 'object') {
+    errors.push('viewport must be an object');
+  } else {
+    if (typeof viewport.x !== 'number' || typeof viewport.y !== 'number' || typeof viewport.zoom !== 'number') {
+      errors.push('viewport must have numeric x, y, and zoom');
+    }
+  }
+
+  return errors;
+}
+
 // Load canvas state
 router.get('/:projectId', requireProjectAccess('viewer'), (req, res) => {
   const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(req.params.projectId);
@@ -26,6 +99,11 @@ router.get('/:projectId', requireProjectAccess('viewer'), (req, res) => {
 router.put('/:projectId', requireProjectAccess('editor'), (req, res) => {
   const { nodes, edges, viewport, label } = req.body;
   const { projectId } = req.params;
+
+  const validationErrors = validateCanvasPayload(nodes, edges, viewport);
+  if (validationErrors.length > 0) {
+    return res.status(400).json({ error: 'Invalid canvas data', details: validationErrors });
+  }
 
   const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
@@ -50,12 +128,17 @@ router.post('/:projectId/import', requireProjectAccess('editor'), (req, res) => 
   const { nodes, edges, viewport } = req.body;
   const { projectId } = req.params;
 
-  const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(projectId);
-  if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
-
   const importedNodes = nodes || [];
   const importedEdges = edges || [];
   const importedViewport = viewport || { x: 0, y: 0, zoom: 1 };
+
+  const validationErrors = validateCanvasPayload(importedNodes, importedEdges, importedViewport);
+  if (validationErrors.length > 0) {
+    return res.status(400).json({ error: 'Invalid canvas data', details: validationErrors });
+  }
+
+  const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(projectId);
+  if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
   const importTransaction = db.transaction(() => {
     db.prepare(

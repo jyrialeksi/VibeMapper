@@ -36,7 +36,7 @@ Identified during pre-public security review. Work through top-to-bottom by prio
   - Production stage runs as root
   - Fix: Add `adduser` + `USER` directive
 
-- [ ] **7. Add input validation on canvas save**
+- [x] **7. Add input validation on canvas save**
   - File: `backend/src/routes/canvas.js:26-46`
   - No validation of structure or size on nodes/edges/viewport
   - Fix: Validate schema, enforce reasonable limits on node/edge counts
