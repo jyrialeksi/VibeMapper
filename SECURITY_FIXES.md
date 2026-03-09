@@ -9,7 +9,7 @@ Identified during pre-public security review. Work through top-to-bottom by prio
   - `GET /api/ai/history/:projectId` has no `requireProjectAccess()` — any authenticated user can read AI history for any project
   - Fix: Add `requireProjectAccess('viewer')` middleware
 
-- [ ] **2. Add project access check to AI generate/arrange**
+- [x] **2. Add project access check to AI generate/arrange**
   - File: `backend/src/routes/ai.js:39,112`
   - `POST /api/ai/generate` and `POST /api/ai/arrange` accept `projectId` in body but never verify access
   - Fix: Validate project access when `projectId` is provided

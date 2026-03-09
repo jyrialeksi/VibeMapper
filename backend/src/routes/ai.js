@@ -15,6 +15,16 @@ function getUserApiKey(userId) {
   return decrypt(row.openrouter_api_key);
 }
 
+function verifyProjectAccess(userId, projectId) {
+  const project = db.prepare('SELECT owner_id FROM projects WHERE id = ?').get(projectId);
+  if (!project) return false;
+  if (project.owner_id === userId) return true;
+  const share = db.prepare(
+    'SELECT role FROM project_shares WHERE project_id = ? AND user_id = ?'
+  ).get(projectId, userId);
+  return share && (share.role === 'editor' || share.role === 'owner');
+}
+
 function buildCompactState(nodes, edges) {
   const lines = ['EXISTING NODES:'];
   for (const n of nodes) {
@@ -44,6 +54,10 @@ router.post('/generate', async (req, res) => {
     const { prompt, model, projectId, existingNodes, existingEdges } = req.body;
     if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
     if (!model) return res.status(400).json({ error: 'Model is required' });
+
+    if (projectId && !verifyProjectAccess(req.user.id, projectId)) {
+      return res.status(403).json({ error: 'Access denied to this project' });
+    }
 
     const isEditMode = Array.isArray(existingNodes) && existingNodes.length > 0;
 
