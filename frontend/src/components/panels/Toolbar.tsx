@@ -53,6 +53,7 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
   const cardTypeToAdd = useMapStore((s) => s.cardTypeToAdd);
   const setCardTypeToAdd = useMapStore((s) => s.setCardTypeToAdd);
   const isDirty = useMapStore((s) => s.isDirty);
+  const saveError = useMapStore((s) => s.saveError);
   const canUndo = useMapStore((s) => s.canUndo);
   const canRedo = useMapStore((s) => s.canRedo);
   const undo = useMapStore((s) => s.undo);
@@ -262,7 +263,12 @@ export function Toolbar({ onImport, onExport, onExportMarkdown }: ToolbarProps) 
       )}
 
       {/* Save indicator (hidden for viewers) */}
-      {!isViewer && isDirty && (
+      {!isViewer && saveError && (
+        <span className="text-xs text-red-600 dark:text-red-400 bg-red-50/80 dark:bg-red-900/30 backdrop-blur-xl px-2 py-1 rounded-lg border border-red-200/50 dark:border-red-700/50" title={saveError}>
+          Save failed
+        </span>
+      )}
+      {!isViewer && isDirty && !saveError && (
         <span className="text-xs text-[#C6FF4D] bg-[#C6FF4D]/10 dark:bg-[#C6FF4D]/15 backdrop-blur-xl px-2 py-1 rounded-lg border border-[#C6FF4D]/20">
           Unsaved
         </span>
