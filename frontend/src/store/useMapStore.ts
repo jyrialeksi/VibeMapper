@@ -69,6 +69,10 @@ interface MapState {
   // Project role (for sharing permissions)
   projectRole: 'owner' | 'editor' | 'viewer';
 
+  // Canvas loading state
+  isCanvasLoading: boolean;
+  canvasLoadError: string | null;
+
   // Mobile state
   mobileEditingNodeId: string | null;
   activePanel: ActivePanel;
@@ -89,6 +93,8 @@ interface MapState {
   setCardTypeToAdd: (type: CardType) => void;
   setProjectId: (id: string | null) => void;
   setDirty: (dirty: boolean) => void;
+  startLoadingProject: (projectId: string) => void;
+  setCanvasLoadError: (error: string | null) => void;
   loadCanvas: (nodes: Node<StoryCardData>[], edges: Edge[], viewport: Viewport, visibility?: { showDescriptions?: boolean; showAcceptanceCriteria?: boolean }) => void;
   mergeNodes: (newNodes: Node<StoryCardData>[], newEdges: Edge[]) => void;
   applyArrangement: (positions: { id: string; position: { x: number; y: number } }[]) => void;
@@ -179,6 +185,10 @@ export const useMapStore = create<MapState>((set, get) => ({
   // Project role
   projectRole: 'owner',
 
+  // Canvas loading state
+  isCanvasLoading: false,
+  canvasLoadError: null,
+
   // Mobile state
   mobileEditingNodeId: null,
   activePanel: 'none',
@@ -240,9 +250,33 @@ export const useMapStore = create<MapState>((set, get) => ({
   setProjectId: (id) => set({ projectId: id }),
   setDirty: (dirty) => set({ isDirty: dirty }),
 
+  startLoadingProject: (projectId) => set({
+    projectId,
+    isCanvasLoading: true,
+    canvasLoadError: null,
+    nodes: [],
+    edges: [],
+    viewport: { x: 0, y: 0, zoom: 1 },
+    isDirty: false,
+    selectedNodeId: null,
+    highlightedNodes: new Map(),
+    lastAIEditNodeIds: new Set(),
+    showLastAIEdit: false,
+    pendingLayout: 'none' as PendingLayout,
+    undoStack: [],
+    redoStack: [],
+    canUndo: false,
+    canRedo: false,
+    mobileEditingNodeId: null,
+    activePanel: 'none' as ActivePanel,
+  }),
+
+  setCanvasLoadError: (error) => set({ canvasLoadError: error, isCanvasLoading: false }),
+
   loadCanvas: (nodes, edges, viewport, visibility) => {
     set({
       nodes, edges, viewport, isDirty: false,
+      isCanvasLoading: false, canvasLoadError: null,
       highlightedNodes: new Map(), lastAIEditNodeIds: new Set(), showLastAIEdit: false,
       ...(visibility?.showDescriptions !== undefined && { showDescriptions: visibility.showDescriptions }),
       ...(visibility?.showAcceptanceCriteria !== undefined && { showAcceptanceCriteria: visibility.showAcceptanceCriteria }),

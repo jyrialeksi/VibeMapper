@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect, useMemo } from 'react';
+import { useCallback, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -7,7 +7,7 @@ import {
   type Node,
   BackgroundVariant,
 } from '@xyflow/react';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, AlertTriangle, ArrowLeft, RotateCcw } from 'lucide-react';
 import { useMapStore } from '../store/useMapStore';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useTheme } from '../hooks/useTheme';
@@ -22,6 +22,7 @@ import { VersionHistoryPanel } from './panels/VersionHistoryPanel';
 import { LayoutCorrector } from './LayoutCorrector';
 import { HighlightClearer } from './HighlightClearer';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useNavigate } from 'react-router-dom';
 import type { StoryCardData, CardType } from '../types';
 import { exportToMarkdown } from '../utils/exportToMarkdown';
 
@@ -64,7 +65,10 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
   const cardTypeToAdd = useMapStore((s) => s.cardTypeToAdd);
   const setToolMode = useMapStore((s) => s.setToolMode);
   const loadCanvas = useMapStore((s) => s.loadCanvas);
-  const setProjectId = useMapStore((s) => s.setProjectId);
+  const startLoadingProject = useMapStore((s) => s.startLoadingProject);
+  const setCanvasLoadError = useMapStore((s) => s.setCanvasLoadError);
+  const isCanvasLoading = useMapStore((s) => s.isCanvasLoading);
+  const canvasLoadError = useMapStore((s) => s.canvasLoadError);
   const pushSnapshot = useMapStore((s) => s.pushSnapshot);
   const isVersionPanelOpen = useMapStore((s) => s.isVersionPanelOpen);
   const hiddenPriorities = useMapStore((s) => s.hiddenPriorities);
@@ -77,6 +81,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
   const mobileEditingNodeId = useMapStore((s) => s.mobileEditingNodeId);
   const setMobileEditingNodeId = useMapStore((s) => s.setMobileEditingNodeId);
   const setActivePanel = useMapStore((s) => s.setActivePanel);
+  const navigate = useNavigate();
   const isReadOnly = projectRole === 'viewer' || isAIEditing;
 
   const visibleNodes = useMemo(() => {
@@ -123,26 +128,41 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
   const { getToken } = useAuth();
   const applyVisibility = useMapStore((s) => s.applyVisibility);
 
-  // Load canvas state on mount
-  useEffect(() => {
-    setProjectId(projectId);
+  // Clear canvas synchronously (before paint) then fetch new data.
+  // Combined in one useLayoutEffect so the clear + fetch always pair together,
+  // preventing Strict Mode from clearing without fetching.
+  useLayoutEffect(() => {
+    let cancelled = false;
+    startLoadingProject(projectId);
+
     api.loadCanvas(projectId).then((state) => {
+      if (cancelled) return;
       loadCanvas(state.nodes, state.edges, state.viewport, {
         showDescriptions: state.showDescriptions,
         showAcceptanceCriteria: state.showAcceptanceCriteria,
       });
       if (state.role) setProjectRole(state.role);
-    }).catch(console.error);
-  }, [projectId, loadCanvas, setProjectId, setProjectRole]);
+    }).catch((err) => {
+      if (cancelled) return;
+      console.error('Failed to load canvas:', err);
+      setCanvasLoadError(err instanceof Error ? err.message : 'Failed to load project');
+    });
+
+    return () => { cancelled = true; };
+  }, [projectId, startLoadingProject, loadCanvas, setProjectRole, setCanvasLoadError]);
 
   // SSE subscription for live visibility sync
   useEffect(() => {
     if (!projectId) return;
 
     let es: EventSource | null = null;
+    let cancelled = false;
 
     const connect = async () => {
       const token = await getToken();
+      // If cleanup ran while we were awaiting the token, don't create the EventSource
+      if (cancelled) return;
+
       const url = `/api/canvas/${projectId}/events${token ? `?token=${encodeURIComponent(token)}` : ''}`;
       es = new EventSource(url);
 
@@ -161,6 +181,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
     connect();
 
     return () => {
+      cancelled = true;
       es?.close();
     };
   }, [projectId, getToken, applyVisibility]);
@@ -329,6 +350,50 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
                 Cancel
               </button>
             )}
+          </div>
+        </div>
+      )}
+      {isCanvasLoading && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 dark:bg-[#080810]/60 backdrop-blur-[2px]">
+          <div className="bg-white/90 dark:bg-[#0F0F1E]/90 backdrop-blur-xl rounded-2xl shadow-lg border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-8 py-6 flex flex-col items-center gap-4">
+            <Loader2 size={32} className="animate-spin text-[#7B2FFF]" />
+            <p className="text-sm font-medium text-[#080810] dark:text-[#F0EEFF]">Loading project...</p>
+          </div>
+        </div>
+      )}
+      {canvasLoadError && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/20 dark:bg-[#080810]/60 backdrop-blur-[2px]">
+          <div className="bg-white/90 dark:bg-[#0F0F1E]/90 backdrop-blur-xl rounded-2xl shadow-lg border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] px-8 py-6 flex flex-col items-center gap-4 max-w-sm">
+            <AlertTriangle size={32} className="text-amber-500" />
+            <p className="text-sm font-medium text-[#080810] dark:text-[#F0EEFF]">Failed to load project</p>
+            <p className="text-xs text-[#080810]/60 dark:text-[#F0EEFF]/60 text-center">{canvasLoadError}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => navigate('/')}
+                className="px-4 py-1.5 text-sm font-medium text-[#080810]/70 dark:text-[#F0EEFF]/70 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-150 flex items-center gap-1.5"
+              >
+                <ArrowLeft size={14} />
+                Back
+              </button>
+              <button
+                onClick={() => {
+                  startLoadingProject(projectId);
+                  api.loadCanvas(projectId).then((state) => {
+                    loadCanvas(state.nodes, state.edges, state.viewport, {
+                      showDescriptions: state.showDescriptions,
+                      showAcceptanceCriteria: state.showAcceptanceCriteria,
+                    });
+                    if (state.role) setProjectRole(state.role);
+                  }).catch((err) => {
+                    setCanvasLoadError(err instanceof Error ? err.message : 'Failed to load project');
+                  });
+                }}
+                className="px-4 py-1.5 text-sm font-medium text-[#7B2FFF] dark:text-[#C6FF4D] bg-[#7B2FFF]/10 dark:bg-[#C6FF4D]/10 hover:bg-[#7B2FFF]/20 dark:hover:bg-[#C6FF4D]/20 rounded-lg border border-[#7B2FFF]/20 dark:border-[#C6FF4D]/20 transition-colors duration-150 flex items-center gap-1.5"
+              >
+                <RotateCcw size={14} />
+                Retry
+              </button>
+            </div>
           </div>
         </div>
       )}

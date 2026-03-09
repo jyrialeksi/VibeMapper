@@ -283,11 +283,21 @@ export function LayoutCorrector() {
   const setPendingLayout = useMapStore((s) => s.setPendingLayout);
   const showDescriptions = useMapStore((s) => s.showDescriptions);
   const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
+  const projectId = useMapStore((s) => s.projectId);
   const nodeLookup = useStore(nodeLookupSelector);
   const nodeLookupRef = useRef(nodeLookup);
   nodeLookupRef.current = nodeLookup;
   const actionRef = useRef<string | null>(null);
   const initialVisibilityRef = useRef({ showDescriptions, showAcceptanceCriteria });
+  const suppressVisibilityArrangeRef = useRef(false);
+  const lastProjectIdRef = useRef(projectId);
+
+  // When project changes, suppress the next visibility-triggered arrange
+  // since loaded nodes already have correct saved positions
+  if (lastProjectIdRef.current !== projectId) {
+    lastProjectIdRef.current = projectId;
+    suppressVisibilityArrangeRef.current = true;
+  }
 
   // Capture the action in a ref, then clear the store flag
   if (pendingLayout !== 'none' && actionRef.current === null) {
@@ -336,6 +346,13 @@ export function LayoutCorrector() {
       return;
     }
     initialVisibilityRef.current = { showDescriptions, showAcceptanceCriteria };
+
+    // Skip arrange when visibility changed due to project load —
+    // loaded nodes already have correct saved positions
+    if (suppressVisibilityArrangeRef.current) {
+      suppressVisibilityArrangeRef.current = false;
+      return;
+    }
 
     // Wait for content CSS transition to finish so measured heights are final
     const arrangeTimer = setTimeout(() => {

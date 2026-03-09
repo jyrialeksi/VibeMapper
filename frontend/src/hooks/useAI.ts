@@ -4,9 +4,27 @@ import { useMapStore } from '../store/useMapStore';
 import type { AIModel, StoryCardData } from '../types';
 import type { Node, Edge } from '@xyflow/react';
 
+// Cache models at module level — they don't change during a session
+let cachedModels: AIModel[] | null = null;
+let modelsFetchPromise: Promise<AIModel[]> | null = null;
+
+function fetchModelsOnce(): Promise<AIModel[]> {
+  if (cachedModels) return Promise.resolve(cachedModels);
+  if (!modelsFetchPromise) {
+    modelsFetchPromise = api.getModels().then((m) => {
+      cachedModels = m;
+      return m;
+    }).catch((err) => {
+      modelsFetchPromise = null; // Allow retry on failure
+      throw err;
+    });
+  }
+  return modelsFetchPromise;
+}
+
 export function useAI() {
-  const [models, setModels] = useState<AIModel[]>([]);
-  const [selectedModel, setSelectedModel] = useState('');
+  const [models, setModels] = useState<AIModel[]>(cachedModels ?? []);
+  const [selectedModel, setSelectedModel] = useState(cachedModels?.[0]?.id ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -22,7 +40,8 @@ export function useAI() {
   const setCancelAIEdit = useMapStore((s) => s.setCancelAIEdit);
 
   useEffect(() => {
-    api.getModels().then((m) => {
+    if (cachedModels) return; // Already have models, no fetch needed
+    fetchModelsOnce().then((m) => {
       setModels(m);
       if (m.length > 0) setSelectedModel(m[0].id);
     }).catch(console.error);
