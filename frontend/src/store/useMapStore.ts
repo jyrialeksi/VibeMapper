@@ -525,13 +525,9 @@ export const useMapStore = create<MapState>((set, get) => ({
   // Mobile actions
   setMobileEditingNodeId: (id) => {
     if (id !== null) {
-      set({ mobileEditingNodeId: id, selectedNodeId: id, activePanel: 'cardEditor' });
+      set({ mobileEditingNodeId: id, selectedNodeId: id });
     } else {
-      set((s) => ({
-        mobileEditingNodeId: null,
-        selectedNodeId: null,
-        ...(s.activePanel === 'cardEditor' && { activePanel: 'none' as ActivePanel }),
-      }));
+      set({ mobileEditingNodeId: null });
     }
   },
   setActivePanel: (panel) => set({

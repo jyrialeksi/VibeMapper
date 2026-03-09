@@ -13,6 +13,7 @@ export function CardEditor() {
   const updateNodeData = useMapStore((s) => s.updateNodeData);
   const deleteNode = useMapStore((s) => s.deleteNode);
   const setSelectedNodeId = useMapStore((s) => s.setSelectedNodeId);
+  const setActivePanel = useMapStore((s) => s.setActivePanel);
   const pushSnapshot = useMapStore((s) => s.pushSnapshot);
   const prevSelectedRef = useRef<string | null>(null);
 
@@ -34,7 +35,7 @@ export function CardEditor() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-[#080810] dark:text-[#F0EEFF]">Edit Card</h3>
           <button
-            onClick={() => setSelectedNodeId(null)}
+            onClick={() => { setSelectedNodeId(null); setActivePanel('none'); }}
             className="p-1 hover:bg-[#7B2FFF]/10 dark:hover:bg-[#7B2FFF]/20 rounded-md text-[#7A7A9A] hover:text-[#7B2FFF] transition-colors duration-150"
           >
             <X size={16} />

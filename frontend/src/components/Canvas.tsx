@@ -12,12 +12,17 @@ import { useMapStore } from '../store/useMapStore';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { api } from '../api/client';
 import { nodeTypes } from './nodes';
 import { edgeTypes } from './edges';
+import { Toolbar } from './panels/Toolbar';
+import { CardEditor } from './panels/CardEditor';
+import { AIPromptBox } from './panels/AIPromptBox';
 import { MobileToolbar } from './panels/MobileToolbar';
 import { MobileCardEditor } from './panels/MobileCardEditor';
 import { MobileAIButton } from './panels/MobileAIButton';
+import { NodeContextBar } from './panels/NodeContextBar';
 import { VersionHistoryPanel } from './panels/VersionHistoryPanel';
 import { LayoutCorrector } from './LayoutCorrector';
 import { HighlightClearer } from './HighlightClearer';
@@ -81,8 +86,11 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
   const setProjectRole = useMapStore((s) => s.setProjectRole);
   const mobileEditingNodeId = useMapStore((s) => s.mobileEditingNodeId);
   const setMobileEditingNodeId = useMapStore((s) => s.setMobileEditingNodeId);
+  const activePanel = useMapStore((s) => s.activePanel);
   const setActivePanel = useMapStore((s) => s.setActivePanel);
+  const selectedNodeId = useMapStore((s) => s.selectedNodeId);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const isReadOnly = projectRole === 'viewer' || isAIEditing;
 
   const visibleNodes = useMemo(() => {
@@ -93,14 +101,14 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         return !hiddenPriorities.has(n.data.priority);
       });
     }
-    // Per-node draggable: only the node being edited is draggable
-    if (mobileEditingNodeId) {
+    // Per-node draggable: only the selected node is draggable
+    if (selectedNodeId) {
       return filtered.map((n) =>
-        n.id === mobileEditingNodeId ? { ...n, draggable: true } : n
+        n.id === selectedNodeId ? { ...n, draggable: true } : n
       );
     }
     return filtered;
-  }, [nodes, hiddenPriorities, mobileEditingNodeId]);
+  }, [nodes, hiddenPriorities, selectedNodeId]);
 
   const visibleNodeIds = useMemo(() => {
     if (hiddenPriorities.size === 0) return null;
@@ -234,19 +242,24 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
 
   const handleNodeDoubleClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      setMobileEditingNodeId(node.id);
+      if (isMobile) {
+        setMobileEditingNodeId(node.id);
+      } else {
+        setSelectedNodeId(node.id);
+        setActivePanel('cardEditor');
+      }
       setToolMode('select');
     },
-    [setMobileEditingNodeId, setToolMode]
+    [isMobile, setMobileEditingNodeId, setSelectedNodeId, setActivePanel, setToolMode]
   );
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      // Single click opens bottom sheet editor
-      setMobileEditingNodeId(node.id);
+      // Single click only selects — does NOT open editor
+      setSelectedNodeId(node.id);
       setToolMode('select');
     },
-    [setMobileEditingNodeId, setToolMode]
+    [setSelectedNodeId, setToolMode]
   );
 
   const handleNodeDragStart = useCallback(() => {
@@ -308,7 +321,11 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
 
   return (
     <div className="w-full h-full relative">
-      <MobileToolbar onImport={handleImport} onExport={handleExport} onExportMarkdown={handleExportMarkdown} onDeleteProject={onDeleteProject} />
+      {isMobile ? (
+        <MobileToolbar onImport={handleImport} onExport={handleExport} onExportMarkdown={handleExportMarkdown} onDeleteProject={onDeleteProject} />
+      ) : (
+        <Toolbar onImport={handleImport} onExport={handleExport} onExportMarkdown={handleExportMarkdown} />
+      )}
       <ReactFlow
         nodes={visibleNodes}
         edges={visibleEdges}
@@ -398,9 +415,15 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
           </div>
         </div>
       )}
-      {mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <MobileCardEditor />}
+      {/* Desktop: sidebar CardEditor */}
+      {!isMobile && activePanel === 'cardEditor' && selectedNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <CardEditor />}
+      {/* Mobile: bottom sheet editor */}
+      {isMobile && mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <MobileCardEditor />}
+      {/* Mobile: context bar near selected node */}
+      {isMobile && selectedNodeId && !mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <NodeContextBar />}
       <VersionHistoryPanel />
-      {projectRole !== 'viewer' && <MobileAIButton />}
+      {/* AI prompt: desktop bottom bar vs mobile FAB */}
+      {projectRole !== 'viewer' && (isMobile ? <MobileAIButton /> : <AIPromptBox />)}
       <input
         ref={fileInputRef}
         type="file"
