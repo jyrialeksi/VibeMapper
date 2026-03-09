@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useReactFlow } from '@xyflow/react';
+import { useReactFlow, useViewport } from '@xyflow/react';
 import { useMapStore } from '../../store/useMapStore';
 import { Pencil, Trash2 } from 'lucide-react';
 import { GLASS_PANEL } from '../../styles/shared';
@@ -12,6 +12,8 @@ export function NodeContextBar() {
   const setMobileEditingNodeId = useMapStore((s) => s.setMobileEditingNodeId);
   const deleteNode = useMapStore((s) => s.deleteNode);
   const { getNode, flowToScreenPosition } = useReactFlow();
+  // Subscribe to viewport changes so position recomputes on pan/zoom
+  const viewport = useViewport();
 
   const position = useMemo(() => {
     if (!selectedNodeId) return null;
@@ -38,7 +40,8 @@ export function NodeContextBar() {
     }
 
     return { x: topCenter.x, y: topCenter.y - 12, below: false };
-  }, [selectedNodeId, getNode, flowToScreenPosition]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedNodeId, getNode, flowToScreenPosition, viewport.x, viewport.y, viewport.zoom]);
 
   if (!position) return null;
 
