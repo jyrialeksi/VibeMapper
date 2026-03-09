@@ -9,6 +9,33 @@ import { decrypt } from '../utils/encryption.js';
 
 const router = Router();
 
+const allowedModelIds = new Set(availableModels.map(m => m.id));
+
+function validateAIInput({ prompt, model, projectId, existingNodes, existingEdges }) {
+  if (prompt !== undefined) {
+    if (typeof prompt !== 'string') return 'prompt must be a string';
+    if (prompt.length > 20000) return 'prompt must be at most 20,000 characters';
+  }
+  if (model !== undefined) {
+    if (typeof model !== 'string' || !allowedModelIds.has(model)) {
+      return `model must be one of: ${[...allowedModelIds].join(', ')}`;
+    }
+  }
+  if (existingNodes !== undefined) {
+    if (!Array.isArray(existingNodes)) return 'existingNodes must be an array';
+    if (existingNodes.length > 500) return 'existingNodes must have at most 500 items';
+  }
+  if (existingEdges !== undefined) {
+    if (!Array.isArray(existingEdges)) return 'existingEdges must be an array';
+    if (existingEdges.length > 1000) return 'existingEdges must have at most 1,000 items';
+  }
+  if (projectId !== undefined) {
+    if (typeof projectId !== 'string') return 'projectId must be a string';
+    if (projectId.length > 100) return 'projectId must be at most 100 characters';
+  }
+  return null;
+}
+
 function getUserApiKey(userId) {
   const row = db.prepare('SELECT openrouter_api_key FROM users WHERE id = ?').get(userId);
   if (!row?.openrouter_api_key) return null;
@@ -54,6 +81,9 @@ router.post('/generate', async (req, res) => {
     const { prompt, model, projectId, existingNodes, existingEdges } = req.body;
     if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
     if (!model) return res.status(400).json({ error: 'Model is required' });
+
+    const validationError = validateAIInput({ prompt, model, projectId, existingNodes, existingEdges });
+    if (validationError) return res.status(400).json({ error: validationError });
 
     if (projectId && !verifyProjectAccess(req.user.id, projectId)) {
       return res.status(403).json({ error: 'Access denied to this project' });
@@ -136,6 +166,9 @@ router.post('/arrange', async (req, res) => {
     const { nodes, edges, model } = req.body;
     if (!nodes) return res.status(400).json({ error: 'Nodes are required' });
     if (!model) return res.status(400).json({ error: 'Model is required' });
+
+    const validationError = validateAIInput({ model, existingNodes: nodes, existingEdges: edges });
+    if (validationError) return res.status(400).json({ error: validationError });
 
     const result = await chatCompletion(apiKey, model, [
       { role: 'system', content: ARRANGE_SYSTEM_PROMPT },

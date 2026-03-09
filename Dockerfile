@@ -49,12 +49,14 @@ RUN addgroup --system --gid 1001 appgroup && \
     chown -R appuser:appgroup backend/data
 
 # Copy entrypoint script
-COPY docker-entrypoint.sh /usr/local/bin/
+COPY --chown=appuser:appgroup docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENV NODE_ENV=production
 ENV PORT=3001
 
 EXPOSE 3001
+
+USER appuser
 
 ENTRYPOINT ["docker-entrypoint.sh"]

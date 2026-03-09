@@ -25,7 +25,12 @@ router.get('/config', (req, res) => {
 
 // Protected: return current user info
 router.get('/me', requireAuth, (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare(`
+    SELECT id, email, name, picture, created_at, last_login,
+      CASE WHEN openrouter_api_key IS NOT NULL THEN 1 ELSE 0 END AS has_api_key,
+      CASE WHEN mcp_api_token IS NOT NULL THEN 1 ELSE 0 END AS has_mcp_token
+    FROM users WHERE id = ?
+  `).get(req.user.id);
   if (!user && !authEnabled) {
     return res.json(req.user);
   }

@@ -49,10 +49,10 @@ app.use(helmet({
   contentSecurityPolicy: isProd ? {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://apis.google.com"],
+      scriptSrc: ["'self'", "'sha256-+RyqG0IMFlxEWk7QyPIJnr0bKEACtZfGUm313wsRQ2g='", "https://apis.google.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: ["'self'", "data:", "https://*.googleusercontent.com", "https://*.googleapis.com"],
       connectSrc: ["'self'", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com", "https://www.googleapis.com"],
       frameSrc: ["'self'", "https://accounts.google.com"],
     },
