@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import db from '../db/database.js';
+import { getUserById, getProjectById, getProjectShare } from '../db/queries.js';
 import { chatCompletion } from '../ai/client.js';
 import { availableModels } from '../ai/models.js';
 import { GENERATE_SYSTEM_PROMPT, EDIT_SYSTEM_PROMPT, ARRANGE_SYSTEM_PROMPT } from '../ai/prompts.js';
@@ -37,18 +38,16 @@ function validateAIInput({ prompt, model, projectId, existingNodes, existingEdge
 }
 
 function getUserApiKey(userId) {
-  const row = db.prepare('SELECT openrouter_api_key FROM users WHERE id = ?').get(userId);
+  const row = getUserById(userId);
   if (!row?.openrouter_api_key) return null;
   return decrypt(row.openrouter_api_key);
 }
 
 function verifyProjectAccess(userId, projectId) {
-  const project = db.prepare('SELECT owner_id FROM projects WHERE id = ?').get(projectId);
+  const project = getProjectById(projectId);
   if (!project) return false;
   if (project.owner_id === userId) return true;
-  const share = db.prepare(
-    'SELECT role FROM project_shares WHERE project_id = ? AND user_id = ?'
-  ).get(projectId, userId);
+  const share = getProjectShare(projectId, userId);
   return share && (share.role === 'editor' || share.role === 'owner');
 }
 

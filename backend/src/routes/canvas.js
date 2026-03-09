@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import db from '../db/database.js';
+import { getCanvasState, getProjectById } from '../db/queries.js';
 import { createVersion, listVersions, getVersion } from '../db/versions.js';
 import { requireProjectAccess, verifyTokenAndGetUser } from '../middleware/auth.js';
 import { addClient, broadcast } from '../sse/connections.js';
@@ -100,7 +101,7 @@ function validateCanvasPayload(nodes, edges, viewport) {
 
 // Load canvas state
 router.get('/:projectId', requireProjectAccess('viewer'), (req, res) => {
-  const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(req.params.projectId);
+  const canvas = getCanvasState(req.params.projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
   const parsed = parseCanvasFields(canvas);
@@ -127,7 +128,7 @@ router.put('/:projectId', requireProjectAccess('editor'), (req, res) => {
     return res.status(400).json({ error: 'Invalid canvas data', details: validationErrors });
   }
 
-  const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(projectId);
+  const canvas = getCanvasState(projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
   const saveTransaction = db.transaction(() => {
@@ -159,7 +160,7 @@ router.post('/:projectId/import', requireProjectAccess('editor'), (req, res) => 
     return res.status(400).json({ error: 'Invalid canvas data', details: validationErrors });
   }
 
-  const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(projectId);
+  const canvas = getCanvasState(projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
   const importTransaction = db.transaction(() => {
@@ -182,13 +183,13 @@ router.post('/:projectId/import', requireProjectAccess('editor'), (req, res) => 
 
 // Export canvas state as JSON
 router.get('/:projectId/export', requireProjectAccess('viewer'), (req, res) => {
-  const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(req.params.projectId);
+  const canvas = getCanvasState(req.params.projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
   const parsed = parseCanvasFields(canvas);
   if (!parsed) return res.status(500).json({ error: 'Corrupt canvas data in database' });
 
-  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(req.params.projectId);
+  const project = getProjectById(req.params.projectId);
 
   const exportData = {
     project: {
@@ -278,7 +279,7 @@ router.post('/:projectId/versions', requireProjectAccess('editor'), (req, res) =
 
   if (!label) return res.status(400).json({ error: 'Label is required' });
 
-  const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(projectId);
+  const canvas = getCanvasState(projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
   const parsed = parseCanvasFields(canvas);
@@ -295,7 +296,7 @@ router.put('/:projectId/visibility', requireProjectAccess('editor'), (req, res) 
   const { showDescriptions, showAcceptanceCriteria } = req.body;
   const { projectId } = req.params;
 
-  const canvas = db.prepare('SELECT * FROM canvas_states WHERE project_id = ?').get(projectId);
+  const canvas = getCanvasState(projectId);
   if (!canvas) return res.status(404).json({ error: 'Canvas not found' });
 
   db.prepare(
@@ -322,7 +323,7 @@ router.get('/:projectId/events', async (req, res) => {
   }
 
   // Check project access inline (viewer or above)
-  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
+  const project = getProjectById(projectId);
   if (!project) return res.status(404).json({ error: 'Project not found' });
 
   const authEnabled = process.env.AUTH_ENABLED === 'true';
