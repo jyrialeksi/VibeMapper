@@ -116,6 +116,7 @@ claude mcp add user-story-mapper -e USM_BACKEND_URL=http://localhost:3001 -e USM
 - Node components use React Flow's `Handle` for connections and `NodeProps<Node<StoryCardData>>` typing
 - `mergeNodes()` in the store offsets AI-generated nodes if they overlap existing ones
 - **Git commits**: Always create a local git commit after completing each full task/feature. Use descriptive commit messages.
+- **Pre-commit testing**: Before every git commit, run all unit tests (`npm test`) and e2e tests (`npx playwright test`). All tests must pass. If any test fails, diagnose and fix the issue before committing. Never commit or push code with failing tests.
 - **CLAUDE.md maintenance**: As a final step before each git commit, review this file and update it if the completed work changes the app's architecture, features, key files, or conventions. Skip updates for insignificant changes (typos, minor refactors). Always add a bullet to the Learnings section if a meaningful lesson was discovered during development.
 
 ## Learnings
