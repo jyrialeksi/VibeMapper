@@ -25,8 +25,9 @@ for FILE in $FILES_TO_SCAN; do
 
   CONTENT=$(git show ":$FILE" 2>/dev/null) || continue
 
-  # Private keys (PEM format)
-  if printf '%s\n' "$CONTENT" | grep -qE -- 'BEGIN (RSA |EC )?PRIVATE KEY'; then
+  # Private keys (PEM format) — skip placeholder patterns like "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+  PRIVATE_KEY_LINES=$(printf '%s\n' "$CONTENT" | grep -E -- 'BEGIN (RSA |EC )?PRIVATE KEY' | grep -v -e 'BEGIN PRIVATE KEY-----\\n\.\.\.\\n-----END PRIVATE KEY' || true)
+  if [ -n "$PRIVATE_KEY_LINES" ]; then
     echo "ERROR: Private key found in $FILE"
     SECRETS_FOUND=1
   fi

@@ -42,8 +42,8 @@ Built for developers, product managers, and anyone who plans before they build.
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/your-username/user-story-mapper-ai.git
-cd user-story-mapper-ai
+git clone https://github.com/jyrialeksi/VibeMapper.git
+cd VibeMapper
 npm install
 ```
 
@@ -96,7 +96,7 @@ VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
 ## Project Structure
 
 ```
-user-story-mapper-ai/
+VibeMapper/
 ├── frontend/          # React + TypeScript + Vite
 │   └── src/
 │       ├── components/   # Canvas, nodes, panels, UI
@@ -170,13 +170,13 @@ Generate an MCP API token from the app's Settings page.
 
 ```bash
 # Build
-docker build -t user-story-mapper .
+docker build -t vibemapper .
 
 # Run
 docker run -p 3001:3001 \
   -e ENCRYPTION_KEY=$(openssl rand -hex 32) \
   -v usm-data:/app/backend/data \
-  user-story-mapper
+  vibemapper
 ```
 
 Then open http://localhost:3001.
