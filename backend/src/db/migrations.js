@@ -125,6 +125,12 @@ export function runMigrations() {
       ON card_comments(project_id, node_id, created_at ASC);
   `);
 
+  // Add resolved_at column to card_comments for resolve feature
+  const commentCols = db.prepare("PRAGMA table_info(card_comments)").all();
+  if (!commentCols.some(c => c.name === 'resolved_at')) {
+    db.exec(`ALTER TABLE card_comments ADD COLUMN resolved_at TEXT DEFAULT NULL`);
+  }
+
   // Ensure local-dev user exists for non-auth mode
   db.prepare(`INSERT OR IGNORE INTO users (id, email, name, picture) VALUES (?, ?, ?, ?)`)
     .run('local-dev', 'dev@local', 'Local Dev', '');

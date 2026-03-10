@@ -48,6 +48,7 @@ export interface Comment {
   user_id: string;
   content: string;
   is_system_message: boolean;
+  resolved_at: string | null;
   created_at: string;
   user_name: string;
   user_picture: string;

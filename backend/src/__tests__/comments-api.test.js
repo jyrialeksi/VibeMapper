@@ -165,6 +165,111 @@ describe('Comments API', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({});
   });
+
+  it('GET /comment-counts excludes resolved comments', async () => {
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Comment 1', 'c1');
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Comment 2', 'c2');
+    // Mark c1 as resolved
+    db.prepare("UPDATE card_comments SET resolved_at = datetime('now') WHERE id = 'c1'").run();
+
+    const res = await request(app).get('/api/projects/proj-1/comment-counts');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ 'story-1': 1 });
+  });
+
+  it('GET /comment-counts excludes system messages', async () => {
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Comment 1', 'c1');
+    db.prepare(
+      "INSERT INTO card_comments (id, project_id, node_id, user_id, content, is_system_message) VALUES ('sys1', 'proj-1', 'story-1', 'test-user', 'System msg', 1)"
+    ).run();
+
+    const res = await request(app).get('/api/projects/proj-1/comment-counts');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ 'story-1': 1 });
+  });
+
+  it('POST /comments/resolve marks comments as resolved and adds system message', async () => {
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Comment 1', 'c1');
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Comment 2', 'c2');
+
+    const res = await request(app)
+      .post('/api/projects/proj-1/nodes/story-1/comments/resolve');
+    expect(res.status).toBe(200);
+    expect(res.body.systemComment).toBeDefined();
+    expect(res.body.systemComment.is_system_message).toBe(1);
+    expect(res.body.systemComment.content).toContain('Comments resolved by');
+    expect(res.body.systemComment.content).toContain('Test User');
+
+    // Verify comments are now resolved
+    const resolved = db.prepare(
+      "SELECT COUNT(*) as count FROM card_comments WHERE project_id = 'proj-1' AND node_id = 'story-1' AND resolved_at IS NOT NULL AND is_system_message = 0"
+    ).get();
+    expect(resolved.count).toBe(2);
+
+    // Verify comment-counts returns 0 (empty object)
+    const countsRes = await request(app).get('/api/projects/proj-1/comment-counts');
+    expect(countsRes.body).toEqual({});
+  });
+
+  it('POST /comments/resolve returns 400 when no unresolved comments', async () => {
+    const res = await request(app)
+      .post('/api/projects/proj-1/nodes/story-1/comments/resolve');
+    expect(res.status).toBe(400);
+  });
+
+  it('POST /comments/resolve does not re-resolve already resolved comments', async () => {
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Comment 1', 'c1');
+    // Resolve first time
+    await request(app).post('/api/projects/proj-1/nodes/story-1/comments/resolve');
+
+    // Add new comment
+    await request(app)
+      .post('/api/projects/proj-1/nodes/story-1/comments')
+      .send({ content: 'New after resolve' });
+
+    // Resolve again — should only resolve the new one
+    const res = await request(app)
+      .post('/api/projects/proj-1/nodes/story-1/comments/resolve');
+    expect(res.status).toBe(200);
+
+    // Verify: 2 resolved non-system comments total (c1 + new one)
+    const resolved = db.prepare(
+      "SELECT COUNT(*) as count FROM card_comments WHERE project_id = 'proj-1' AND node_id = 'story-1' AND resolved_at IS NOT NULL AND is_system_message = 0"
+    ).get();
+    expect(resolved.count).toBe(2);
+  });
+
+  it('POST /comments/resolve requires editor role (viewer gets 403)', async () => {
+    seedUser(db, 'viewer-user', 'viewer@test.com', 'Viewer');
+    db.prepare(
+      "INSERT INTO project_shares (id, project_id, user_id, invited_email, role) VALUES ('s1', 'proj-1', 'viewer-user', 'viewer@test.com', 'viewer')"
+    ).run();
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Comment 1', 'c1');
+
+    const viewerApp = express();
+    viewerApp.use(express.json());
+    viewerApp.use(fakeAuth('viewer-user', 'viewer@test.com'));
+    const commentsModule = await import('../routes/comments.js');
+    viewerApp.use('/api/projects', commentsModule.default);
+
+    const res = await request(viewerApp)
+      .post('/api/projects/proj-1/nodes/story-1/comments/resolve');
+    expect(res.status).toBe(403);
+  });
+
+  it('new comments after resolve show up in comment-counts', async () => {
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Comment 1', 'c1');
+    // Resolve
+    await request(app).post('/api/projects/proj-1/nodes/story-1/comments/resolve');
+
+    // Add new comment
+    await request(app)
+      .post('/api/projects/proj-1/nodes/story-1/comments')
+      .send({ content: 'New comment' });
+
+    const countsRes = await request(app).get('/api/projects/proj-1/comment-counts');
+    expect(countsRes.body).toEqual({ 'story-1': 1 });
+  });
 });
 
 describe('Comments API - Apply endpoint', () => {

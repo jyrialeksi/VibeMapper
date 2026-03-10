@@ -69,4 +69,15 @@ describe('Comments API client', () => {
       })
     );
   });
+
+  it('resolveComments sends POST to resolve endpoint', async () => {
+    mockFetch({ systemComment: { id: 'sys1', content: 'Comments resolved by Test User', is_system_message: true } });
+    const result = await api.resolveComments('proj-1', 'node-1');
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/projects/proj-1/nodes/node-1/comments/resolve'),
+      expect.objectContaining({ method: 'POST' })
+    );
+    expect(result.systemComment.is_system_message).toBe(true);
+    expect(result.systemComment.content).toContain('resolved');
+  });
 });

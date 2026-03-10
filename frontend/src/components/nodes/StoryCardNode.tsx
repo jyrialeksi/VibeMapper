@@ -1,5 +1,4 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
-import { MessageCircle } from 'lucide-react';
 import type { StoryCardData, Priority } from '../../types';
 import { STATUS_COLORS, STATUS_LABELS } from '../../types';
 import type { CardStatus } from '../../types';
@@ -32,16 +31,26 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
   const showDescriptions = useMapStore((s) => s.showDescriptions);
   const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
   const commentCount = useMapStore((s) => s.commentCounts.get(id) || 0);
+  const setSelectedNodeId = useMapStore((s) => s.setSelectedNodeId);
+  const setActivePanel = useMapStore((s) => s.setActivePanel);
   const priorityBg = PRIORITY_BG[data.priority] || PRIORITY_BG['must-have'];
   const barColor = selected ? '#C6FF4D' : (PRIORITY_BAR_COLOR[data.priority] || '#FF3CAC');
 
   return (
     <div
-      className={`px-3 pl-5 py-2.5 rounded-lg shadow-md border-2 w-[260px] ${priorityBg} ${
+      className={`relative px-3 pl-5 py-2.5 rounded-lg shadow-md border-2 w-[260px] ${priorityBg} ${
         selected ? 'ring-2 ring-[#C6FF4D]/40' : ''
       } ${highlightClass} ${dimClass}`}
-      style={{ '--tw-inset-shadow': `inset 6px 0 0 0 ${barColor}`, ...(selected ? { borderColor: '#C6FF4D' } : {}) } as React.CSSProperties}
+      style={{ overflow: 'visible', '--tw-inset-shadow': `inset 6px 0 0 0 ${barColor}`, ...(selected ? { borderColor: '#C6FF4D' } : {}) } as React.CSSProperties}
     >
+      {commentCount > 0 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setSelectedNodeId(id); setActivePanel('comments'); }}
+          className="absolute -top-3 -right-3 flex items-center justify-center min-w-[24px] h-[24px] px-1 text-[11px] font-bold text-white bg-[#FF3B30] rounded-full shadow-sm border-2 border-white dark:border-[#1a1a2e] z-10 cursor-pointer hover:scale-110 transition-transform"
+        >
+          {commentCount}
+        </button>
+      )}
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1">
           <span className="font-mono-brand text-[8px] font-bold uppercase tracking-wider text-[#4a6600]">
@@ -60,12 +69,6 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
           {data.estimate && (
             <span className="text-[8px] bg-[#7A7A9A]/20 text-[#555568] px-1 py-0.5 rounded font-medium">
               {data.estimate}
-            </span>
-          )}
-          {commentCount > 0 && (
-            <span className="flex items-center gap-0.5 text-[8px] text-[#7A7A9A]">
-              <MessageCircle size={8} />
-              {commentCount}
             </span>
           )}
           <span

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Send, Loader2, Bot, MessageCircle } from 'lucide-react';
+import { X, Send, Loader2, Bot, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { useMapStore } from '../../store/useMapStore';
 import { useAI } from '../../hooks/useAI';
 import { api } from '../../api/client';
@@ -15,6 +15,7 @@ export function CommentsPanel() {
   const nodes = useMapStore((s) => s.nodes);
   const incrementCommentCount = useMapStore((s) => s.incrementCommentCount);
   const decrementCommentCount = useMapStore((s) => s.decrementCommentCount);
+  const setCommentCount = useMapStore((s) => s.setCommentCount);
   const applyOperations = useMapStore((s) => s.applyOperations);
   const setPendingSaveLabel = useMapStore((s) => s.setPendingSaveLabel);
   const { selectedModel } = useAI();
@@ -24,6 +25,7 @@ export function CommentsPanel() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -99,6 +101,26 @@ export function CommentsPanel() {
       setApplying(false);
     }
   }, [projectId, selectedNodeId, selectedModel, applyOperations, setPendingSaveLabel]);
+
+  const handleResolve = useCallback(async () => {
+    if (!projectId || !selectedNodeId) return;
+    setResolving(true);
+    setError(null);
+    try {
+      const { systemComment } = await api.resolveComments(projectId, selectedNodeId);
+      // Mark all non-system comments as resolved locally
+      setComments((prev) => prev.map((c) =>
+        !c.is_system_message && !c.resolved_at ? { ...c, resolved_at: new Date().toISOString() } : c
+      ).concat(systemComment ? [systemComment] : []));
+      setCommentCount(selectedNodeId, 0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resolve comments');
+    } finally {
+      setResolving(false);
+    }
+  }, [projectId, selectedNodeId, setCommentCount]);
+
+  const hasUnresolved = comments.some((c) => !c.is_system_message && !c.resolved_at);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -191,13 +213,13 @@ export function CommentsPanel() {
         </div>
       )}
 
-      {/* Apply button (editors/owners only, when there are comments) */}
+      {/* Action buttons (editors/owners only, when there are comments) */}
       {canEdit && comments.length > 0 && (
-        <div className="px-4 pb-2">
+        <div className="px-4 pb-2 flex gap-2">
           <button
             onClick={handleApply}
-            disabled={applying}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#7B2FFF] dark:text-[#C6FF4D] bg-[#7B2FFF]/10 dark:bg-[#C6FF4D]/10 hover:bg-[#7B2FFF]/20 dark:hover:bg-[#C6FF4D]/20 rounded-lg border border-[#7B2FFF]/20 dark:border-[#C6FF4D]/20 transition-colors duration-150 disabled:opacity-50"
+            disabled={applying || resolving}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#7B2FFF] dark:text-[#C6FF4D] bg-[#7B2FFF]/10 dark:bg-[#C6FF4D]/10 hover:bg-[#7B2FFF]/20 dark:hover:bg-[#C6FF4D]/20 rounded-lg border border-[#7B2FFF]/20 dark:border-[#C6FF4D]/20 transition-colors duration-150 disabled:opacity-50"
           >
             {applying ? (
               <>
@@ -207,10 +229,29 @@ export function CommentsPanel() {
             ) : (
               <>
                 <Bot size={12} />
-                Apply Changes via AI
+                Apply via AI
               </>
             )}
           </button>
+          {hasUnresolved && (
+            <button
+              onClick={handleResolve}
+              disabled={resolving || applying}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/10 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/20 rounded-lg border border-emerald-500/20 dark:border-emerald-500/20 transition-colors duration-150 disabled:opacity-50"
+            >
+              {resolving ? (
+                <>
+                  <Loader2 size={12} className="animate-spin" />
+                  Resolving...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={12} />
+                  Resolve
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
 

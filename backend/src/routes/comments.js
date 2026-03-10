@@ -68,7 +68,7 @@ router.post('/:projectId/nodes/:nodeId/comments', requireProjectAccess('viewer')
     WHERE c.id = ?
   `).get(id);
 
-  broadcast(projectId, 'comment_add', { nodeId, commentId: id });
+  broadcast(projectId, 'comment_add', { nodeId, commentId: id }, req.user.id);
   res.status(201).json(comment);
 });
 
@@ -91,7 +91,7 @@ router.delete('/:projectId/comments/:commentId', requireProjectAccess('viewer'),
   }
 
   db.prepare('DELETE FROM card_comments WHERE id = ?').run(commentId);
-  broadcast(projectId, 'comment_delete', { nodeId: comment.node_id, commentId });
+  broadcast(projectId, 'comment_delete', { nodeId: comment.node_id, commentId }, req.user.id);
   res.status(204).end();
 });
 
@@ -189,10 +189,45 @@ Based on this discussion, update the card. Focus on the discussed changes only.`
   }
 });
 
-// Bulk comment counts for badges
+// Resolve comments on a node
+router.post('/:projectId/nodes/:nodeId/comments/resolve', requireProjectAccess('editor'), (req, res) => {
+  const { projectId, nodeId } = req.params;
+
+  // Mark all unresolved comments as resolved
+  const result = db.prepare(
+    "UPDATE card_comments SET resolved_at = datetime('now') WHERE project_id = ? AND node_id = ? AND resolved_at IS NULL AND is_system_message = 0"
+  ).run(projectId, nodeId);
+
+  if (result.changes === 0) {
+    return res.status(400).json({ error: 'No unresolved comments to resolve' });
+  }
+
+  // Get user name for the system message
+  const user = getUserById(req.user.id);
+  const userName = user?.name || 'Unknown';
+
+  // Insert system comment
+  const systemCommentId = uuidv4();
+  db.prepare(
+    'INSERT INTO card_comments (id, project_id, node_id, user_id, content, is_system_message) VALUES (?, ?, ?, ?, ?, 1)'
+  ).run(systemCommentId, projectId, nodeId, req.user.id, `Comments resolved by ${userName}`);
+
+  const systemComment = db.prepare(`
+    SELECT c.*, u.name as user_name, u.picture as user_picture
+    FROM card_comments c
+    LEFT JOIN users u ON c.user_id = u.id
+    WHERE c.id = ?
+  `).get(systemCommentId);
+
+  broadcast(projectId, 'comments_resolve', { nodeId }, req.user.id);
+
+  res.json({ systemComment });
+});
+
+// Bulk comment counts for badges (only unresolved, non-system comments)
 router.get('/:projectId/comment-counts', requireProjectAccess('viewer'), (req, res) => {
   const rows = db.prepare(
-    'SELECT node_id, COUNT(*) as count FROM card_comments WHERE project_id = ? GROUP BY node_id'
+    'SELECT node_id, COUNT(*) as count FROM card_comments WHERE project_id = ? AND resolved_at IS NULL AND is_system_message = 0 GROUP BY node_id'
   ).all(req.params.projectId);
 
   const counts = {};

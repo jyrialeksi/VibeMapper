@@ -77,6 +77,7 @@ export function createTestDb() {
       user_id TEXT NOT NULL,
       content TEXT NOT NULL,
       is_system_message INTEGER DEFAULT 0,
+      resolved_at TEXT DEFAULT NULL,
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

@@ -165,6 +165,10 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ model }),
     }),
+  resolveComments: (projectId: string, nodeId: string) =>
+    request<{ systemComment: Comment }>(`/projects/${projectId}/nodes/${nodeId}/comments/resolve`, {
+      method: 'POST',
+    }),
   getCommentCounts: (projectId: string) =>
     request<Record<string, number>>(`/projects/${projectId}/comment-counts`),
 };

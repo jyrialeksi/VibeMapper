@@ -141,6 +141,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
   const setCommentCounts = useMapStore((s) => s.setCommentCounts);
   const incrementCommentCount = useMapStore((s) => s.incrementCommentCount);
   const decrementCommentCount = useMapStore((s) => s.decrementCommentCount);
+  const setCommentCount = useMapStore((s) => s.setCommentCount);
 
   // Clear canvas synchronously (before paint) then fetch new data.
   // Combined in one useLayoutEffect so the clear + fetch always pair together,
@@ -208,6 +209,13 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         } catch { /* ignore */ }
       });
 
+      es.addEventListener('comments_resolve', (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.nodeId) setCommentCount(data.nodeId, 0);
+        } catch { /* ignore */ }
+      });
+
       es.onerror = () => {
         // EventSource auto-reconnects; no action needed
       };
@@ -219,7 +227,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
       cancelled = true;
       es?.close();
     };
-  }, [projectId, getToken, applyVisibility, incrementCommentCount, decrementCommentCount]);
+  }, [projectId, getToken, applyVisibility, incrementCommentCount, decrementCommentCount, setCommentCount]);
 
   const handlePaneClick = useCallback(
     (event: React.MouseEvent) => {
