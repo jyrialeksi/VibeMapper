@@ -186,4 +186,57 @@ describe('exportToMarkdown', () => {
     const md = exportToMarkdown(nodes, [], new Set(), undefined, {});
     expect(md).not.toContain('**Comments:**');
   });
+
+  it('renders comments on activities and steps', () => {
+    const nodes = [
+      makeNode('a1', 'activity', 'Login', 0, 0),
+      makeNode('s1', 'step', 'Auth Flow', 0, 200),
+      makeNode('st1', 'story', 'Login Form', 0, 400),
+    ];
+    const edges = [makeEdge('a1', 's1'), makeEdge('s1', 'st1')];
+    const comments = {
+      'a1': [
+        {
+          id: 'c1', project_id: 'p1', node_id: 'a1', user_id: 'u1',
+          content: 'Activity comment',
+          is_system_message: false, resolved_at: null,
+          created_at: '2024-01-15 10:00:00',
+          user_name: 'Alice', user_picture: '',
+        },
+      ],
+      's1': [
+        {
+          id: 'c2', project_id: 'p1', node_id: 's1', user_id: 'u1',
+          content: 'Step comment',
+          is_system_message: false, resolved_at: null,
+          created_at: '2024-01-15 11:00:00',
+          user_name: 'Bob', user_picture: '',
+        },
+      ],
+    };
+
+    const md = exportToMarkdown(nodes, edges, new Set(), undefined, comments);
+    expect(md).toContain('**Alice** (2024-01-15): Activity comment');
+    expect(md).toContain('**Bob** (2024-01-15): Step comment');
+  });
+
+  it('handles SQLite date format without T separator', () => {
+    const nodes = [
+      makeNode('st1', 'story', 'Story', 0, 400),
+    ];
+    const comments = {
+      'st1': [
+        {
+          id: 'c1', project_id: 'p1', node_id: 'st1', user_id: 'u1',
+          content: 'Test',
+          is_system_message: false, resolved_at: null,
+          created_at: '2024-01-15 10:00:00',
+          user_name: 'Alice', user_picture: '',
+        },
+      ],
+    };
+
+    const md = exportToMarkdown(nodes, [], new Set(), undefined, comments);
+    expect(md).toContain('**Alice** (2024-01-15): Test');
+  });
 });

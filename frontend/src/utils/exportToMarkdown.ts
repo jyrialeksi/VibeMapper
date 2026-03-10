@@ -67,6 +67,7 @@ export function exportToMarkdown(
       lines.push('');
       lines.push(activity.data.description);
     }
+    renderComments(lines, activity.id, comments);
     lines.push('');
 
     // Get steps under this activity
@@ -83,6 +84,7 @@ export function exportToMarkdown(
         lines.push('');
         lines.push(step.data.description);
       }
+      renderComments(lines, step.id, comments);
       lines.push('');
 
       // Get stories under this step
@@ -122,6 +124,7 @@ export function exportToMarkdown(
         lines.push('');
         lines.push(step.data.description);
       }
+      renderComments(lines, step.id, comments);
       lines.push('');
 
       const storyIds = childrenOf.get(step.id) ?? [];
@@ -160,6 +163,21 @@ export function exportToMarkdown(
   return lines.join('\n');
 }
 
+function renderComments(lines: string[], nodeId: string, comments?: Record<string, Comment[]>) {
+  if (!comments || !comments[nodeId]) return;
+  const nodeComments = comments[nodeId].filter(
+    (c) => !c.is_system_message && !c.resolved_at
+  );
+  if (nodeComments.length > 0) {
+    lines.push('');
+    lines.push('**Comments:**');
+    for (const c of nodeComments) {
+      const date = c.created_at ? c.created_at.slice(0, 10) : '';
+      lines.push(`- **${c.user_name || 'Unknown'}** (${date}): ${c.content}`);
+    }
+  }
+}
+
 function renderStory(lines: string[], story: Node<StoryCardData>, comments?: Record<string, Comment[]>) {
   const meta: string[] = [];
   meta.push(story.data.priority);
@@ -180,20 +198,7 @@ function renderStory(lines: string[], story: Node<StoryCardData>, comments?: Rec
     }
   }
 
-  // Render unresolved, non-system comments
-  if (comments && comments[story.id]) {
-    const storyComments = comments[story.id].filter(
-      (c) => !c.is_system_message && !c.resolved_at
-    );
-    if (storyComments.length > 0) {
-      lines.push('');
-      lines.push('**Comments:**');
-      for (const c of storyComments) {
-        const date = c.created_at ? c.created_at.split('T')[0] : '';
-        lines.push(`- **${c.user_name || 'Unknown'}** (${date}): ${c.content}`);
-      }
-    }
-  }
+  renderComments(lines, story.id, comments);
 
   lines.push('');
 }
