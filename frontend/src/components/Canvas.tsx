@@ -315,8 +315,16 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
     }
   }, [projectId]);
 
-  const handleExportMarkdown = useCallback(() => {
-    const md = exportToMarkdown(nodes, edges, hiddenPriorities);
+  const handleExportMarkdown = useCallback(async () => {
+    let comments: Record<string, import('../types').Comment[]> | undefined;
+    if (projectId) {
+      try {
+        comments = await api.getAllComments(projectId);
+      } catch {
+        // Fallback to no-comments export
+      }
+    }
+    const md = exportToMarkdown(nodes, edges, hiddenPriorities, undefined, comments);
     const blob = new Blob([md], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -324,7 +332,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
     a.download = 'story_map.md';
     a.click();
     URL.revokeObjectURL(url);
-  }, [nodes, edges, hiddenPriorities]);
+  }, [projectId, nodes, edges, hiddenPriorities]);
 
   const handleImport = useCallback(() => {
     fileInputRef.current?.click();

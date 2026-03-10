@@ -1,5 +1,5 @@
 import type { Node, Edge } from '@xyflow/react';
-import type { StoryCardData, Priority } from '../types';
+import type { StoryCardData, Priority, Comment } from '../types';
 
 /**
  * Export visible canvas nodes to a structured Markdown document.
@@ -9,7 +9,8 @@ export function exportToMarkdown(
   nodes: Node<StoryCardData>[],
   edges: Edge[],
   hiddenPriorities: Set<Priority>,
-  projectName?: string
+  projectName?: string,
+  comments?: Record<string, Comment[]>
 ): string {
   // Filter out hidden story cards
   const visibleNodes = nodes.filter((n) => {
@@ -104,7 +105,7 @@ export function exportToMarkdown(
 
       for (const story of stepStories) {
         placed.add(story.id);
-        renderStory(lines, story);
+        renderStory(lines, story, comments);
       }
     }
   }
@@ -129,7 +130,7 @@ export function exportToMarkdown(
         .filter(Boolean) as Node<StoryCardData>[];
       for (const story of stepStories) {
         placed.add(story.id);
-        renderStory(lines, story);
+        renderStory(lines, story, comments);
       }
     }
   }
@@ -140,7 +141,7 @@ export function exportToMarkdown(
     lines.push('## Unlinked Stories');
     lines.push('');
     for (const story of orphanedStories) {
-      renderStory(lines, story);
+      renderStory(lines, story, comments);
     }
   }
 
@@ -159,7 +160,7 @@ export function exportToMarkdown(
   return lines.join('\n');
 }
 
-function renderStory(lines: string[], story: Node<StoryCardData>) {
+function renderStory(lines: string[], story: Node<StoryCardData>, comments?: Record<string, Comment[]>) {
   const meta: string[] = [];
   meta.push(story.data.priority);
   if (story.data.estimate) meta.push(story.data.estimate);
@@ -176,6 +177,21 @@ function renderStory(lines: string[], story: Node<StoryCardData>) {
     lines.push('**Acceptance Criteria:**');
     for (const ac of story.data.acceptanceCriteria) {
       lines.push(`- ${ac}`);
+    }
+  }
+
+  // Render unresolved, non-system comments
+  if (comments && comments[story.id]) {
+    const storyComments = comments[story.id].filter(
+      (c) => !c.is_system_message && !c.resolved_at
+    );
+    if (storyComments.length > 0) {
+      lines.push('');
+      lines.push('**Comments:**');
+      for (const c of storyComments) {
+        const date = c.created_at ? c.created_at.split('T')[0] : '';
+        lines.push(`- **${c.user_name || 'Unknown'}** (${date}): ${c.content}`);
+      }
     }
   }
 

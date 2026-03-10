@@ -64,10 +64,26 @@ function createTestDb() {
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS card_comments (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      node_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      is_system_message INTEGER DEFAULT 0,
+      resolved_at TEXT DEFAULT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_card_comments_project_node
+      ON card_comments(project_id, node_id, created_at ASC);
   `);
 
   db.prepare("INSERT INTO projects (id, name, description) VALUES ('proj-1', 'Test Project', '')").run();
   db.prepare("INSERT INTO canvas_states (id, project_id, nodes, edges, viewport) VALUES ('cs-1', 'proj-1', '[]', '[]', '{\"x\":0,\"y\":0,\"zoom\":1}')").run();
+  db.prepare("INSERT INTO users (id, email, name) VALUES ('test-user', 'test@test.com', 'Test User')").run();
 
   return db;
 }
@@ -80,9 +96,10 @@ function fakeAuth(req, _res, next) {
 
 describe('Canvas API endpoints', () => {
   let app;
+  let db;
 
   beforeEach(async () => {
-    const db = createTestDb();
+    db = createTestDb();
 
     vi.resetModules();
     vi.doMock('../db/database.js', () => ({ default: db }));
@@ -335,6 +352,88 @@ describe('Canvas API endpoints', () => {
     const res = await request(app)
       .post('/api/canvas/proj-1/import')
       .send({});
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+  });
+
+  // --- Export/Import with comments tests ---
+
+  it('GET /:projectId/export includes comments array', async () => {
+    db.prepare("INSERT INTO card_comments (id, project_id, node_id, user_id, content) VALUES ('c1', 'proj-1', 'story-1', 'test-user', 'Test comment')").run();
+
+    // Set up nodes so export works
+    await request(app).put('/api/canvas/proj-1').send({
+      nodes: [{ id: 'story-1', type: 'storyCard' }],
+      edges: [],
+      viewport: { x: 0, y: 0, zoom: 1 },
+    });
+
+    const res = await request(app).get('/api/canvas/proj-1/export');
+    expect(res.status).toBe(200);
+    expect(res.body.comments).toBeDefined();
+    expect(Array.isArray(res.body.comments)).toBe(true);
+    expect(res.body.comments).toHaveLength(1);
+    expect(res.body.comments[0].node_id).toBe('story-1');
+    expect(res.body.comments[0].content).toBe('Test comment');
+    expect(res.body.comments[0].user_name).toBe('Test User');
+  });
+
+  it('GET /:projectId/export returns empty comments when no comments exist', async () => {
+    const res = await request(app).get('/api/canvas/proj-1/export');
+    expect(res.status).toBe(200);
+    expect(res.body.comments).toBeDefined();
+    expect(res.body.comments).toEqual([]);
+  });
+
+  it('POST /:projectId/import with comments creates them in DB', async () => {
+    const res = await request(app)
+      .post('/api/canvas/proj-1/import')
+      .send({
+        nodes: [{ id: 'story-1', type: 'storyCard' }],
+        edges: [],
+        viewport: { x: 0, y: 0, zoom: 1 },
+        comments: [
+          { node_id: 'story-1', content: 'Imported comment', is_system_message: false, created_at: '2024-01-15T10:00:00Z' },
+        ],
+      });
+
+    expect(res.status).toBe(200);
+
+    // Verify comment was created
+    const comments = db.prepare("SELECT * FROM card_comments WHERE project_id = 'proj-1'").all();
+    expect(comments).toHaveLength(1);
+    expect(comments[0].content).toBe('Imported comment');
+    expect(comments[0].node_id).toBe('story-1');
+  });
+
+  it('POST /:projectId/import skips comments for non-existent node_ids', async () => {
+    const res = await request(app)
+      .post('/api/canvas/proj-1/import')
+      .send({
+        nodes: [{ id: 'story-1', type: 'storyCard' }],
+        edges: [],
+        viewport: { x: 0, y: 0, zoom: 1 },
+        comments: [
+          { node_id: 'story-1', content: 'Valid comment' },
+          { node_id: 'nonexistent', content: 'Should be skipped' },
+        ],
+      });
+
+    expect(res.status).toBe(200);
+    const comments = db.prepare("SELECT * FROM card_comments WHERE project_id = 'proj-1'").all();
+    expect(comments).toHaveLength(1);
+    expect(comments[0].node_id).toBe('story-1');
+  });
+
+  it('POST /:projectId/import without comments field works (backward compat)', async () => {
+    const res = await request(app)
+      .post('/api/canvas/proj-1/import')
+      .send({
+        nodes: [{ id: 'story-1', type: 'storyCard' }],
+        edges: [],
+        viewport: { x: 0, y: 0, zoom: 1 },
+      });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);

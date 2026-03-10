@@ -4,6 +4,7 @@ import { registerProjectTools } from './tools/projects.js';
 import { registerCanvasTools } from './tools/canvas.js';
 import { registerNodeTools } from './tools/nodes.js';
 import { registerStatusTools } from './tools/status.js';
+import { registerCommentTools } from './tools/comments.js';
 import { registerCreateMapTool } from './tools/create-map.js';
 import { registerResources } from './resources/index.js';
 
@@ -17,6 +18,7 @@ export function createMcpServer(apiClient: ApiClient): McpServer {
   registerCanvasTools(server, apiClient);
   registerNodeTools(server, apiClient);
   registerStatusTools(server, apiClient);
+  registerCommentTools(server, apiClient);
   registerCreateMapTool(server, apiClient);
   registerResources(server, apiClient);
 

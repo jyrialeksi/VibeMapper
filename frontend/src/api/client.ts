@@ -178,4 +178,6 @@ export const api = {
     }),
   getCommentCounts: (projectId: string) =>
     request<Record<string, number>>(`/projects/${projectId}/comment-counts`),
+  getAllComments: (projectId: string) =>
+    request<Record<string, Comment[]>>(`/projects/${projectId}/comments`),
 };

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import db from '../db/database.js';
 import { getCanvasState, getProjectById } from '../db/queries.js';
 import { createVersion, listVersions, getVersion } from '../db/versions.js';
@@ -173,6 +174,28 @@ router.post('/:projectId/import', requireProjectAccess('editor'), (req, res) => 
       projectId
     );
 
+    // Import comments if provided
+    const importedComments = req.body.comments;
+    if (Array.isArray(importedComments) && importedComments.length > 0) {
+      const nodeIds = new Set(importedNodes.map(n => n.id));
+      const insertComment = db.prepare(
+        'INSERT INTO card_comments (id, project_id, node_id, user_id, content, is_system_message, resolved_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      );
+      for (const c of importedComments) {
+        if (!nodeIds.has(c.node_id)) continue;
+        insertComment.run(
+          uuidv4(),
+          projectId,
+          c.node_id,
+          req.user.id,
+          c.content || '',
+          c.is_system_message ? 1 : 0,
+          c.resolved_at || null,
+          c.created_at || new Date().toISOString()
+        );
+      }
+    }
+
     return createVersion(projectId, importedNodes, importedEdges, importedViewport, 'Import');
   });
 
@@ -203,6 +226,17 @@ router.get('/:projectId/export', requireProjectAccess('viewer'), (req, res) => {
       viewport: parsed.viewport,
     },
   };
+
+  // Fetch all comments for the project
+  const comments = db.prepare(`
+    SELECT c.node_id, c.content, u.name as user_name, c.is_system_message, c.resolved_at, c.created_at
+    FROM card_comments c
+    LEFT JOIN users u ON c.user_id = u.id
+    WHERE c.project_id = ?
+    ORDER BY c.node_id, c.created_at ASC
+  `).all(req.params.projectId);
+
+  exportData.comments = comments;
 
   res.setHeader('Content-Disposition', `attachment; filename="${project.name.replace(/[^a-z0-9]/gi, '_')}_story_map.json"`);
   res.setHeader('Content-Type', 'application/json');

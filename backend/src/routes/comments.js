@@ -10,6 +10,26 @@ import { decrypt } from '../utils/encryption.js';
 
 const router = Router({ mergeParams: true });
 
+// All comments for a project (grouped by node_id)
+router.get('/:projectId/comments', requireProjectAccess('viewer'), (req, res) => {
+  const comments = db.prepare(`
+    SELECT c.*, u.name as user_name, u.picture as user_picture
+    FROM card_comments c
+    LEFT JOIN users u ON c.user_id = u.id
+    WHERE c.project_id = ?
+    ORDER BY c.node_id, c.created_at ASC
+  `).all(req.params.projectId);
+
+  const grouped = {};
+  for (const comment of comments) {
+    if (!grouped[comment.node_id]) {
+      grouped[comment.node_id] = [];
+    }
+    grouped[comment.node_id].push(comment);
+  }
+  res.json(grouped);
+});
+
 function getUserApiKey(userId) {
   const row = getUserById(userId);
   if (!row?.openrouter_api_key) return null;

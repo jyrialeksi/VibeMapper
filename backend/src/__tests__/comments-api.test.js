@@ -26,6 +26,36 @@ describe('Comments API', () => {
     app.use('/api/projects', commentsModule.default);
   });
 
+  it('GET /:projectId/comments returns all comments grouped by nodeId', async () => {
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Comment A', 'c1');
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Comment B', 'c2');
+    seedComment(db, 'proj-1', 'story-2', 'test-user', 'Comment C', 'c3');
+
+    const res = await request(app).get('/api/projects/proj-1/comments');
+    expect(res.status).toBe(200);
+    expect(Object.keys(res.body)).toHaveLength(2);
+    expect(res.body['story-1']).toHaveLength(2);
+    expect(res.body['story-2']).toHaveLength(1);
+    expect(res.body['story-1'][0].content).toBe('Comment A');
+    expect(res.body['story-1'][1].content).toBe('Comment B');
+    expect(res.body['story-2'][0].content).toBe('Comment C');
+  });
+
+  it('GET /:projectId/comments returns empty object when no comments', async () => {
+    const res = await request(app).get('/api/projects/proj-1/comments');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({});
+  });
+
+  it('GET /:projectId/comments includes user_name and user_picture', async () => {
+    seedComment(db, 'proj-1', 'story-1', 'test-user', 'Hello', 'c1');
+
+    const res = await request(app).get('/api/projects/proj-1/comments');
+    expect(res.status).toBe(200);
+    expect(res.body['story-1'][0].user_name).toBe('Test User');
+    expect(res.body['story-1'][0].user_picture).toBeDefined();
+  });
+
   it('GET /comments returns empty array for node with no comments', async () => {
     const res = await request(app).get('/api/projects/proj-1/nodes/story-1/comments');
     expect(res.status).toBe(200);

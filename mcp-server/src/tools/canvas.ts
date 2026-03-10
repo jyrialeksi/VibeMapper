@@ -3,7 +3,11 @@ import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import type { CanvasState } from '../utils/schemas.js';
 
-function formatMapAsText(canvas: CanvasState): string {
+function formatMapAsText(
+  canvas: CanvasState,
+  commentCounts?: Record<string, number>,
+  allComments?: Record<string, Array<{ content: string; user_name: string; created_at: string; is_system_message: number; resolved_at: string | null }>> | null
+): string {
   const { nodes, edges } = canvas;
 
   const activities = nodes.filter((n) => n.data.cardType === 'activity');
@@ -38,12 +42,26 @@ function formatMapAsText(canvas: CanvasState): string {
         const priority = story.data.priority || 'must-have';
         const estimate = story.data.estimate ? ` [${story.data.estimate}]` : '';
         const status = story.data.status ? ` (${story.data.status})` : '';
-        lines.push(`    - [${story.id}] [${priority}]${estimate}${status} ${story.data.title as string}`);
+        const commentCount = commentCounts?.[story.id];
+        const commentsTag = commentCount ? ` (${commentCount} comments)` : '';
+        lines.push(`    - [${story.id}] [${priority}]${estimate}${status}${commentsTag} ${story.data.title as string}`);
         if (story.data.description) lines.push(`      ${story.data.description}`);
         const ac = story.data.acceptanceCriteria as string[] | undefined;
         if (ac && ac.length > 0) {
           for (const criterion of ac) {
             lines.push(`      * ${criterion}`);
+          }
+        }
+        if (allComments && allComments[story.id]) {
+          const unresolvedComments = allComments[story.id].filter(
+            (c) => !c.is_system_message && !c.resolved_at
+          );
+          const toShow = unresolvedComments.slice(-3);
+          if (toShow.length > 0) {
+            lines.push(`      Comments${unresolvedComments.length > 3 ? ` (showing last 3 of ${unresolvedComments.length})` : ''}:`);
+            for (const c of toShow) {
+              lines.push(`        ${c.user_name || 'Unknown'}: ${c.content}`);
+            }
           }
         }
       }
@@ -57,11 +75,25 @@ function formatMapAsText(canvas: CanvasState): string {
 export function registerCanvasTools(server: McpServer, api: ApiClient) {
   (server as any).tool(
     'get_story_map',
-    'Read a project\'s story map. Returns a human-readable hierarchical summary by default. Set include_json=true to also get raw JSON (needed for set_story_map/add_nodes/update_nodes). For large maps, prefer the summary-only default.',
-    { project_id: z.string(), include_json: z.boolean().optional().describe('Include raw JSON nodes/edges (default: false)') },
+    'Read a project\'s story map. Returns a human-readable hierarchical summary by default. Set include_json=true to also get raw JSON (needed for set_story_map/add_nodes/update_nodes). Set include_comments=true to show comment threads on cards.',
+    {
+      project_id: z.string(),
+      include_json: z.boolean().optional().describe('Include raw JSON nodes/edges (default: false)'),
+      include_comments: z.boolean().optional().describe('Include full comment threads (default: false)'),
+    },
     async (args: Record<string, unknown>) => {
       const canvas = (await api.get(`/api/canvas/${args.project_id}`)) as CanvasState;
-      const text = formatMapAsText(canvas);
+
+      // Fetch comment counts
+      const commentCounts = (await api.get(`/api/projects/${args.project_id}/comment-counts`)) as Record<string, number>;
+
+      // Fetch full comments if requested
+      let allComments: Record<string, Array<{ content: string; user_name: string; created_at: string; is_system_message: number; resolved_at: string | null }>> | null = null;
+      if (args.include_comments) {
+        allComments = (await api.get(`/api/projects/${args.project_id}/comments`)) as typeof allComments;
+      }
+
+      const text = formatMapAsText(canvas, commentCounts, allComments);
       const content: Array<{ type: 'text'; text: string }> = [
         { type: 'text' as const, text },
       ];
