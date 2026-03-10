@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, type User } from 'firebase/auth';
 import { initFirebase, getFirebaseAuth } from '../lib/firebase';
 import { api } from '../api/client';
 
@@ -97,6 +97,13 @@ export function useAuthProvider(): AuthState {
         setAuthEnabled(true);
         const { auth } = initFirebase(config.firebaseConfig!);
 
+        // Catch redirect errors (success handled by onAuthStateChanged)
+        getRedirectResult(auth).catch((err) => {
+          console.error('Redirect sign-in error:', err);
+          setError(err.message || 'Sign-in failed. Please try again.');
+          setLoading(false);
+        });
+
         unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
           firebaseUserRef.current = fbUser;
           if (fbUser) {
@@ -139,7 +146,7 @@ export function useAuthProvider(): AuthState {
     const auth = getFirebaseAuth();
     if (!auth) return;
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
   }, []);
 
   const logout = useCallback(async () => {

@@ -1,10 +1,22 @@
+import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-import { Moon, Sun, LogIn } from 'lucide-react';
+import { Moon, Sun, LogIn, Loader2 } from 'lucide-react';
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, error } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [signingIn, setSigningIn] = useState(false);
+
+  const handleLogin = async () => {
+    setSigningIn(true);
+    try {
+      await login();
+      // Browser navigates away for redirect — signingIn stays true
+    } catch {
+      setSigningIn(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F0EEFF] dark:bg-[#080810] flex items-center justify-center">
@@ -24,12 +36,26 @@ export function LoginPage() {
           Create and manage user story maps with AI assistance
         </p>
 
+        {error && (
+          <p className="text-red-600 dark:text-red-400 text-sm mb-4">{error}</p>
+        )}
+
         <button
-          onClick={login}
-          className="w-full flex items-center justify-center gap-2 btn-primary px-5 py-3 rounded-lg text-sm font-medium transition-colors"
+          onClick={handleLogin}
+          disabled={signingIn}
+          className="w-full flex items-center justify-center gap-2 btn-primary px-5 py-3 rounded-lg text-sm font-medium transition-colors disabled:opacity-60"
         >
-          <LogIn size={18} />
-          Sign in with Google
+          {signingIn ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              Redirecting to Google…
+            </>
+          ) : (
+            <>
+              <LogIn size={18} />
+              Sign in with Google
+            </>
+          )}
         </button>
       </div>
     </div>
