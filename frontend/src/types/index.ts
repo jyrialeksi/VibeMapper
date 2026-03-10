@@ -41,6 +41,18 @@ export interface Share {
   user_name?: string;
 }
 
+export interface Comment {
+  id: string;
+  project_id: string;
+  node_id: string;
+  user_id: string;
+  content: string;
+  is_system_message: boolean;
+  created_at: string;
+  user_name: string;
+  user_picture: string;
+}
+
 export interface CanvasState {
   nodes: import('@xyflow/react').Node<StoryCardData>[];
   edges: import('@xyflow/react').Edge[];
