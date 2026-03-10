@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Key, Check, Trash2, ExternalLink, LogOut, Cpu, Sparkles } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Key, Check, Trash2, ExternalLink, LogOut, Cpu, Sparkles, ToggleLeft, ToggleRight, Star } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../api/client';
+import { invalidateEnabledModelsCache } from '../hooks/useAI';
 import { McpServerPanel } from './panels/McpServerPanel';
 import type { AIModel } from '../types';
 
@@ -18,6 +19,7 @@ export function SettingsPage() {
   // Model selection state
   const [models, setModels] = useState<AIModel[]>([]);
   const [preferredModel, setPreferredModel] = useState<string | null>(null);
+  const [enabledModelIds, setEnabledModelIds] = useState<string[] | null>(null); // null = all enabled
   const [modelSaving, setModelSaving] = useState(false);
   const [modelMsg, setModelMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [modelFilter, setModelFilter] = useState<'all' | 'free' | 'paid'>('all');
@@ -27,10 +29,12 @@ export function SettingsPage() {
     Promise.all([
       api.getModels(),
       api.getPreferredModel().catch(() => ({ preferredModel: null })),
-    ]).then(([fetchedModels, prefResult]) => {
+      api.getEnabledModels().catch(() => ({ enabledModels: null })),
+    ]).then(([fetchedModels, prefResult, enabledResult]) => {
       if (cancelled) return;
       setModels(fetchedModels);
       setPreferredModel(prefResult.preferredModel);
+      setEnabledModelIds(enabledResult.enabledModels);
     });
     return () => { cancelled = true; };
   }, []);
@@ -66,6 +70,45 @@ export function SettingsPage() {
       setModelSaving(false);
     }
   };
+
+  const isModelEnabled = useCallback((modelId: string) => {
+    if (!enabledModelIds) return false; // loading state
+    return enabledModelIds.includes(modelId);
+  }, [enabledModelIds]);
+
+  const handleToggleModel = async (modelId: string) => {
+    if (!enabledModelIds) return;
+
+    let newEnabled: string[];
+    if (enabledModelIds.includes(modelId)) {
+      // Disabling — must keep at least one
+      newEnabled = enabledModelIds.filter(id => id !== modelId);
+      if (newEnabled.length === 0) {
+        setModelMsg({ type: 'error', text: 'At least one model must be enabled' });
+        setTimeout(() => setModelMsg(null), 3000);
+        return;
+      }
+    } else {
+      // Enabling
+      newEnabled = [...enabledModelIds, modelId];
+    }
+
+    setEnabledModelIds(newEnabled);
+    try {
+      await api.setEnabledModels(newEnabled);
+      invalidateEnabledModelsCache();
+      // If preferred model was disabled, clear it
+      if (preferredModel && !newEnabled.includes(preferredModel)) {
+        setPreferredModel(null);
+        await api.setPreferredModel(null);
+      }
+    } catch (err) {
+      setModelMsg({ type: 'error', text: (err as Error).message });
+      setTimeout(() => setModelMsg(null), 3000);
+    }
+  };
+
+  const enabledCount = enabledModelIds ? enabledModelIds.length : 0;
 
   const filteredModels = models.filter(m => {
     if (modelFilter === 'free') return m.isFree;
@@ -202,10 +245,13 @@ export function SettingsPage() {
         <div className="mb-8 bg-white/85 dark:bg-[#0F0F1E]/85 backdrop-blur-xl border border-[rgba(123,47,255,0.12)] dark:border-[rgba(198,255,77,0.12)] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
             <Cpu size={16} className="text-[#7A7A9A]" />
-            <h3 className="text-sm font-medium text-[#080810]/80 dark:text-[#F0EEFF]/80">Default AI Model</h3>
+            <h3 className="text-sm font-medium text-[#080810]/80 dark:text-[#F0EEFF]/80">AI Models</h3>
+            <span className="ml-auto text-xs text-[#7A7A9A]">
+              {enabledCount} of {models.length} enabled
+            </span>
           </div>
           <p className="text-xs text-[#7A7A9A] mb-3">
-            Choose which model to use by default. You can still switch models per-request in the AI prompt.
+            Toggle which models appear in the canvas AI prompt. Click the star to set your default model.
           </p>
 
           {modelMsg && (
@@ -232,7 +278,7 @@ export function SettingsPage() {
           </div>
 
           {/* Model list grouped by provider */}
-          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[28rem] overflow-y-auto pr-1">
             {providerOrder.map(provider => (
               <div key={provider}>
                 <div className="text-xs font-medium text-[#7A7A9A] uppercase tracking-wider mb-1.5 sticky top-0 bg-white/85 dark:bg-[#0F0F1E]/85 py-0.5">
@@ -240,34 +286,57 @@ export function SettingsPage() {
                 </div>
                 <div className="space-y-1">
                   {groupedModels[provider].map(m => {
-                    const isSelected = preferredModel === m.id || (!preferredModel && models[0]?.id === m.id);
+                    const enabled = isModelEnabled(m.id);
+                    const isDefault = preferredModel === m.id;
                     return (
-                      <button
+                      <div
                         key={m.id}
-                        onClick={() => handleSelectModel(m.id)}
-                        disabled={modelSaving}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-150 flex items-center gap-2 ${
-                          isSelected
-                            ? 'bg-[#7B2FFF]/10 border border-[#7B2FFF]/30 dark:bg-[#7B2FFF]/20 dark:border-[#C6FF4D]/30'
-                            : 'border border-transparent hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
+                          enabled
+                            ? 'border border-transparent hover:bg-[#7B2FFF]/5 dark:hover:bg-[#7B2FFF]/10'
+                            : 'border border-transparent opacity-50'
                         }`}
                       >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className={`truncate ${isSelected ? 'text-[#7B2FFF] dark:text-[#C6FF4D] font-medium' : 'text-[#080810]/80 dark:text-[#F0EEFF]/80'}`}>
-                              {m.name}
+                        {/* Toggle */}
+                        <button
+                          onClick={() => handleToggleModel(m.id)}
+                          className="shrink-0 text-[#7A7A9A] hover:text-[#7B2FFF] dark:hover:text-[#C6FF4D] transition-colors"
+                          title={enabled ? 'Disable for canvas' : 'Enable for canvas'}
+                        >
+                          {enabled
+                            ? <ToggleRight size={20} className="text-[#7B2FFF] dark:text-[#C6FF4D]" />
+                            : <ToggleLeft size={20} />
+                          }
+                        </button>
+
+                        {/* Name + badges */}
+                        <div className="flex-1 min-w-0 flex items-center gap-2">
+                          <span className={`truncate ${enabled ? 'text-[#080810]/80 dark:text-[#F0EEFF]/80' : 'text-[#7A7A9A]'}`}>
+                            {m.name}
+                          </span>
+                          {m.isFree && (
+                            <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full bg-[#00F5D4]/15 text-[#00F5D4] font-medium">
+                              FREE
                             </span>
-                            {m.isFree && (
-                              <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full bg-[#00F5D4]/15 text-[#00F5D4] font-medium">
-                                FREE
-                              </span>
-                            )}
-                          </div>
+                          )}
                         </div>
-                        {isSelected && (
-                          <Check size={14} className="shrink-0 text-[#7B2FFF] dark:text-[#C6FF4D]" />
+
+                        {/* Set as default star */}
+                        {enabled && (
+                          <button
+                            onClick={() => handleSelectModel(m.id)}
+                            disabled={modelSaving}
+                            className={`shrink-0 transition-colors ${
+                              isDefault
+                                ? 'text-amber-400'
+                                : 'text-[#7A7A9A]/40 hover:text-amber-400/70'
+                            }`}
+                            title={isDefault ? 'Default model' : 'Set as default'}
+                          >
+                            <Star size={14} fill={isDefault ? 'currentColor' : 'none'} />
+                          </button>
                         )}
-                      </button>
+                      </div>
                     );
                   })}
                 </div>

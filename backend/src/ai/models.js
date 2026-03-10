@@ -124,7 +124,7 @@ export const availableModels = [
   },
 
   // ═══════════════════════════════════════════════════════════
-  // FREE MODELS (OpenRouter subsidized, rate-limited)
+  // FREE MODELS (OpenRouter subsidized, rate-limited ~20 req/min)
   // ═══════════════════════════════════════════════════════════
 
   {
@@ -161,12 +161,6 @@ export const availableModels = [
     id: 'google/gemini-3-flash-preview-20251217:free',
     name: 'Gemini 3 Flash (Free)',
     provider: 'Google',
-    isFree: true,
-  },
-  {
-    id: 'openai/gpt-4o-mini:free',
-    name: 'GPT-4o Mini (Free)',
-    provider: 'OpenAI',
     isFree: true,
   },
   {
@@ -229,16 +223,18 @@ export const availableModels = [
     provider: 'Nous Research',
     isFree: true,
   },
-  {
-    id: 'x-ai/grok-4.1-fast:free',
-    name: 'Grok 4.1 Fast (Free)',
-    provider: 'xAI',
-    isFree: true,
-  },
-  {
-    id: 'anthropic/claude-4.6-opus-20260205:free',
-    name: 'Claude 4.6 Opus (Free)',
-    provider: 'Anthropic',
-    isFree: true,
-  },
+];
+
+// Default models shown in canvas for new users (when enabled_models is NULL)
+export const defaultEnabledModelIds = [
+  'anthropic/claude-4.6-sonnet-20260217',
+  'anthropic/claude-4.6-opus-20260205',
+  'deepseek/deepseek-v3.2-20251201',
+  'google/gemini-3-flash-preview-20251217',
+  'meta-llama/llama-3.3-70b-instruct',
+  'openai/gpt-5.2-20251211',
+  // Popular free models
+  'google/gemini-2.5-flash:free',
+  'deepseek/deepseek-v3.2-20251201:free',
+  'openai/gpt-4.1-mini-2025-04-14:free',
 ];

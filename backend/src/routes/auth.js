@@ -3,6 +3,7 @@ import { Router } from 'express';
 import db from '../db/database.js';
 import { requireAuth } from '../middleware/auth.js';
 import { encrypt } from '../utils/encryption.js';
+import { defaultEnabledModelIds } from '../ai/models.js';
 
 const router = Router();
 
@@ -83,6 +84,24 @@ router.put('/preferred-model', requireAuth, (req, res) => {
   }
   db.prepare('UPDATE users SET preferred_model = ? WHERE id = ?').run(model || null, req.user.id);
   res.json({ success: true, preferredModel: model || null });
+});
+
+// Get enabled models for canvas (null in DB = use defaults)
+router.get('/enabled-models', requireAuth, (req, res) => {
+  const row = db.prepare('SELECT enabled_models FROM users WHERE id = ?').get(req.user.id);
+  const enabledModels = row?.enabled_models ? JSON.parse(row.enabled_models) : defaultEnabledModelIds;
+  res.json({ enabledModels });
+});
+
+// Set enabled models for canvas
+router.put('/enabled-models', requireAuth, (req, res) => {
+  const { enabledModels } = req.body;
+  if (enabledModels !== null && !Array.isArray(enabledModels)) {
+    return res.status(400).json({ error: 'enabledModels must be an array or null' });
+  }
+  const value = enabledModels ? JSON.stringify(enabledModels) : null;
+  db.prepare('UPDATE users SET enabled_models = ? WHERE id = ?').run(value, req.user.id);
+  res.json({ success: true, enabledModels: enabledModels || null });
 });
 
 // Generate MCP API token

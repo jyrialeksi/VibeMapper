@@ -40,6 +40,32 @@ function fetchPreferredModelOnce(): Promise<string | null> {
   return preferredModelPromise;
 }
 
+// Cache enabled models fetch
+let enabledModelsPromise: Promise<string[] | null> | null = null;
+let enabledModelsLoaded = false;
+let cachedEnabledModels: string[] | null = null;
+
+function fetchEnabledModelsOnce(): Promise<string[] | null> {
+  if (enabledModelsLoaded) return Promise.resolve(cachedEnabledModels);
+  if (!enabledModelsPromise) {
+    enabledModelsPromise = api.getEnabledModels().then((r) => {
+      enabledModelsLoaded = true;
+      cachedEnabledModels = r.enabledModels;
+      return r.enabledModels;
+    }).catch(() => {
+      enabledModelsPromise = null;
+      return null;
+    });
+  }
+  return enabledModelsPromise;
+}
+
+export function invalidateEnabledModelsCache() {
+  enabledModelsPromise = null;
+  enabledModelsLoaded = false;
+  cachedEnabledModels = null;
+}
+
 export function useAI() {
   const [models, setModels] = useState<AIModel[]>(cachedModels ?? []);
   const [selectedModel, setSelectedModel] = useState(cachedModels?.[0]?.id ?? '');
@@ -60,15 +86,21 @@ export function useAI() {
   useEffect(() => {
     let cancelled = false;
 
-    Promise.all([fetchModelsOnce(), fetchPreferredModelOnce()]).then(([fetchedModels, preferred]) => {
+    Promise.all([fetchModelsOnce(), fetchPreferredModelOnce(), fetchEnabledModelsOnce()]).then(([fetchedModels, preferred, enabledIds]) => {
       if (cancelled) return;
-      setModels(fetchedModels);
 
-      // Use preferred model if it exists in the list, otherwise fall back to first
-      if (preferred && fetchedModels.some(m => m.id === preferred)) {
+      // Filter to only enabled models (null = all enabled)
+      const visibleModels = enabledIds
+        ? fetchedModels.filter(m => enabledIds.includes(m.id))
+        : fetchedModels;
+
+      setModels(visibleModels);
+
+      // Use preferred model if it exists in the visible list, otherwise fall back to first
+      if (preferred && visibleModels.some(m => m.id === preferred)) {
         setSelectedModel(preferred);
-      } else if (fetchedModels.length > 0) {
-        setSelectedModel(fetchedModels[0].id);
+      } else if (visibleModels.length > 0) {
+        setSelectedModel(visibleModels[0].id);
       }
     }).catch(console.error);
 

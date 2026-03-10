@@ -129,6 +129,13 @@ export const api = {
     body: JSON.stringify({ model }),
   }),
 
+  // Enabled models (for canvas)
+  getEnabledModels: () => request<{ enabledModels: string[] | null }>('/auth/enabled-models'),
+  setEnabledModels: (enabledModels: string[] | null) => request<{ success: boolean; enabledModels: string[] | null }>('/auth/enabled-models', {
+    method: 'PUT',
+    body: JSON.stringify({ enabledModels }),
+  }),
+
   // MCP Token
   getMcpTokenStatus: () => request<{ hasToken: boolean }>('/auth/mcp-token/status'),
   generateMcpToken: () => request<{ token: string }>('/auth/mcp-token', { method: 'POST' }),
