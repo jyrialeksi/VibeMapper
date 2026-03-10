@@ -85,7 +85,9 @@ if [ "$deploy_app" = true ]; then
     --stage
 
   echo "==> Deploying app to Fly.io ($FLY_APP)..."
-  fly deploy --config "$FLY_CONFIG"
+  fly deploy --config "$FLY_CONFIG" \
+    --build-arg COMMIT_SHA="$(git rev-parse --short HEAD)" \
+    --build-arg BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
   echo ""
   echo "==> App deployed! Live at $APP_URL"

@@ -8,6 +8,7 @@ primary_region = 'ams'
 
 [build]
   dockerfile = 'Dockerfile'
+  # COMMIT_SHA and BUILD_TIME are passed dynamically via deploy.sh
 
 [env]
   AUTH_ENABLED = 'true'

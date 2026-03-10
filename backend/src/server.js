@@ -118,11 +118,18 @@ const authLimiter = isProd ? rateLimit({ windowMs: 60 * 1000, max: 30, standardH
 const aiLimiter = isProd ? rateLimit({ windowMs: 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false }) : noopLimiter;
 const apiLimiter = isProd ? rateLimit({ windowMs: 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }) : noopLimiter;
 
-// Health check (public) with DB connectivity check
+// Health check (public) with DB connectivity and version info
 app.get('/api/health', (req, res) => {
   try {
     db.prepare('SELECT 1').get();
-    res.json({ status: 'ok', db: 'connected' });
+    res.json({
+      status: 'ok',
+      db: 'connected',
+      version: {
+        commit: process.env.COMMIT_SHA || 'dev',
+        buildTime: process.env.BUILD_TIME || null,
+      },
+    });
   } catch {
     res.status(503).json({ status: 'error', db: 'disconnected' });
   }
