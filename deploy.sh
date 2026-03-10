@@ -4,9 +4,25 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# --- Prompt for environment ---
+echo "Which environment?"
+echo "  1) Staging"
+echo "  2) Production"
+read -rp "Choose [1/2]: " env_choice
+
+case "$env_choice" in
+  1) FLY_CONFIG="fly.staging.toml"; FLY_APP="user-story-mapper-staging"; APP_URL="https://user-story-mapper-staging.fly.dev" ;;
+  2) FLY_CONFIG="fly.toml"; FLY_APP="user-story-mapper"; APP_URL="https://app.vibemapper.io" ;;
+  *) echo "Invalid choice. Exiting."; exit 1 ;;
+esac
+
+echo ""
+echo "Environment: $([ "$env_choice" = "1" ] && echo "STAGING" || echo "PRODUCTION")"
+echo ""
+
 # --- Prompt for deploy target ---
 echo "What would you like to deploy?"
-echo "  1) App (Fly.io → app.vibemapper.io)"
+echo "  1) App (Fly.io → $APP_URL)"
 echo "  2) Website (Cloudflare Pages → vibemapper.io)"
 echo "  3) Both"
 read -rp "Choose [1/2/3]: " choice
@@ -63,7 +79,7 @@ if [ "$deploy_app" = true ]; then
   fi
 
   echo ""
-  echo "==> Setting Fly.io secrets..."
+  echo "==> Setting Fly.io secrets for $FLY_APP..."
   fly secrets set \
     ENCRYPTION_KEY="$ENCRYPTION_KEY" \
     FIREBASE_PROJECT_ID="$FIREBASE_PROJECT_ID" \
@@ -71,13 +87,14 @@ if [ "$deploy_app" = true ]; then
     FIREBASE_PRIVATE_KEY="$FIREBASE_PRIVATE_KEY" \
     VITE_FIREBASE_API_KEY="$VITE_FIREBASE_API_KEY" \
     VITE_FIREBASE_AUTH_DOMAIN="$VITE_FIREBASE_AUTH_DOMAIN" \
+    --app "$FLY_APP" \
     --stage
 
-  echo "==> Deploying app to Fly.io..."
-  fly deploy
+  echo "==> Deploying app to Fly.io ($FLY_APP)..."
+  fly deploy --config "$FLY_CONFIG"
 
   echo ""
-  echo "==> App deployed! Live at https://app.vibemapper.io"
+  echo "==> App deployed! Live at $APP_URL"
 fi
 
 # --- Deploy Website to Cloudflare Pages ---
