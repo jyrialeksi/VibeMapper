@@ -10,11 +10,12 @@ export function AIPromptBox() {
   const [prompt, setPrompt] = useState('');
   const { models, selectedModel, setSelectedModel, loading, error, generate } = useAI();
   const hasNodes = useMapStore((s) => s.nodes.length > 0);
+  const selectedNodeId = useMapStore((s) => s.selectedNodeId);
   const { hasApiKey } = useAuth();
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
-    generate(prompt);
+    generate(prompt, selectedNodeId);
     setPrompt('');
   };
 
@@ -64,7 +65,7 @@ export function AIPromptBox() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={hasNodes ? "Describe changes to your story map..." : "Describe your product or feature..."}
+            placeholder={hasNodes ? (selectedNodeId ? "Describe changes to this card..." : "Describe changes to your story map...") : "Describe your product or feature..."}
             className={`flex-1 ${INPUT_BASE} px-3 py-2 focus:outline-none placeholder:text-[#7A7A9A]`}
             disabled={loading}
           />
@@ -76,13 +77,20 @@ export function AIPromptBox() {
             {loading ? (
               <>
                 <Loader2 size={15} className="animate-spin" />
-                {hasNodes ? 'Editing...' : 'Generating...'}
+                {hasNodes ? (selectedNodeId ? 'Editing Card...' : 'Editing...') : 'Generating...'}
               </>
             ) : hasNodes ? (
-              <>
-                <Send size={15} />
-                Edit Map
-              </>
+              selectedNodeId ? (
+                <>
+                  <Send size={15} />
+                  Edit Card
+                </>
+              ) : (
+                <>
+                  <Send size={15} />
+                  Edit Map
+                </>
+              )
             ) : (
               <>
                 <Sparkles size={15} />
