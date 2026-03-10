@@ -20,7 +20,7 @@ interface Snapshot {
 const MAX_HISTORY = 50;
 
 export type PendingLayout = 'none' | 'correctOverlap' | 'fullArrange';
-export type ActivePanel = 'none' | 'toolbar' | 'ai' | 'cardEditor';
+export type ActivePanel = 'none' | 'toolbar' | 'ai' | 'cardEditor' | 'comments';
 
 interface MapState {
   // Canvas state
@@ -75,6 +75,9 @@ interface MapState {
 
   // Auto-save error
   saveError: string | null;
+
+  // Comment counts
+  commentCounts: Map<string, number>;
 
   // Mobile state
   mobileEditingNodeId: string | null;
@@ -139,6 +142,12 @@ interface MapState {
   // Project role actions
   setProjectRole: (role: 'owner' | 'editor' | 'viewer') => void;
 
+  // Comment count actions
+  setCommentCounts: (counts: Map<string, number>) => void;
+  setCommentCount: (nodeId: string, count: number) => void;
+  incrementCommentCount: (nodeId: string) => void;
+  decrementCommentCount: (nodeId: string) => void;
+
   // Mobile actions
   setMobileEditingNodeId: (id: string | null) => void;
   setActivePanel: (panel: ActivePanel) => void;
@@ -193,6 +202,9 @@ export const useMapStore = create<MapState>((set, get) => ({
   isCanvasLoading: false,
   canvasLoadError: null,
   saveError: null,
+
+  // Comment counts
+  commentCounts: new Map(),
 
   // Mobile state
   mobileEditingNodeId: null,
@@ -274,6 +286,7 @@ export const useMapStore = create<MapState>((set, get) => ({
     canRedo: false,
     mobileEditingNodeId: null,
     activePanel: 'none' as ActivePanel,
+    commentCounts: new Map(),
   }),
 
   setCanvasLoadError: (error) => set({ canvasLoadError: error, isCanvasLoading: false }),
@@ -521,6 +534,27 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Project role actions
   setProjectRole: (role) => set({ projectRole: role }),
+
+  // Comment count actions
+  setCommentCounts: (counts) => set({ commentCounts: counts }),
+  setCommentCount: (nodeId, count) => {
+    const next = new Map(get().commentCounts);
+    if (count <= 0) next.delete(nodeId);
+    else next.set(nodeId, count);
+    set({ commentCounts: next });
+  },
+  incrementCommentCount: (nodeId) => {
+    const next = new Map(get().commentCounts);
+    next.set(nodeId, (next.get(nodeId) || 0) + 1);
+    set({ commentCounts: next });
+  },
+  decrementCommentCount: (nodeId) => {
+    const next = new Map(get().commentCounts);
+    const cur = next.get(nodeId) || 0;
+    if (cur <= 1) next.delete(nodeId);
+    else next.set(nodeId, cur - 1);
+    set({ commentCounts: next });
+  },
 
   // Mobile actions
   setMobileEditingNodeId: (id) => {

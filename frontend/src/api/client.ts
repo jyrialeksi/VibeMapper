@@ -1,4 +1,4 @@
-import type { Project, CanvasState, AIModel, VersionSummary, VersionDetail, AIGenerateResult, Share } from '../types';
+import type { Project, CanvasState, AIModel, VersionSummary, VersionDetail, AIGenerateResult, Share, Comment } from '../types';
 
 const BASE = '/api';
 
@@ -149,4 +149,22 @@ export const api = {
     }),
   acceptShareLink: (token: string) =>
     request<{ projectId: string }>(`/shares/accept/${token}`, { method: 'POST' }),
+
+  // Comments
+  listComments: (projectId: string, nodeId: string) =>
+    request<Comment[]>(`/projects/${projectId}/nodes/${nodeId}/comments`),
+  addComment: (projectId: string, nodeId: string, content: string) =>
+    request<Comment>(`/projects/${projectId}/nodes/${nodeId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    }),
+  deleteComment: (projectId: string, commentId: string) =>
+    request<void>(`/projects/${projectId}/comments/${commentId}`, { method: 'DELETE' }),
+  applyComments: (projectId: string, nodeId: string, model: string) =>
+    request<{ mode: string; operations: unknown[] }>(`/projects/${projectId}/nodes/${nodeId}/comments/apply`, {
+      method: 'POST',
+      body: JSON.stringify({ model }),
+    }),
+  getCommentCounts: (projectId: string) =>
+    request<Record<string, number>>(`/projects/${projectId}/comment-counts`),
 };
