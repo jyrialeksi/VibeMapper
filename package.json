@@ -15,7 +15,7 @@
     "test": "npm run test --workspaces",
     "test:e2e": "npx playwright test",
     "test:all": "npm run test && npm run test:e2e",
-    "prepare": "husky"
+    "prepare": "node -e \"try{require('husky')}catch(e){process.exit(0)}\" && husky"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
