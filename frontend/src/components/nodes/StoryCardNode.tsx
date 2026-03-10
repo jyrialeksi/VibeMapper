@@ -1,4 +1,5 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
+import { MessageCircle } from 'lucide-react';
 import type { StoryCardData, Priority } from '../../types';
 import { STATUS_COLORS, STATUS_LABELS } from '../../types';
 import type { CardStatus } from '../../types';
@@ -30,6 +31,7 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
   const { highlightClass, dimClass } = useNodeHighlight(id);
   const showDescriptions = useMapStore((s) => s.showDescriptions);
   const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
+  const commentCount = useMapStore((s) => s.commentCounts.get(id) || 0);
   const priorityBg = PRIORITY_BG[data.priority] || PRIORITY_BG['must-have'];
   const barColor = selected ? '#C6FF4D' : (PRIORITY_BAR_COLOR[data.priority] || '#FF3CAC');
 
@@ -58,6 +60,12 @@ export function StoryCardNode({ id, data, selected }: NodeProps<Node<StoryCardDa
           {data.estimate && (
             <span className="text-[8px] bg-[#7A7A9A]/20 text-[#555568] px-1 py-0.5 rounded font-medium">
               {data.estimate}
+            </span>
+          )}
+          {commentCount > 0 && (
+            <span className="flex items-center gap-0.5 text-[8px] text-[#7A7A9A]">
+              <MessageCircle size={8} />
+              {commentCount}
             </span>
           )}
           <span

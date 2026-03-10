@@ -26,7 +26,7 @@ test.describe('Card editing', () => {
     await page.waitForTimeout(300);
 
     // Card editor sidebar should appear with "Edit Card" heading
-    await expect(page.locator('text=Edit Card')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('h3:has-text("Edit Card")')).toBeVisible({ timeout: 3000 });
   });
 
   test('edit card title via sidebar', async ({ page }) => {
@@ -66,14 +66,16 @@ test.describe('Card editing', () => {
     await page.waitForTimeout(300);
 
     // Verify editor is open
-    await expect(page.locator('text=Edit Card')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('h3:has-text("Edit Card")')).toBeVisible({ timeout: 3000 });
 
-    // Press Escape
+    // Click the canvas pane to move focus out of the editor, then press Escape
+    await page.locator('.react-flow__pane').click({ position: { x: 10, y: 10 } });
+    await page.waitForTimeout(200);
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
 
     // Editor should close
-    await expect(page.locator('text=Edit Card')).toBeHidden({ timeout: 3000 });
+    await expect(page.locator('h3:has-text("Edit Card")')).toBeHidden({ timeout: 3000 });
   });
 
   test('Delete key removes selected node', async ({ page }) => {

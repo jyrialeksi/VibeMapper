@@ -23,6 +23,8 @@ import { MobileToolbar } from './panels/MobileToolbar';
 import { MobileCardEditor } from './panels/MobileCardEditor';
 import { MobileAIButton } from './panels/MobileAIButton';
 import { NodeContextBar } from './panels/NodeContextBar';
+import { CommentsPanel } from './panels/CommentsPanel';
+import { MobileCommentsPanel } from './panels/MobileCommentsPanel';
 import { VersionHistoryPanel } from './panels/VersionHistoryPanel';
 import { LayoutCorrector } from './LayoutCorrector';
 import { HighlightClearer } from './HighlightClearer';
@@ -136,6 +138,9 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
 
   const { getToken } = useAuth();
   const applyVisibility = useMapStore((s) => s.applyVisibility);
+  const setCommentCounts = useMapStore((s) => s.setCommentCounts);
+  const incrementCommentCount = useMapStore((s) => s.incrementCommentCount);
+  const decrementCommentCount = useMapStore((s) => s.decrementCommentCount);
 
   // Clear canvas synchronously (before paint) then fetch new data.
   // Combined in one useLayoutEffect so the clear + fetch always pair together,
@@ -157,8 +162,15 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
       setCanvasLoadError(err instanceof Error ? err.message : 'Failed to load project');
     });
 
+    // Load comment counts
+    api.getCommentCounts(projectId).then((counts) => {
+      if (cancelled) return;
+      const countMap = new Map(Object.entries(counts).map(([k, v]) => [k, v]));
+      setCommentCounts(countMap);
+    }).catch(console.error);
+
     return () => { cancelled = true; };
-  }, [projectId, startLoadingProject, loadCanvas, setProjectRole, setCanvasLoadError]);
+  }, [projectId, startLoadingProject, loadCanvas, setProjectRole, setCanvasLoadError, setCommentCounts]);
 
   // SSE subscription for live visibility sync
   useEffect(() => {
@@ -182,6 +194,20 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         } catch { /* ignore parse errors */ }
       });
 
+      es.addEventListener('comment_add', (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.nodeId) incrementCommentCount(data.nodeId);
+        } catch { /* ignore */ }
+      });
+
+      es.addEventListener('comment_delete', (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.nodeId) decrementCommentCount(data.nodeId);
+        } catch { /* ignore */ }
+      });
+
       es.onerror = () => {
         // EventSource auto-reconnects; no action needed
       };
@@ -193,11 +219,11 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
       cancelled = true;
       es?.close();
     };
-  }, [projectId, getToken, applyVisibility]);
+  }, [projectId, getToken, applyVisibility, incrementCommentCount, decrementCommentCount]);
 
   const handlePaneClick = useCallback(
     (event: React.MouseEvent) => {
-      if (toolMode === 'addCard' && rfRef.current) {
+      if (projectRole !== 'viewer' && toolMode === 'addCard' && rfRef.current) {
         const position = rfRef.current.screenToFlowPosition({
           x: event.clientX,
           y: event.clientY,
@@ -211,7 +237,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         };
 
         addNode(newNode);
-      } else if (toolMode === 'box' && rfRef.current) {
+      } else if (projectRole !== 'viewer' && toolMode === 'box' && rfRef.current) {
         const position = rfRef.current.screenToFlowPosition({
           x: event.clientX,
           y: event.clientY,
@@ -237,7 +263,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         setActivePanel('none');
       }
     },
-    [toolMode, cardTypeToAdd, addNode, setSelectedNodeId, setMobileEditingNodeId, setActivePanel]
+    [toolMode, cardTypeToAdd, addNode, setSelectedNodeId, setMobileEditingNodeId, setActivePanel, projectRole]
   );
 
   const handleNodeDoubleClick = useCallback(
@@ -333,9 +359,9 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         onEdgesChange={isReadOnly ? undefined : onEdgesChange}
         onConnect={isReadOnly ? undefined : onConnect}
         onInit={(instance) => { rfRef.current = instance; }}
-        onPaneClick={isReadOnly ? undefined : handlePaneClick}
+        onPaneClick={isAIEditing ? undefined : handlePaneClick}
         onNodeDoubleClick={isReadOnly ? undefined : handleNodeDoubleClick}
-        onNodeClick={isReadOnly ? undefined : handleNodeClick}
+        onNodeClick={isAIEditing ? undefined : handleNodeClick}
         onNodeDragStart={isReadOnly ? undefined : handleNodeDragStart}
         nodesDraggable={false}
         nodesConnectable={!isReadOnly}
@@ -354,7 +380,8 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         <LayoutCorrector />
         <HighlightClearer />
         {/* NodeContextBar must be inside ReactFlow for useReactFlow() */}
-        {isMobile && selectedNodeId && !mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <NodeContextBar />}
+        {!isMobile && selectedNodeId && !isVersionPanelOpen && !isAIEditing && activePanel !== 'cardEditor' && activePanel !== 'comments' && <NodeContextBar />}
+        {isMobile && selectedNodeId && !mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && activePanel !== 'comments' && <NodeContextBar />}
       </ReactFlow>
       {isAIEditing && (
         <div className={MODAL_OVERLAY}>
@@ -421,6 +448,10 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
       {!isMobile && activePanel === 'cardEditor' && selectedNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <CardEditor />}
       {/* Mobile: bottom sheet editor */}
       {isMobile && mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && projectRole !== 'viewer' && <MobileCardEditor />}
+      {/* Desktop: comments sidebar */}
+      {!isMobile && activePanel === 'comments' && selectedNodeId && !isVersionPanelOpen && !isAIEditing && <CommentsPanel />}
+      {/* Mobile: comments bottom sheet */}
+      {isMobile && activePanel === 'comments' && selectedNodeId && !isVersionPanelOpen && !isAIEditing && <MobileCommentsPanel />}
       <VersionHistoryPanel />
       {/* AI prompt: desktop bottom bar vs mobile FAB */}
       {projectRole !== 'viewer' && (isMobile ? <MobileAIButton /> : <AIPromptBox />)}

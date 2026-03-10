@@ -1,9 +1,12 @@
 import { Handle, Position, type NodeProps, type Node } from '@xyflow/react';
+import { MessageCircle } from 'lucide-react';
 import type { StoryCardData } from '../../types';
+import { useMapStore } from '../../store/useMapStore';
 import { useNodeHighlight } from '../../hooks/useNodeHighlight';
 
 export function StepNode({ id, data, selected }: NodeProps<Node<StoryCardData>>) {
   const { highlightClass, dimClass } = useNodeHighlight(id);
+  const commentCount = useMapStore((s) => s.commentCounts.get(id) || 0);
 
   return (
     <div
@@ -11,8 +14,16 @@ export function StepNode({ id, data, selected }: NodeProps<Node<StoryCardData>>)
         selected ? 'border-[#00F5D4] ring-2 ring-[#00F5D4]/30' : 'border-[#00F5D4]/60'
       } ${highlightClass} ${dimClass}`}
     >
-      <div className="font-mono-brand text-[8px] font-bold uppercase tracking-wider text-[#007a6a] mb-1">
-        Step
+      <div className="flex items-center justify-between mb-1">
+        <span className="font-mono-brand text-[8px] font-bold uppercase tracking-wider text-[#007a6a]">
+          Step
+        </span>
+        {commentCount > 0 && (
+          <span className="flex items-center gap-0.5 text-[8px] text-[#7A7A9A]">
+            <MessageCircle size={8} />
+            {commentCount}
+          </span>
+        )}
       </div>
       <div className="font-semibold text-[11px] text-[#080810] leading-snug">{data.title}</div>
       {data.description && (
