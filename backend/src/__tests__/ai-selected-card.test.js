@@ -49,7 +49,7 @@ describe('AI Selected Card', () => {
       .post('/api/ai/generate')
       .send({
         prompt: 'Add acceptance criteria',
-        model: 'anthropic/claude-4.6-sonnet-20260217',
+        model: 'anthropic/claude-sonnet-4.6',
         projectId: 'proj-1',
         existingNodes: sampleNodes,
         existingEdges: sampleEdges,
@@ -72,7 +72,7 @@ describe('AI Selected Card', () => {
       .post('/api/ai/generate')
       .send({
         prompt: 'Rename this step',
-        model: 'anthropic/claude-4.6-sonnet-20260217',
+        model: 'anthropic/claude-sonnet-4.6',
         projectId: 'proj-1',
         existingNodes: sampleNodes,
         existingEdges: sampleEdges,
@@ -93,7 +93,7 @@ describe('AI Selected Card', () => {
       .post('/api/ai/generate')
       .send({
         prompt: 'Add a new activity',
-        model: 'anthropic/claude-4.6-sonnet-20260217',
+        model: 'anthropic/claude-sonnet-4.6',
         projectId: 'proj-1',
         existingNodes: sampleNodes,
         existingEdges: sampleEdges,
@@ -113,7 +113,7 @@ describe('AI Selected Card', () => {
       .post('/api/ai/generate')
       .send({
         prompt: 'Add a new activity',
-        model: 'anthropic/claude-4.6-sonnet-20260217',
+        model: 'anthropic/claude-sonnet-4.6',
         projectId: 'proj-1',
         existingNodes: sampleNodes,
         existingEdges: sampleEdges,
@@ -132,7 +132,7 @@ describe('AI Selected Card', () => {
       .post('/api/ai/generate')
       .send({
         prompt: 'Do something',
-        model: 'anthropic/claude-4.6-sonnet-20260217',
+        model: 'anthropic/claude-sonnet-4.6',
         projectId: 'proj-1',
         existingNodes: sampleNodes,
         existingEdges: sampleEdges,
@@ -152,7 +152,7 @@ describe('AI Selected Card', () => {
       .post('/api/ai/generate')
       .send({
         prompt: 'Edit this activity',
-        model: 'anthropic/claude-4.6-sonnet-20260217',
+        model: 'anthropic/claude-sonnet-4.6',
         projectId: 'proj-1',
         existingNodes: sampleNodes,
         existingEdges: sampleEdges,

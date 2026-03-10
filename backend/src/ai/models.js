@@ -1,19 +1,19 @@
 export const availableModels = [
   // ── Anthropic ───────────────────────────────────────────────
   {
-    id: 'anthropic/claude-4.6-sonnet-20260217',
+    id: 'anthropic/claude-sonnet-4.6',
     name: 'Claude 4.6 Sonnet',
     provider: 'Anthropic',
     isFree: false,
   },
   {
-    id: 'anthropic/claude-4.6-opus-20260205',
+    id: 'anthropic/claude-opus-4.6',
     name: 'Claude 4.6 Opus',
     provider: 'Anthropic',
     isFree: false,
   },
   {
-    id: 'anthropic/claude-4.5-sonnet-20250929',
+    id: 'anthropic/claude-sonnet-4.5',
     name: 'Claude 4.5 Sonnet',
     provider: 'Anthropic',
     isFree: false,
@@ -21,19 +21,19 @@ export const availableModels = [
 
   // ── OpenAI ──────────────────────────────────────────────────
   {
-    id: 'openai/gpt-5.2-20251211',
+    id: 'openai/gpt-5.2',
     name: 'GPT-5.2',
     provider: 'OpenAI',
     isFree: false,
   },
   {
-    id: 'openai/gpt-5.1-20251113',
+    id: 'openai/gpt-5.1',
     name: 'GPT-5.1',
     provider: 'OpenAI',
     isFree: false,
   },
   {
-    id: 'openai/gpt-4.1-mini-2025-04-14',
+    id: 'openai/gpt-4.1-mini',
     name: 'GPT-4.1 Mini',
     provider: 'OpenAI',
     isFree: false,
@@ -47,7 +47,7 @@ export const availableModels = [
 
   // ── Google ──────────────────────────────────────────────────
   {
-    id: 'google/gemini-3-flash-preview-20251217',
+    id: 'google/gemini-3-flash-preview',
     name: 'Gemini 3 Flash',
     provider: 'Google',
     isFree: false,
@@ -73,13 +73,13 @@ export const availableModels = [
 
   // ── DeepSeek ────────────────────────────────────────────────
   {
-    id: 'deepseek/deepseek-v3.2-20251201',
+    id: 'deepseek/deepseek-v3.2',
     name: 'DeepSeek V3.2',
     provider: 'DeepSeek',
     isFree: false,
   },
   {
-    id: 'deepseek/deepseek-r1-0528',
+    id: 'deepseek/deepseek-r1',
     name: 'DeepSeek R1',
     provider: 'DeepSeek',
     isFree: false,
@@ -125,26 +125,9 @@ export const availableModels = [
 
   // ═══════════════════════════════════════════════════════════
   // FREE MODELS (OpenRouter subsidized, rate-limited ~20 req/min)
+  // Verified against openrouter.ai as of 2026-03-10
   // ═══════════════════════════════════════════════════════════
 
-  {
-    id: 'qwen/qwen3-coder:free',
-    name: 'Qwen3 Coder (Free)',
-    provider: 'Qwen',
-    isFree: true,
-  },
-  {
-    id: 'stepfun/step-3.5-flash:free',
-    name: 'Step 3.5 Flash (Free)',
-    provider: 'StepFun',
-    isFree: true,
-  },
-  {
-    id: 'deepseek/deepseek-v3.2-20251201:free',
-    name: 'DeepSeek V3.2 (Free)',
-    provider: 'DeepSeek',
-    isFree: true,
-  },
   {
     id: 'google/gemini-2.5-flash:free',
     name: 'Gemini 2.5 Flash (Free)',
@@ -158,38 +141,26 @@ export const availableModels = [
     isFree: true,
   },
   {
-    id: 'google/gemini-3-flash-preview-20251217:free',
-    name: 'Gemini 3 Flash (Free)',
+    id: 'google/gemma-3-27b-it:free',
+    name: 'Gemma 3 27B (Free)',
     provider: 'Google',
     isFree: true,
   },
   {
-    id: 'openai/gpt-4.1-mini-2025-04-14:free',
+    id: 'deepseek/deepseek-v3.2:free',
+    name: 'DeepSeek V3.2 (Free)',
+    provider: 'DeepSeek',
+    isFree: true,
+  },
+  {
+    id: 'openai/gpt-4.1-mini:free',
     name: 'GPT-4.1 Mini (Free)',
-    provider: 'OpenAI',
-    isFree: true,
-  },
-  {
-    id: 'openai/gpt-5-nano-2025-08-07:free',
-    name: 'GPT-5 Nano (Free)',
-    provider: 'OpenAI',
-    isFree: true,
-  },
-  {
-    id: 'openai/gpt-5-mini-2025-08-07:free',
-    name: 'GPT-5 Mini (Free)',
     provider: 'OpenAI',
     isFree: true,
   },
   {
     id: 'openai/gpt-oss-20b:free',
     name: 'GPT Open-Source 20B (Free)',
-    provider: 'OpenAI',
-    isFree: true,
-  },
-  {
-    id: 'openai/gpt-oss-120b:free',
-    name: 'GPT Open-Source 120B (Free)',
     provider: 'OpenAI',
     isFree: true,
   },
@@ -212,29 +183,29 @@ export const availableModels = [
     isFree: true,
   },
   {
-    id: 'google/gemma-3-27b-it:free',
-    name: 'Gemma 3 27B (Free)',
-    provider: 'Google',
-    isFree: true,
-  },
-  {
     id: 'nousresearch/hermes-3-llama-3.1-405b:free',
     name: 'Hermes 3 Llama 405B (Free)',
     provider: 'Nous Research',
+    isFree: true,
+  },
+  {
+    id: 'stepfun/step-3.5-flash:free',
+    name: 'Step 3.5 Flash (Free)',
+    provider: 'StepFun',
     isFree: true,
   },
 ];
 
 // Default models shown in canvas for new users (when enabled_models is NULL)
 export const defaultEnabledModelIds = [
-  'anthropic/claude-4.6-sonnet-20260217',
-  'anthropic/claude-4.6-opus-20260205',
-  'deepseek/deepseek-v3.2-20251201',
-  'google/gemini-3-flash-preview-20251217',
+  'anthropic/claude-sonnet-4.6',
+  'anthropic/claude-opus-4.6',
+  'deepseek/deepseek-v3.2',
+  'google/gemini-3-flash-preview',
   'meta-llama/llama-3.3-70b-instruct',
-  'openai/gpt-5.2-20251211',
+  'openai/gpt-5.2',
   // Popular free models
   'google/gemini-2.5-flash:free',
-  'deepseek/deepseek-v3.2-20251201:free',
-  'openai/gpt-4.1-mini-2025-04-14:free',
+  'deepseek/deepseek-v3.2:free',
+  'openai/gpt-4.1-mini:free',
 ];
