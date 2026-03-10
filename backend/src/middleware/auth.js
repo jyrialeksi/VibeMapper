@@ -31,12 +31,14 @@ export function requireAuth(req, res, next) {
   }
 
   const header = req.headers.authorization;
-  if (!header || !header.startsWith('Bearer ')) {
+  // Fall back to query param token for SSE (EventSource can't set headers)
+  const queryToken = req.query?.token;
+  if (!header?.startsWith('Bearer ') && !queryToken) {
     console.warn(`[AUTH] Missing/invalid Authorization header for ${req.method} ${req.originalUrl}`);
     return res.status(401).json({ error: 'Missing or invalid Authorization header' });
   }
 
-  const token = header.slice(7);
+  const token = header ? header.slice(7) : queryToken;
 
   // MCP API token path
   if (token.startsWith('mcp_')) {

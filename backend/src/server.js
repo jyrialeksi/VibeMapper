@@ -47,6 +47,17 @@ if (isProd) {
 // Firebase Auth reverse proxy — before helmet so Firebase responses pass through unmodified
 if (process.env.FIREBASE_PROJECT_ID) {
   const firebaseHost = `${process.env.FIREBASE_PROJECT_ID}.firebaseapp.com`;
+
+  // Serve init.json directly — Firebase Hosting isn't set up, so firebaseapp.com 404s this.
+  // The auth handler page fetches it to get the Firebase config.
+  app.get('/__/firebase/init.json', (req, res) => {
+    res.json({
+      apiKey: process.env.VITE_FIREBASE_API_KEY || '',
+      authDomain: req.get('host') || '',
+      projectId: process.env.FIREBASE_PROJECT_ID || '',
+    });
+  });
+
   app.all('/__/*', async (req, res) => {
     const targetUrl = `https://${firebaseHost}${req.originalUrl}`;
     try {
