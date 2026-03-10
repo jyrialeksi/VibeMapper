@@ -29,7 +29,7 @@ router.get('/config', (req, res) => {
 // Protected: return current user info
 router.get('/me', requireAuth, (req, res) => {
   const user = db.prepare(`
-    SELECT id, email, name, picture, created_at, last_login,
+    SELECT id, email, name, picture, created_at, last_login, preferred_model,
       CASE WHEN openrouter_api_key IS NOT NULL THEN 1 ELSE 0 END AS has_api_key,
       CASE WHEN mcp_api_token IS NOT NULL THEN 1 ELSE 0 END AS has_mcp_token
     FROM users WHERE id = ?
@@ -67,6 +67,22 @@ router.put('/api-key', requireAuth, (req, res) => {
 router.delete('/api-key', requireAuth, (req, res) => {
   db.prepare('UPDATE users SET openrouter_api_key = NULL WHERE id = ?').run(req.user.id);
   res.json({ success: true, hasKey: false });
+});
+
+// Get preferred model
+router.get('/preferred-model', requireAuth, (req, res) => {
+  const row = db.prepare('SELECT preferred_model FROM users WHERE id = ?').get(req.user.id);
+  res.json({ preferredModel: row?.preferred_model || null });
+});
+
+// Set preferred model
+router.put('/preferred-model', requireAuth, (req, res) => {
+  const { model } = req.body;
+  if (model !== null && (typeof model !== 'string' || model.length > 200)) {
+    return res.status(400).json({ error: 'Invalid model' });
+  }
+  db.prepare('UPDATE users SET preferred_model = ? WHERE id = ?').run(model || null, req.user.id);
+  res.json({ success: true, preferredModel: model || null });
 });
 
 // Generate MCP API token

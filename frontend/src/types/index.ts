@@ -68,6 +68,7 @@ export interface AIModel {
   id: string;
   name: string;
   provider: string;
+  isFree: boolean;
 }
 
 export const PRIORITY_COLORS: Record<Priority, string> = {

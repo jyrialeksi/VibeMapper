@@ -122,6 +122,13 @@ export const api = {
   }),
   deleteApiKey: () => request<{ success: boolean; hasKey: boolean }>('/auth/api-key', { method: 'DELETE' }),
 
+  // Preferred model
+  getPreferredModel: () => request<{ preferredModel: string | null }>('/auth/preferred-model'),
+  setPreferredModel: (model: string | null) => request<{ success: boolean; preferredModel: string | null }>('/auth/preferred-model', {
+    method: 'PUT',
+    body: JSON.stringify({ model }),
+  }),
+
   // MCP Token
   getMcpTokenStatus: () => request<{ hasToken: boolean }>('/auth/mcp-token/status'),
   generateMcpToken: () => request<{ token: string }>('/auth/mcp-token', { method: 'POST' }),

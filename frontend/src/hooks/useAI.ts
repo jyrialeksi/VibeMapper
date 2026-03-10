@@ -22,6 +22,24 @@ function fetchModelsOnce(): Promise<AIModel[]> {
   return modelsFetchPromise;
 }
 
+// Cache preferred model fetch
+let preferredModelPromise: Promise<string | null> | null = null;
+let preferredModelLoaded = false;
+
+function fetchPreferredModelOnce(): Promise<string | null> {
+  if (preferredModelLoaded) return Promise.resolve(null);
+  if (!preferredModelPromise) {
+    preferredModelPromise = api.getPreferredModel().then((r) => {
+      preferredModelLoaded = true;
+      return r.preferredModel;
+    }).catch(() => {
+      preferredModelPromise = null;
+      return null;
+    });
+  }
+  return preferredModelPromise;
+}
+
 export function useAI() {
   const [models, setModels] = useState<AIModel[]>(cachedModels ?? []);
   const [selectedModel, setSelectedModel] = useState(cachedModels?.[0]?.id ?? '');
@@ -40,11 +58,21 @@ export function useAI() {
   const setCancelAIEdit = useMapStore((s) => s.setCancelAIEdit);
 
   useEffect(() => {
-    if (cachedModels) return; // Already have models, no fetch needed
-    fetchModelsOnce().then((m) => {
-      setModels(m);
-      if (m.length > 0) setSelectedModel(m[0].id);
+    let cancelled = false;
+
+    Promise.all([fetchModelsOnce(), fetchPreferredModelOnce()]).then(([fetchedModels, preferred]) => {
+      if (cancelled) return;
+      setModels(fetchedModels);
+
+      // Use preferred model if it exists in the list, otherwise fall back to first
+      if (preferred && fetchedModels.some(m => m.id === preferred)) {
+        setSelectedModel(preferred);
+      } else if (fetchedModels.length > 0) {
+        setSelectedModel(fetchedModels[0].id);
+      }
     }).catch(console.error);
+
+    return () => { cancelled = true; };
   }, []);
 
   const cancel = useCallback(() => {

@@ -17,6 +17,8 @@ export function MobileAIButton() {
   if (!hasApiKey) return null;
 
   const open = activePanel === 'ai';
+  const paidModels = models.filter(m => !m.isFree);
+  const freeModels = models.filter(m => m.isFree);
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
@@ -72,9 +74,20 @@ export function MobileAIButton() {
               onChange={(e) => setSelectedModel(e.target.value)}
               className={`w-full ${INPUT_BASE} px-3 py-2.5 mb-2`}
             >
-              {models.map((m) => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
+              {paidModels.length > 0 && (
+                <optgroup label="Paid Models">
+                  {paidModels.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </optgroup>
+              )}
+              {freeModels.length > 0 && (
+                <optgroup label="Free Models">
+                  {freeModels.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </optgroup>
+              )}
             </select>
 
             {/* Prompt input */}

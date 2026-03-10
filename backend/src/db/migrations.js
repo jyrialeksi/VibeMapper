@@ -100,6 +100,9 @@ export function runMigrations() {
   if (!userCols.some(c => c.name === 'mcp_api_token')) {
     db.exec(`ALTER TABLE users ADD COLUMN mcp_api_token TEXT DEFAULT NULL`);
   }
+  if (!userCols.some(c => c.name === 'preferred_model')) {
+    db.exec(`ALTER TABLE users ADD COLUMN preferred_model TEXT DEFAULT NULL`);
+  }
 
   // Add expires_at column to project_shares for link expiration
   const shareCols = db.prepare("PRAGMA table_info(project_shares)").all();

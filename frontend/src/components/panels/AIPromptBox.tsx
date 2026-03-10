@@ -39,6 +39,11 @@ export function AIPromptBox() {
     );
   }
 
+  // Group models for the dropdown
+  const paidModels = models.filter(m => !m.isFree);
+  const freeModels = models.filter(m => m.isFree);
+  const currentModel = models.find(m => m.id === selectedModel);
+
   return (
     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-50 w-full max-w-2xl">
       <div className={`${GLASS_PANEL} rounded-2xl shadow-lg p-3`}>
@@ -48,17 +53,35 @@ export function AIPromptBox() {
           </div>
         )}
         <div className="flex items-end gap-2">
-          <select
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-            className={`${INPUT_BASE} py-2 min-w-[160px] self-end`}
-          >
-            {models.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-col gap-1 self-end">
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className={`${INPUT_BASE} py-2 min-w-[180px]`}
+            >
+              {paidModels.length > 0 && (
+                <optgroup label="Paid Models">
+                  {paidModels.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {freeModels.length > 0 && (
+                <optgroup label="Free Models">
+                  {freeModels.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+            {currentModel?.isFree && (
+              <span className="text-[10px] text-[#00F5D4] font-medium px-1">FREE</span>
+            )}
+          </div>
           <AutoExpandTextarea
             minRows={1}
             maxRows={10}

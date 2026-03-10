@@ -54,6 +54,7 @@ export function createTestDb() {
       picture TEXT DEFAULT '',
       openrouter_api_key TEXT DEFAULT NULL,
       mcp_api_token TEXT DEFAULT NULL,
+      preferred_model TEXT DEFAULT NULL,
       created_at TEXT DEFAULT (datetime('now')),
       last_login TEXT DEFAULT (datetime('now'))
     );
