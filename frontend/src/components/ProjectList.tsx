@@ -90,7 +90,7 @@ export function ProjectList() {
     try {
       const project = await api.createProject(newName.trim());
       setNewName('');
-      setProjects((prev) => [project, ...prev]);
+      navigate(`/project/${project.id}`);
     } catch (err) {
       console.error('Failed to create project:', err);
     }

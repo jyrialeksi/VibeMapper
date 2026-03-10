@@ -9,16 +9,14 @@ test.describe('Project CRUD', () => {
     const nameInput = page.locator('input[placeholder="New project name..."]');
     await nameInput.fill('E2E Create Test');
 
-    // Now click Create
+    // Now click Create — should navigate directly to the new project
     const createBtn = page.locator('button:has-text("Create")');
     await createBtn.click();
 
-    // Project should appear in the list (handleCreate adds it without navigating)
-    await expect(page.locator('text=E2E Create Test')).toBeVisible({ timeout: 5000 });
-
-    // Click on the project to navigate
-    await page.locator('text=E2E Create Test').first().click();
     await expect(page).toHaveURL(/\/project\//, { timeout: 5000 });
+
+    // Should see the onboarding view (empty project) with the project name in the header
+    await expect(page.locator('text=E2E Create Test')).toBeVisible({ timeout: 5000 });
 
     // Clean up — extract project ID from URL and delete
     const url = page.url();
