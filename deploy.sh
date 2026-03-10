@@ -68,13 +68,8 @@ if [ "$deploy_app" = true ]; then
   FIREBASE_PRIVATE_KEY=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$SA_FILE','utf8')).private_key)")
 
   VITE_FIREBASE_API_KEY=$(grep -E '^VITE_FIREBASE_API_KEY=' "$ENV_FILE" | cut -d'=' -f2-)
-  VITE_FIREBASE_AUTH_DOMAIN=$(grep -E '^VITE_FIREBASE_AUTH_DOMAIN=' "$ENV_FILE" | cut -d'=' -f2-)
   if [ -z "$VITE_FIREBASE_API_KEY" ]; then
     echo "Error: VITE_FIREBASE_API_KEY not found in $ENV_FILE"
-    exit 1
-  fi
-  if [ -z "$VITE_FIREBASE_AUTH_DOMAIN" ]; then
-    echo "Error: VITE_FIREBASE_AUTH_DOMAIN not found in $ENV_FILE"
     exit 1
   fi
 
@@ -86,7 +81,6 @@ if [ "$deploy_app" = true ]; then
     FIREBASE_CLIENT_EMAIL="$FIREBASE_CLIENT_EMAIL" \
     FIREBASE_PRIVATE_KEY="$FIREBASE_PRIVATE_KEY" \
     VITE_FIREBASE_API_KEY="$VITE_FIREBASE_API_KEY" \
-    VITE_FIREBASE_AUTH_DOMAIN="$VITE_FIREBASE_AUTH_DOMAIN" \
     --app "$FLY_APP" \
     --stage
 

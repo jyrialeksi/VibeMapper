@@ -13,11 +13,14 @@ router.get('/config', (req, res) => {
   if (!authEnabled) {
     return res.json({ authEnabled: false });
   }
+  // Use the app's own domain as authDomain so signInWithRedirect goes through
+  // our /__/auth/ reverse proxy instead of directly to firebaseapp.com (which 404s).
+  const authDomain = process.env.FIREBASE_AUTH_DOMAIN || req.get('host') || '';
   res.json({
     authEnabled: true,
     firebaseConfig: {
       apiKey: process.env.VITE_FIREBASE_API_KEY || '',
-      authDomain: process.env.FIREBASE_AUTH_DOMAIN || process.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+      authDomain,
       projectId: process.env.FIREBASE_PROJECT_ID || '',
     },
   });
