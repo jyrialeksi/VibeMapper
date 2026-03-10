@@ -451,10 +451,13 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
       {/* Desktop: comments sidebar */}
       {!isMobile && activePanel === 'comments' && selectedNodeId && !isVersionPanelOpen && !isAIEditing && <CommentsPanel />}
       {/* Mobile: comments bottom sheet */}
-      {isMobile && activePanel === 'comments' && selectedNodeId && !isVersionPanelOpen && !isAIEditing && <MobileCommentsPanel />}
+      {isMobile && activePanel === 'comments' && selectedNodeId && !mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && <MobileCommentsPanel />}
       <VersionHistoryPanel />
       {/* AI prompt: desktop bottom bar vs mobile FAB */}
-      {projectRole !== 'viewer' && (isMobile ? <MobileAIButton /> : <AIPromptBox />)}
+      {projectRole !== 'viewer' && (isMobile
+        ? (activePanel !== 'comments' && <MobileAIButton />)
+        : <AIPromptBox />
+      )}
       <input
         ref={fileInputRef}
         type="file"

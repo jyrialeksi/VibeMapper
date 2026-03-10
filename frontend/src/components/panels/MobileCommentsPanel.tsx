@@ -156,9 +156,9 @@ export function MobileCommentsPanel() {
         >
           <div className="w-10 h-1 bg-[#7A7A9A]/30 rounded-full mx-auto mb-2" />
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <GripHorizontal size={16} className="text-[#7A7A9A]" />
-              <MessageCircle size={16} className="text-[#7B2FFF] dark:text-[#C6FF4D]" />
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <GripHorizontal size={16} className="text-[#7A7A9A] shrink-0" />
+              <MessageCircle size={16} className="text-[#7B2FFF] dark:text-[#C6FF4D] shrink-0" />
               <h3 className="font-semibold text-[#080810] dark:text-[#F0EEFF] text-sm truncate">
                 {node.data.title}
               </h3>
