@@ -70,6 +70,19 @@ export function createTestDb() {
     );
     CREATE INDEX IF NOT EXISTS idx_project_shares_project ON project_shares(project_id);
     CREATE INDEX IF NOT EXISTS idx_project_shares_user ON project_shares(user_id);
+    CREATE TABLE IF NOT EXISTS card_comments (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      node_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      is_system_message INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_card_comments_project_node
+      ON card_comments(project_id, node_id, created_at ASC);
   `);
   return db;
 }
@@ -88,4 +101,9 @@ export function seedProject(db, id = 'proj-1', name = 'Test Project', ownerId = 
 
 export function seedUser(db, id = 'test-user', email = 'test@test.com', name = 'Test User') {
   db.prepare("INSERT OR IGNORE INTO users (id, email, name, picture) VALUES (?, ?, ?, '')").run(id, email, name);
+}
+
+export function seedComment(db, projectId, nodeId, userId, content, id = `comment-${Date.now()}`) {
+  db.prepare("INSERT INTO card_comments (id, project_id, node_id, user_id, content) VALUES (?, ?, ?, ?, ?)").run(id, projectId, nodeId, userId, content);
+  return id;
 }

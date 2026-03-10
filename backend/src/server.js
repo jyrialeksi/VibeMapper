@@ -18,6 +18,7 @@ import projectsRouter from './routes/projects.js';
 import canvasRouter from './routes/canvas.js';
 import aiRouter from './routes/ai.js';
 import sharesRouter from './routes/shares.js';
+import commentsRouter from './routes/comments.js';
 import mcpRouter from './routes/mcp.js';
 
 // Initialize Firebase Admin if auth is enabled
@@ -147,6 +148,7 @@ app.use('/api/canvas', canvasRouter);
 app.use('/api/ai', aiLimiter, aiRouter);
 app.use('/api/projects', sharesRouter);
 app.use('/api/shares', sharesRouter);
+app.use('/api/projects', commentsRouter);
 
 // MCP endpoint (requires auth via Bearer token)
 app.use('/mcp', requireAuth, apiLimiter, mcpRouter);

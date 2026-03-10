@@ -107,6 +107,24 @@ export function runMigrations() {
     db.exec(`ALTER TABLE project_shares ADD COLUMN expires_at TEXT DEFAULT NULL`);
   }
 
+  // Add card_comments table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS card_comments (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      node_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      is_system_message INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_card_comments_project_node
+      ON card_comments(project_id, node_id, created_at ASC);
+  `);
+
   // Ensure local-dev user exists for non-auth mode
   db.prepare(`INSERT OR IGNORE INTO users (id, email, name, picture) VALUES (?, ?, ?, ?)`)
     .run('local-dev', 'dev@local', 'Local Dev', '');
