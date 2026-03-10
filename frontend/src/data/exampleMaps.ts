@@ -1,0 +1,161 @@
+import type { Node, Edge } from '@xyflow/react';
+import type { StoryCardData } from '../types';
+
+export interface ExampleMap {
+  name: string;
+  description: string;
+  nodes: Node<StoryCardData>[];
+  edges: Edge[];
+  viewport: { x: number; y: number; zoom: number };
+}
+
+const Y = { activity: 0, step: 200, must: 400, should: 600, could: 800 };
+const X_SPACE = 300;
+
+export const exampleMaps: ExampleMap[] = [
+  {
+    name: 'E-commerce Store',
+    description: 'Product browsing, cart management, and checkout flow',
+    nodes: [
+      // Activities
+      { id: 'activity-1', type: 'activity', position: { x: 0, y: Y.activity }, data: { title: 'Browse Products', description: 'Customers discover and explore products', acceptanceCriteria: [], cardType: 'activity', priority: 'must-have' } },
+      { id: 'activity-2', type: 'activity', position: { x: X_SPACE * 3, y: Y.activity }, data: { title: 'Purchase', description: 'Cart and checkout experience', acceptanceCriteria: [], cardType: 'activity', priority: 'must-have' } },
+      // Steps
+      { id: 'step-1-1', type: 'step', position: { x: 0, y: Y.step }, data: { title: 'Search & Filter', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-1-2', type: 'step', position: { x: X_SPACE, y: Y.step }, data: { title: 'View Product', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-1-3', type: 'step', position: { x: X_SPACE * 2, y: Y.step }, data: { title: 'Reviews', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-2-1', type: 'step', position: { x: X_SPACE * 3, y: Y.step }, data: { title: 'Manage Cart', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-2-2', type: 'step', position: { x: X_SPACE * 4, y: Y.step }, data: { title: 'Checkout', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      // Stories
+      { id: 'story-1-1-1', type: 'storyCard', position: { x: 0, y: Y.must }, data: { title: 'Keyword search with autocomplete', description: 'Users can search products by name or keyword', acceptanceCriteria: ['Search bar on all pages', 'Autocomplete suggestions appear'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-1-1-2', type: 'storyCard', position: { x: 0, y: Y.should }, data: { title: 'Filter by category and price', description: '', acceptanceCriteria: ['Category sidebar filter', 'Price range slider'], cardType: 'story', priority: 'should-have' } },
+      { id: 'story-1-2-1', type: 'storyCard', position: { x: X_SPACE, y: Y.must }, data: { title: 'Product detail page', description: 'Show images, price, description', acceptanceCriteria: ['Image gallery', 'Add to cart button'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-1-3-1', type: 'storyCard', position: { x: X_SPACE * 2, y: Y.must }, data: { title: 'View product reviews', description: '', acceptanceCriteria: ['Star rating display', 'Sorted by helpfulness'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-1-3-2', type: 'storyCard', position: { x: X_SPACE * 2, y: Y.could }, data: { title: 'Write a review', description: '', acceptanceCriteria: ['Star rating input', 'Text review with photos'], cardType: 'story', priority: 'could-have' } },
+      { id: 'story-2-1-1', type: 'storyCard', position: { x: X_SPACE * 3, y: Y.must }, data: { title: 'Add/remove cart items', description: '', acceptanceCriteria: ['Update quantity', 'Remove item'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-2-2-1', type: 'storyCard', position: { x: X_SPACE * 4, y: Y.must }, data: { title: 'Guest checkout with payment', description: '', acceptanceCriteria: ['Shipping address form', 'Credit card payment'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-2-2-2', type: 'storyCard', position: { x: X_SPACE * 4, y: Y.should }, data: { title: 'Order confirmation email', description: '', acceptanceCriteria: ['Email with order summary', 'Tracking link'], cardType: 'story', priority: 'should-have' } },
+    ],
+    edges: [
+      { id: 'edge-activity-1-step-1-1', source: 'activity-1', target: 'step-1-1' },
+      { id: 'edge-activity-1-step-1-2', source: 'activity-1', target: 'step-1-2' },
+      { id: 'edge-activity-1-step-1-3', source: 'activity-1', target: 'step-1-3' },
+      { id: 'edge-activity-2-step-2-1', source: 'activity-2', target: 'step-2-1' },
+      { id: 'edge-activity-2-step-2-2', source: 'activity-2', target: 'step-2-2' },
+      { id: 'edge-step-1-1-story-1-1-1', source: 'step-1-1', target: 'story-1-1-1' },
+      { id: 'edge-step-1-1-story-1-1-2', source: 'step-1-1', target: 'story-1-1-2' },
+      { id: 'edge-step-1-2-story-1-2-1', source: 'step-1-2', target: 'story-1-2-1' },
+      { id: 'edge-step-1-3-story-1-3-1', source: 'step-1-3', target: 'story-1-3-1' },
+      { id: 'edge-step-1-3-story-1-3-2', source: 'step-1-3', target: 'story-1-3-2' },
+      { id: 'edge-step-2-1-story-2-1-1', source: 'step-2-1', target: 'story-2-1-1' },
+      { id: 'edge-step-2-2-story-2-2-1', source: 'step-2-2', target: 'story-2-2-1' },
+      { id: 'edge-step-2-2-story-2-2-2', source: 'step-2-2', target: 'story-2-2-2' },
+    ],
+    viewport: { x: 100, y: 50, zoom: 0.75 },
+  },
+  {
+    name: 'Blog Platform',
+    description: 'Content creation, publishing, and reader engagement',
+    nodes: [
+      { id: 'activity-1', type: 'activity', position: { x: 0, y: Y.activity }, data: { title: 'Create Content', description: 'Authors write and manage posts', acceptanceCriteria: [], cardType: 'activity', priority: 'must-have' } },
+      { id: 'activity-2', type: 'activity', position: { x: X_SPACE * 2, y: Y.activity }, data: { title: 'Read & Engage', description: 'Readers discover and interact with content', acceptanceCriteria: [], cardType: 'activity', priority: 'must-have' } },
+      { id: 'step-1-1', type: 'step', position: { x: 0, y: Y.step }, data: { title: 'Write Post', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-1-2', type: 'step', position: { x: X_SPACE, y: Y.step }, data: { title: 'Publish', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-2-1', type: 'step', position: { x: X_SPACE * 2, y: Y.step }, data: { title: 'Browse Posts', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-2-2', type: 'step', position: { x: X_SPACE * 3, y: Y.step }, data: { title: 'Interact', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'story-1-1-1', type: 'storyCard', position: { x: 0, y: Y.must }, data: { title: 'Rich text editor', description: 'WYSIWYG editor for blog posts', acceptanceCriteria: ['Formatting toolbar', 'Image embedding', 'Code blocks'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-1-1-2', type: 'storyCard', position: { x: 0, y: Y.should }, data: { title: 'Draft auto-save', description: '', acceptanceCriteria: ['Save every 30 seconds', 'Draft indicator'], cardType: 'story', priority: 'should-have' } },
+      { id: 'story-1-2-1', type: 'storyCard', position: { x: X_SPACE, y: Y.must }, data: { title: 'Publish with tags', description: '', acceptanceCriteria: ['Add/remove tags', 'Publish date picker'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-1-2-2', type: 'storyCard', position: { x: X_SPACE, y: Y.could }, data: { title: 'Schedule future posts', description: '', acceptanceCriteria: ['Date/time picker', 'Scheduled posts list'], cardType: 'story', priority: 'could-have' } },
+      { id: 'story-2-1-1', type: 'storyCard', position: { x: X_SPACE * 2, y: Y.must }, data: { title: 'Homepage feed', description: '', acceptanceCriteria: ['Post cards with excerpts', 'Pagination'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-2-1-2', type: 'storyCard', position: { x: X_SPACE * 2, y: Y.should }, data: { title: 'Search posts', description: '', acceptanceCriteria: ['Full-text search', 'Filter by tag'], cardType: 'story', priority: 'should-have' } },
+      { id: 'story-2-2-1', type: 'storyCard', position: { x: X_SPACE * 3, y: Y.must }, data: { title: 'Comments on posts', description: '', acceptanceCriteria: ['Threaded replies', 'Author highlighting'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-2-2-2', type: 'storyCard', position: { x: X_SPACE * 3, y: Y.should }, data: { title: 'Like/bookmark posts', description: '', acceptanceCriteria: ['Like counter', 'Bookmarks page'], cardType: 'story', priority: 'should-have' } },
+    ],
+    edges: [
+      { id: 'edge-activity-1-step-1-1', source: 'activity-1', target: 'step-1-1' },
+      { id: 'edge-activity-1-step-1-2', source: 'activity-1', target: 'step-1-2' },
+      { id: 'edge-activity-2-step-2-1', source: 'activity-2', target: 'step-2-1' },
+      { id: 'edge-activity-2-step-2-2', source: 'activity-2', target: 'step-2-2' },
+      { id: 'edge-step-1-1-story-1-1-1', source: 'step-1-1', target: 'story-1-1-1' },
+      { id: 'edge-step-1-1-story-1-1-2', source: 'step-1-1', target: 'story-1-1-2' },
+      { id: 'edge-step-1-2-story-1-2-1', source: 'step-1-2', target: 'story-1-2-1' },
+      { id: 'edge-step-1-2-story-1-2-2', source: 'step-1-2', target: 'story-1-2-2' },
+      { id: 'edge-step-2-1-story-2-1-1', source: 'step-2-1', target: 'story-2-1-1' },
+      { id: 'edge-step-2-1-story-2-1-2', source: 'step-2-1', target: 'story-2-1-2' },
+      { id: 'edge-step-2-2-story-2-2-1', source: 'step-2-2', target: 'story-2-2-1' },
+      { id: 'edge-step-2-2-story-2-2-2', source: 'step-2-2', target: 'story-2-2-2' },
+    ],
+    viewport: { x: 100, y: 50, zoom: 0.75 },
+  },
+  {
+    name: 'Task Manager',
+    description: 'Task organization, collaboration, and progress tracking',
+    nodes: [
+      { id: 'activity-1', type: 'activity', position: { x: 0, y: Y.activity }, data: { title: 'Manage Tasks', description: 'Create and organize work items', acceptanceCriteria: [], cardType: 'activity', priority: 'must-have' } },
+      { id: 'activity-2', type: 'activity', position: { x: X_SPACE * 2, y: Y.activity }, data: { title: 'Collaborate', description: 'Team coordination and updates', acceptanceCriteria: [], cardType: 'activity', priority: 'must-have' } },
+      { id: 'step-1-1', type: 'step', position: { x: 0, y: Y.step }, data: { title: 'Create Task', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-1-2', type: 'step', position: { x: X_SPACE, y: Y.step }, data: { title: 'Organize', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-2-1', type: 'step', position: { x: X_SPACE * 2, y: Y.step }, data: { title: 'Assign & Track', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-2-2', type: 'step', position: { x: X_SPACE * 3, y: Y.step }, data: { title: 'Notify', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'story-1-1-1', type: 'storyCard', position: { x: 0, y: Y.must }, data: { title: 'Create task with title and description', description: '', acceptanceCriteria: ['Title field required', 'Rich text description', 'Due date picker'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-1-1-2', type: 'storyCard', position: { x: 0, y: Y.should }, data: { title: 'Subtask checklist', description: '', acceptanceCriteria: ['Add/remove subtasks', 'Progress indicator'], cardType: 'story', priority: 'should-have' } },
+      { id: 'story-1-2-1', type: 'storyCard', position: { x: X_SPACE, y: Y.must }, data: { title: 'Kanban board view', description: '', acceptanceCriteria: ['Drag-and-drop columns', 'Custom column names'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-1-2-2', type: 'storyCard', position: { x: X_SPACE, y: Y.should }, data: { title: 'Labels and priority tags', description: '', acceptanceCriteria: ['Color-coded labels', 'Priority levels'], cardType: 'story', priority: 'should-have' } },
+      { id: 'story-2-1-1', type: 'storyCard', position: { x: X_SPACE * 2, y: Y.must }, data: { title: 'Assign tasks to team members', description: '', acceptanceCriteria: ['Member dropdown', 'Avatar on task card'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-2-1-2', type: 'storyCard', position: { x: X_SPACE * 2, y: Y.could }, data: { title: 'Time tracking', description: '', acceptanceCriteria: ['Start/stop timer', 'Manual time entry'], cardType: 'story', priority: 'could-have' } },
+      { id: 'story-2-2-1', type: 'storyCard', position: { x: X_SPACE * 3, y: Y.must }, data: { title: 'Email notifications', description: '', acceptanceCriteria: ['Assignment notifications', 'Due date reminders'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-2-2-2', type: 'storyCard', position: { x: X_SPACE * 3, y: Y.could }, data: { title: 'Slack integration', description: '', acceptanceCriteria: ['Channel notifications', 'Slash commands'], cardType: 'story', priority: 'could-have' } },
+    ],
+    edges: [
+      { id: 'edge-activity-1-step-1-1', source: 'activity-1', target: 'step-1-1' },
+      { id: 'edge-activity-1-step-1-2', source: 'activity-1', target: 'step-1-2' },
+      { id: 'edge-activity-2-step-2-1', source: 'activity-2', target: 'step-2-1' },
+      { id: 'edge-activity-2-step-2-2', source: 'activity-2', target: 'step-2-2' },
+      { id: 'edge-step-1-1-story-1-1-1', source: 'step-1-1', target: 'story-1-1-1' },
+      { id: 'edge-step-1-1-story-1-1-2', source: 'step-1-1', target: 'story-1-1-2' },
+      { id: 'edge-step-1-2-story-1-2-1', source: 'step-1-2', target: 'story-1-2-1' },
+      { id: 'edge-step-1-2-story-1-2-2', source: 'step-1-2', target: 'story-1-2-2' },
+      { id: 'edge-step-2-1-story-2-1-1', source: 'step-2-1', target: 'story-2-1-1' },
+      { id: 'edge-step-2-1-story-2-1-2', source: 'step-2-1', target: 'story-2-1-2' },
+      { id: 'edge-step-2-2-story-2-2-1', source: 'step-2-2', target: 'story-2-2-1' },
+      { id: 'edge-step-2-2-story-2-2-2', source: 'step-2-2', target: 'story-2-2-2' },
+    ],
+    viewport: { x: 100, y: 50, zoom: 0.75 },
+  },
+  {
+    name: 'Fitness App',
+    description: 'Workout tracking, goals, and social features',
+    nodes: [
+      { id: 'activity-1', type: 'activity', position: { x: 0, y: Y.activity }, data: { title: 'Work Out', description: 'Users perform and log exercises', acceptanceCriteria: [], cardType: 'activity', priority: 'must-have' } },
+      { id: 'activity-2', type: 'activity', position: { x: X_SPACE * 2, y: Y.activity }, data: { title: 'Track Progress', description: 'Goals, stats, and achievements', acceptanceCriteria: [], cardType: 'activity', priority: 'must-have' } },
+      { id: 'step-1-1', type: 'step', position: { x: 0, y: Y.step }, data: { title: 'Choose Workout', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-1-2', type: 'step', position: { x: X_SPACE, y: Y.step }, data: { title: 'Log Exercise', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-2-1', type: 'step', position: { x: X_SPACE * 2, y: Y.step }, data: { title: 'View Stats', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'step-2-2', type: 'step', position: { x: X_SPACE * 3, y: Y.step }, data: { title: 'Set Goals', description: '', acceptanceCriteria: [], cardType: 'step', priority: 'must-have' } },
+      { id: 'story-1-1-1', type: 'storyCard', position: { x: 0, y: Y.must }, data: { title: 'Browse workout library', description: '', acceptanceCriteria: ['Category filters', 'Difficulty levels', 'Duration estimates'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-1-1-2', type: 'storyCard', position: { x: 0, y: Y.should }, data: { title: 'Custom workout builder', description: '', acceptanceCriteria: ['Drag exercises into routine', 'Save as template'], cardType: 'story', priority: 'should-have' } },
+      { id: 'story-1-2-1', type: 'storyCard', position: { x: X_SPACE, y: Y.must }, data: { title: 'Log sets, reps, and weight', description: '', acceptanceCriteria: ['Quick-entry number pad', 'Rest timer between sets'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-1-2-2', type: 'storyCard', position: { x: X_SPACE, y: Y.could }, data: { title: 'GPS run tracking', description: '', acceptanceCriteria: ['Map view of route', 'Pace and distance'], cardType: 'story', priority: 'could-have' } },
+      { id: 'story-2-1-1', type: 'storyCard', position: { x: X_SPACE * 2, y: Y.must }, data: { title: 'Weekly/monthly charts', description: '', acceptanceCriteria: ['Workout frequency graph', 'Volume over time'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-2-1-2', type: 'storyCard', position: { x: X_SPACE * 2, y: Y.should }, data: { title: 'Personal records board', description: '', acceptanceCriteria: ['PR badges', 'History per exercise'], cardType: 'story', priority: 'should-have' } },
+      { id: 'story-2-2-1', type: 'storyCard', position: { x: X_SPACE * 3, y: Y.must }, data: { title: 'Set weekly workout goals', description: '', acceptanceCriteria: ['Target days per week', 'Streak tracking'], cardType: 'story', priority: 'must-have' } },
+      { id: 'story-2-2-2', type: 'storyCard', position: { x: X_SPACE * 3, y: Y.could }, data: { title: 'Social challenges', description: '', acceptanceCriteria: ['Invite friends', 'Leaderboard'], cardType: 'story', priority: 'could-have' } },
+    ],
+    edges: [
+      { id: 'edge-activity-1-step-1-1', source: 'activity-1', target: 'step-1-1' },
+      { id: 'edge-activity-1-step-1-2', source: 'activity-1', target: 'step-1-2' },
+      { id: 'edge-activity-2-step-2-1', source: 'activity-2', target: 'step-2-1' },
+      { id: 'edge-activity-2-step-2-2', source: 'activity-2', target: 'step-2-2' },
+      { id: 'edge-step-1-1-story-1-1-1', source: 'step-1-1', target: 'story-1-1-1' },
+      { id: 'edge-step-1-1-story-1-1-2', source: 'step-1-1', target: 'story-1-1-2' },
+      { id: 'edge-step-1-2-story-1-2-1', source: 'step-1-2', target: 'story-1-2-1' },
+      { id: 'edge-step-1-2-story-1-2-2', source: 'step-1-2', target: 'story-1-2-2' },
+      { id: 'edge-step-2-1-story-2-1-1', source: 'step-2-1', target: 'story-2-1-1' },
+      { id: 'edge-step-2-1-story-2-1-2', source: 'step-2-1', target: 'story-2-1-2' },
+      { id: 'edge-step-2-2-story-2-2-1', source: 'step-2-2', target: 'story-2-2-1' },
+      { id: 'edge-step-2-2-story-2-2-2', source: 'step-2-2', target: 'story-2-2-2' },
+    ],
+    viewport: { x: 100, y: 50, zoom: 0.75 },
+  },
+];

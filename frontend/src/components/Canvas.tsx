@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -33,6 +33,7 @@ import { useNavigate } from 'react-router-dom';
 import type { StoryCardData, CardType } from '../types';
 import { exportToMarkdown } from '../utils/exportToMarkdown';
 import { MODAL_OVERLAY, MODAL_CONTENT } from '../styles/shared';
+import { OnboardingView } from './OnboardingView';
 
 function getNodeTypeForCard(cardType: CardType): string {
   switch (cardType) {
@@ -94,6 +95,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const isReadOnly = projectRole === 'viewer' || isAIEditing;
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
 
   const visibleNodes = useMemo(() => {
     let filtered = nodes;
@@ -157,6 +159,8 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         showAcceptanceCriteria: state.showAcceptanceCriteria,
       });
       if (state.role) setProjectRole(state.role);
+      // Show onboarding for empty projects (not for viewers)
+      setShowOnboarding(state.nodes.length === 0 && state.role !== 'viewer');
     }).catch((err) => {
       if (cancelled) return;
       console.error('Failed to load canvas:', err);
@@ -360,6 +364,67 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
     },
     [projectId, loadCanvas]
   );
+
+  if (showOnboarding === true) {
+    return (
+      <div className="w-full h-full relative">
+        <OnboardingView projectId={projectId} onComplete={() => setShowOnboarding(false)} />
+      </div>
+    );
+  }
+
+  if (showOnboarding === null) {
+    // Still loading — don't render canvas yet to avoid flash before onboarding
+    return (
+      <div className="w-full h-full relative">
+        {isCanvasLoading && (
+          <div className={MODAL_OVERLAY}>
+            <div className={MODAL_CONTENT}>
+              <Loader2 size={32} className="animate-spin text-[#7B2FFF]" />
+              <p className="text-sm font-medium text-[#080810] dark:text-[#F0EEFF]">Loading project...</p>
+            </div>
+          </div>
+        )}
+        {canvasLoadError && (
+          <div className={MODAL_OVERLAY}>
+            <div className={`${MODAL_CONTENT} max-w-sm`}>
+              <AlertTriangle size={32} className="text-amber-500" />
+              <p className="text-sm font-medium text-[#080810] dark:text-[#F0EEFF]">Failed to load project</p>
+              <p className="text-xs text-[#080810]/60 dark:text-[#F0EEFF]/60 text-center">{canvasLoadError}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-4 py-1.5 text-sm font-medium text-[#080810]/70 dark:text-[#F0EEFF]/70 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-150 flex items-center gap-1.5"
+                >
+                  <ArrowLeft size={14} />
+                  Back
+                </button>
+                <button
+                  onClick={() => {
+                    startLoadingProject(projectId);
+                    api.loadCanvas(projectId).then((state) => {
+                      loadCanvas(state.nodes, state.edges, state.viewport, {
+                        showDescriptions: state.showDescriptions,
+                        showAcceptanceCriteria: state.showAcceptanceCriteria,
+                      });
+                      if (state.role) setProjectRole(state.role);
+                      setShowOnboarding(state.nodes.length === 0 && state.role !== 'viewer');
+                    }).catch((err) => {
+                      setCanvasLoadError(err instanceof Error ? err.message : 'Failed to load project');
+                    });
+                  }}
+                  className="px-4 py-1.5 text-sm font-medium text-[#7B2FFF] dark:text-[#C6FF4D] bg-[#7B2FFF]/10 dark:bg-[#C6FF4D]/10 hover:bg-[#7B2FFF]/20 dark:hover:bg-[#C6FF4D]/20 rounded-lg border border-[#7B2FFF]/20 dark:border-[#C6FF4D]/20 transition-colors duration-150 flex items-center gap-1.5"
+                >
+                  <RotateCcw size={14} />
+                  Retry
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full relative">

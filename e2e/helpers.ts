@@ -24,9 +24,19 @@ export async function deleteProject(id: string): Promise<void> {
 
 /**
  * Wait for the canvas to be loaded (React Flow renders).
+ * If the onboarding view appears (empty project), skip it first.
  */
 export async function waitForCanvas(page: Page): Promise<void> {
-  await page.waitForSelector('.react-flow', { timeout: 10000 });
+  // Wait for either the canvas or the onboarding skip button
+  const result = await Promise.race([
+    page.waitForSelector('.react-flow', { timeout: 10000 }).then(() => 'canvas' as const),
+    page.waitForSelector('button:has-text("Skip and start with an empty canvas")', { timeout: 10000 }).then(() => 'onboarding' as const),
+  ]);
+
+  if (result === 'onboarding') {
+    await page.click('button:has-text("Skip and start with an empty canvas")');
+    await page.waitForSelector('.react-flow', { timeout: 10000 });
+  }
 }
 
 /**

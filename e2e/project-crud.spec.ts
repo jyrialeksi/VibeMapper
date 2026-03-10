@@ -36,9 +36,13 @@ test.describe('Project CRUD', () => {
       // Click on the project
       await page.locator('text=Nav Test').first().click();
 
-      // Should show canvas (route is /project/:id)
+      // Should show canvas or onboarding (route is /project/:id)
       await expect(page).toHaveURL(`/project/${projectId}`, { timeout: 5000 });
-      await page.waitForSelector('.react-flow', { timeout: 10000 });
+      // Wait for either canvas or onboarding to load
+      await Promise.race([
+        page.waitForSelector('.react-flow', { timeout: 10000 }),
+        page.waitForSelector('button:has-text("Skip and start with an empty canvas")', { timeout: 10000 }),
+      ]);
 
       // Navigate back via "Projects" button in header
       await page.locator('button:has-text("Projects")').click();
