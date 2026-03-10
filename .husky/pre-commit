@@ -1,0 +1,69 @@
+#!/usr/bin/env sh
+
+# Pre-commit hook: scan staged files for secrets
+# Prevents accidental commit of API keys, private keys, and other sensitive data
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+
+# Filter out test files and example configs
+FILES_TO_SCAN=$(echo "$STAGED_FILES" | grep -v -E '(__tests__|\.test\.|\.spec\.|\.env\.example|CLAUDE\.md|\.husky/pre-commit)')
+
+if [ -z "$FILES_TO_SCAN" ]; then
+  exit 0
+fi
+
+SECRETS_FOUND=0
+
+# Check each file for secret patterns using staged content
+for FILE in $FILES_TO_SCAN; do
+  # Skip if file was deleted
+  [ -f "$FILE" ] || continue
+
+  CONTENT=$(git show ":$FILE" 2>/dev/null) || continue
+
+  # Private keys (PEM format)
+  if printf '%s\n' "$CONTENT" | grep -qE -- 'BEGIN (RSA |EC )?PRIVATE KEY'; then
+    echo "ERROR: Private key found in $FILE"
+    SECRETS_FOUND=1
+  fi
+
+  # Google/Firebase API keys (AIzaSy prefix)
+  if printf '%s\n' "$CONTENT" | grep -qE -- 'AIzaSy[0-9A-Za-z_-]{33}'; then
+    echo "ERROR: Google/Firebase API key found in $FILE"
+    SECRETS_FOUND=1
+  fi
+
+  # Encryption key values (not just the variable name)
+  if printf '%s\n' "$CONTENT" | grep -qE -- 'ENCRYPTION_KEY=[0-9a-fA-F]{16,}'; then
+    echo "ERROR: Encryption key value found in $FILE"
+    SECRETS_FOUND=1
+  fi
+
+  # Real OpenRouter keys (sk-or-v1- followed by long hex string)
+  if printf '%s\n' "$CONTENT" | grep -qE -- 'sk-or-v1-[0-9a-f]{48,}'; then
+    echo "ERROR: OpenRouter API key found in $FILE"
+    SECRETS_FOUND=1
+  fi
+
+  # Service account JSON fields with actual values
+  if printf '%s\n' "$CONTENT" | grep -qE -- '"private_key"[[:space:]]*:[[:space:]]*"'; then
+    echo "ERROR: Service account private key found in $FILE"
+    SECRETS_FOUND=1
+  fi
+
+  if printf '%s\n' "$CONTENT" | grep -qE -- '"private_key_id"[[:space:]]*:[[:space:]]*"[0-9a-f]{40}"'; then
+    echo "ERROR: Service account private_key_id found in $FILE"
+    SECRETS_FOUND=1
+  fi
+done
+
+if [ $SECRETS_FOUND -ne 0 ]; then
+  echo ""
+  echo "Commit blocked: secrets detected in staged files."
+  echo "If this is a false positive, use: git commit --no-verify"
+  exit 1
+fi
