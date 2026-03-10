@@ -7,6 +7,7 @@ import { INPUT_BASE } from '../../styles/shared';
 export function MobileAIButton() {
   const { models, selectedModel, setSelectedModel, loading, error, generate } = useAI();
   const hasNodes = useMapStore((s) => s.nodes.length > 0);
+  const selectedNodeId = useMapStore((s) => s.selectedNodeId);
   const activePanel = useMapStore((s) => s.activePanel);
   const setActivePanel = useMapStore((s) => s.setActivePanel);
   const prompt = useMapStore((s) => s.aiPromptText);
@@ -19,7 +20,7 @@ export function MobileAIButton() {
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
-    generate(prompt);
+    generate(prompt, selectedNodeId);
     setPrompt('');
     setActivePanel('none');
   };
@@ -49,7 +50,7 @@ export function MobileAIButton() {
               <div className="w-10 h-1 bg-[#7A7A9A]/30 rounded-full" />
               <span className="text-sm font-semibold text-[#080810] dark:text-[#F0EEFF] flex items-center gap-1.5">
                 <Sparkles size={15} className="text-[#C6FF4D]" />
-                AI {hasNodes ? 'Edit' : 'Generate'}
+                AI {hasNodes ? (selectedNodeId ? 'Edit Card' : 'Edit') : 'Generate'}
               </span>
               <button
                 onClick={() => setActivePanel('none')}
@@ -80,7 +81,7 @@ export function MobileAIButton() {
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder={hasNodes ? 'Describe changes to your story map...' : 'Describe your product or feature...'}
+              placeholder={hasNodes ? (selectedNodeId ? 'Describe changes to this card...' : 'Describe changes to your story map...') : 'Describe your product or feature...'}
               className={`w-full ${INPUT_BASE} px-3 py-2.5 focus:outline-none placeholder:text-[#7A7A9A] resize-none`}
               rows={3}
               disabled={loading}
@@ -95,13 +96,20 @@ export function MobileAIButton() {
               {loading ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  {hasNodes ? 'Editing...' : 'Generating...'}
+                  {hasNodes ? (selectedNodeId ? 'Editing Card...' : 'Editing...') : 'Generating...'}
                 </>
               ) : hasNodes ? (
-                <>
-                  <Send size={16} />
-                  Edit Map
-                </>
+                selectedNodeId ? (
+                  <>
+                    <Send size={16} />
+                    Edit Card
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} />
+                    Edit Map
+                  </>
+                )
               ) : (
                 <>
                   <Sparkles size={16} />

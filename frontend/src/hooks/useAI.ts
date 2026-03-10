@@ -51,7 +51,7 @@ export function useAI() {
     abortControllerRef.current?.abort();
   }, []);
 
-  const generate = async (prompt: string) => {
+  const generate = async (prompt: string, selectedNodeId?: string | null) => {
     if (!selectedModel || !prompt.trim()) return;
     setLoading(true);
     setError(null);
@@ -74,6 +74,7 @@ export function useAI() {
         isEditMode ? currentNodes : undefined,
         isEditMode ? currentEdges : undefined,
         controller.signal,
+        selectedNodeId,
       );
 
       if (result.mode === 'edit') {

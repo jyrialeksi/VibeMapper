@@ -86,7 +86,7 @@ router.post('/generate', async (req, res) => {
     const apiKey = getUserApiKey(req.user.id);
     if (!apiKey) return res.status(403).json({ error: 'No API key configured. Add your OpenRouter API key on the projects page.' });
 
-    const { prompt, model, projectId, existingNodes, existingEdges } = req.body;
+    const { prompt, model, projectId, existingNodes, existingEdges, selectedNodeId } = req.body;
     if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
     if (!model) return res.status(400).json({ error: 'Model is required' });
 
@@ -103,9 +103,33 @@ router.post('/generate', async (req, res) => {
     let result;
     if (isEditMode) {
       const compactState = buildCompactState(existingNodes, existingEdges || []);
+
+      let userContent;
+      if (selectedNodeId) {
+        const selectedNode = existingNodes.find(n => n.id === selectedNodeId);
+        if (selectedNode) {
+          const edgesArr = existingEdges || [];
+          const parentEdge = edgesArr.find(e => e.target === selectedNodeId);
+          const childEdges = edgesArr.filter(e => e.source === selectedNodeId);
+          const parentId = parentEdge ? parentEdge.source : 'none';
+          const childIds = childEdges.map(e => e.target);
+
+          const focusBlock = `FOCUS: The user has selected node "${selectedNodeId}" (${selectedNode.type}: "${selectedNode.data?.title || ''}").
+Direct children: [${childIds.join(', ')}]. Parent: [${parentId}].
+Focus your edits on this card. Only modify other nodes if explicitly requested.
+
+USER REQUEST: ${prompt}`;
+          userContent = `${compactState}\n\n${focusBlock}`;
+        } else {
+          userContent = `${compactState}\n\nUSER REQUEST: ${prompt}`;
+        }
+      } else {
+        userContent = `${compactState}\n\nUSER REQUEST: ${prompt}`;
+      }
+
       messages = [
         { role: 'system', content: EDIT_SYSTEM_PROMPT },
-        { role: 'user', content: `${compactState}\n\nUSER REQUEST: ${prompt}` },
+        { role: 'user', content: userContent },
       ];
       result = await chatCompletion(apiKey, model, messages, { temperature: 0.4 });
     } else {
