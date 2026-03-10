@@ -15,7 +15,7 @@
     "test": "npm run test --workspaces",
     "test:e2e": "npx playwright test",
     "test:all": "npm run test && npm run test:e2e",
-    "prepare": "node -e \"try{require('husky')}catch(e){process.exit(0)}\" && husky"
+    "prepare": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type=module"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
