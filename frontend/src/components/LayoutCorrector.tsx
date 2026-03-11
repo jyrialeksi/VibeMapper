@@ -279,7 +279,7 @@ function fullArrange(
  * corrections using measured DOM heights from React Flow's nodeLookup.
  */
 export function LayoutCorrector() {
-  const pendingLayout = useMapStore((s) => s.pendingLayout);
+  const layoutTrigger = useMapStore((s) => s.layoutTrigger);
   const setPendingLayout = useMapStore((s) => s.setPendingLayout);
   const showDescriptions = useMapStore((s) => s.showDescriptions);
   const showAcceptanceCriteria = useMapStore((s) => s.showAcceptanceCriteria);
@@ -287,7 +287,6 @@ export function LayoutCorrector() {
   const nodeLookup = useStore(nodeLookupSelector);
   const nodeLookupRef = useRef(nodeLookup);
   nodeLookupRef.current = nodeLookup;
-  const actionRef = useRef<string | null>(null);
   const initialVisibilityRef = useRef({ showDescriptions, showAcceptanceCriteria });
   const suppressVisibilityArrangeRef = useRef(false);
   const lastProjectIdRef = useRef(projectId);
@@ -299,39 +298,35 @@ export function LayoutCorrector() {
     suppressVisibilityArrangeRef.current = true;
   }
 
-  // Capture the action in a ref, then clear the store flag
-  if (pendingLayout !== 'none' && actionRef.current === null) {
-    actionRef.current = pendingLayout;
-    console.log('[LayoutCorrector] captured action:', pendingLayout);
-    setPendingLayout('none');
-  }
-
+  // Layout trigger effect — fires when any action sets pendingLayout + increments layoutTrigger.
+  // Uses a proper dependency array to avoid the race condition where a no-dep-array
+  // effect's cleanup cancels the timeout on unrelated re-renders.
   useEffect(() => {
-    const action = actionRef.current;
-    if (!action) return;
-    actionRef.current = null;
+    const action = useMapStore.getState().pendingLayout;
+    if (action === 'none') return;
 
-    console.log('[LayoutCorrector] scheduling', action, 'with 80ms timeout');
+    const rfEl = document.querySelector('.react-flow');
+    rfEl?.classList.add('layout-animating');
 
     const timer = setTimeout(() => {
+      setPendingLayout('none');
       const lookup = nodeLookupRef.current;
       const { nodes, edges } = useMapStore.getState();
-      console.log('[LayoutCorrector] timeout fired for', action, '- nodes:', nodes.length, 'edges:', edges.length, 'lookup size:', lookup.size);
-
-      for (const node of nodes) {
-        const entry = lookup.get(node.id);
-        console.log(`  [node] ${node.id} (${node.type}) measured:`, entry?.measured?.width, 'x', entry?.measured?.height, 'pos:', node.position.x, node.position.y);
-      }
 
       if (action === 'fullArrange') {
         fullArrange(nodes, edges, lookup);
       } else {
         correctOverlap(nodes, lookup);
       }
-    }, 80);
 
-    return () => clearTimeout(timer);
-  });
+      setTimeout(() => rfEl?.classList.remove('layout-animating'), 300);
+    }, 220);
+
+    return () => {
+      clearTimeout(timer);
+      rfEl?.classList.remove('layout-animating');
+    };
+  }, [layoutTrigger, setPendingLayout]);
 
   // Watch visibility changes and trigger a two-phase animated rearrange:
   //   Phase 1: Card content collapses/expands via CSS grid-template-rows (200ms)
