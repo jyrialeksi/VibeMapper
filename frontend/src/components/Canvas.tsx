@@ -464,8 +464,8 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         {/* NodeContextBar must be inside ReactFlow for useReactFlow() */}
         {!isMobile && selectedNodeId && !isVersionPanelOpen && !isAIEditing && activePanel !== 'cardEditor' && activePanel !== 'comments' && <NodeContextBar />}
         {isMobile && selectedNodeId && !mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && activePanel !== 'comments' && <NodeContextBar />}
+        {!isMobile && <CardCursorOutline />}
       </ReactFlow>
-      {!isMobile && <CardCursorOutline />}
       {isAIEditing && (
         <div className={MODAL_OVERLAY}>
           <div className={MODAL_CONTENT}>

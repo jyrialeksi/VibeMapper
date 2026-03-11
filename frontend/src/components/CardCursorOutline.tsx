@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useViewport } from '@xyflow/react';
 import { useMapStore } from '../store/useMapStore';
 import type { CardType } from '../types';
 
@@ -32,11 +33,10 @@ const CARD_STYLES: Record<CardType, CardStyle> = {
   story: {
     width: 260,
     height: 56,
-    borderColor: '#FF3CAC',
-    bgColor: 'rgba(255, 60, 172, 0.08)',
+    borderColor: '#888888',
+    bgColor: 'rgba(136, 136, 136, 0.08)',
     borderStyle: 'solid',
-    label: 'Story Card',
-    barColor: '#FF3CAC',
+    label: 'Card',
   },
   annotation: {
     width: 200,
@@ -51,6 +51,7 @@ const CARD_STYLES: Record<CardType, CardStyle> = {
 export function CardCursorOutline() {
   const toolMode = useMapStore((s) => s.toolMode);
   const cardTypeToAdd = useMapStore((s) => s.cardTypeToAdd);
+  const { zoom } = useViewport();
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -85,6 +86,8 @@ export function CardCursorOutline() {
   if (toolMode !== 'addCard' || !mousePos) return null;
 
   const style = CARD_STYLES[cardTypeToAdd] || CARD_STYLES.story;
+  const w = style.width * zoom;
+  const h = style.height * zoom;
 
   return (
     <div
@@ -92,10 +95,10 @@ export function CardCursorOutline() {
         position: 'absolute',
         left: mousePos.x,
         top: mousePos.y,
-        width: style.width,
-        height: style.height,
+        width: w,
+        height: h,
         border: `2px ${style.borderStyle} ${style.borderColor}`,
-        borderRadius: 8,
+        borderRadius: 8 * zoom,
         backgroundColor: style.bgColor,
         opacity: 0.7,
         pointerEvents: 'none',
@@ -104,13 +107,13 @@ export function CardCursorOutline() {
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: style.barColor
-          ? `inset 6px 0 0 0 ${style.barColor}`
+          ? `inset ${6 * zoom}px 0 0 0 ${style.barColor}`
           : undefined,
       }}
     >
       <span
         style={{
-          fontSize: 12,
+          fontSize: 12 * zoom,
           fontWeight: 500,
           color: style.borderColor,
           opacity: 0.9,
