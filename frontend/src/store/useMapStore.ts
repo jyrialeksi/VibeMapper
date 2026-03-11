@@ -11,6 +11,7 @@ import {
   addEdge,
 } from '@xyflow/react';
 import type { StoryCardData, ToolMode, CardType, Priority, EditOperation, HighlightType } from '../types';
+import { getNodeTypeForCard } from '../utils/nodeHelpers';
 
 interface Snapshot {
   nodes: Node<StoryCardData>[];
@@ -246,9 +247,14 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   updateNodeData: (id, data) => {
     set({
-      nodes: get().nodes.map((n) =>
-        n.id === id ? { ...n, data: { ...n.data, ...data } } : n
-      ),
+      nodes: get().nodes.map((n) => {
+        if (n.id !== id) return n;
+        const updated = { ...n, data: { ...n.data, ...data } };
+        if (data.cardType) {
+          updated.type = getNodeTypeForCard(data.cardType);
+        }
+        return updated;
+      }),
       isDirty: true,
     });
   },

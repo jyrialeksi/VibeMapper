@@ -33,17 +33,9 @@ import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useNavigate } from 'react-router-dom';
 import type { StoryCardData, CardType } from '../types';
 import { exportToMarkdown } from '../utils/exportToMarkdown';
+import { getNodeTypeForCard } from '../utils/nodeHelpers';
 import { MODAL_OVERLAY, MODAL_CONTENT } from '../styles/shared';
 import { OnboardingView } from './OnboardingView';
-
-function getNodeTypeForCard(cardType: CardType): string {
-  switch (cardType) {
-    case 'activity': return 'activity';
-    case 'step': return 'step';
-    case 'annotation': return 'annotation';
-    default: return 'storyCard';
-  }
-}
 
 function createDefaultData(cardType: CardType): StoryCardData {
   return {
