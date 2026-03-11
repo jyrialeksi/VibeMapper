@@ -159,14 +159,16 @@ describe('Store actions', () => {
     expect(useMapStore.getState().canUndo).toBe(true);
   });
 
-  it('arrangeLocal sets pendingLayout and pushes snapshot', () => {
+  it('arrangeLocal sets pendingLayout, increments layoutTrigger, and pushes snapshot', () => {
     useMapStore.setState({
       nodes: [makeNode('a1', 0, 0, 'activity'), makeNode('s1', 0, 200, 'step')],
       edges: [makeEdge('e1', 'a1', 's1')],
     });
 
+    const triggerBefore = useMapStore.getState().layoutTrigger;
     useMapStore.getState().arrangeLocal();
     expect(useMapStore.getState().pendingLayout).toBe('fullArrange');
+    expect(useMapStore.getState().layoutTrigger).toBe(triggerBefore + 1);
     expect(useMapStore.getState().canUndo).toBe(true);
   });
 

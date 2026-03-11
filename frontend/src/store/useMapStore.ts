@@ -43,6 +43,7 @@ interface MapState {
 
   // Layout correction
   pendingLayout: PendingLayout;
+  layoutTrigger: number;
 
   // Priority filter state
   hiddenPriorities: Set<Priority>;
@@ -172,6 +173,7 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   // Layout correction
   pendingLayout: 'none',
+  layoutTrigger: 0,
 
   // Priority filter state
   hiddenPriorities: new Set<Priority>(),
@@ -326,27 +328,29 @@ export const useMapStore = create<MapState>((set, get) => ({
       highlights.set(n.id, 'added');
     }
 
-    set({
+    set((s) => ({
       nodes: [...existing, ...offsetNodes],
       edges: [...existingEdges, ...newEdges],
       isDirty: true,
-      pendingLayout: 'correctOverlap',
+      pendingLayout: 'correctOverlap' as PendingLayout,
+      layoutTrigger: s.layoutTrigger + 1,
       highlightedNodes: highlights,
       lastAIEditNodeIds: new Set(highlights.keys()),
       showLastAIEdit: false,
-    });
+    }));
   },
 
   applyArrangement: (positions) => {
     get().pushSnapshot();
-    set({
+    set((s) => ({
       nodes: get().nodes.map((n) => {
         const pos = positions.find((p) => p.id === n.id);
         return pos ? { ...n, position: pos.position } : n;
       }),
       isDirty: true,
-      pendingLayout: 'correctOverlap',
-    });
+      pendingLayout: 'correctOverlap' as PendingLayout,
+      layoutTrigger: s.layoutTrigger + 1,
+    }));
   },
 
   applyOperations: (operations) => {
@@ -411,24 +415,22 @@ export const useMapStore = create<MapState>((set, get) => ({
     const needsLayout = operations.some(
       (op) => op.type === 'add_node' || op.type === 'move_node'
     );
-    set({
+    set((s) => ({
       nodes,
       edges,
       isDirty: true,
       highlightedNodes: highlights,
       lastAIEditNodeIds: new Set(highlights.keys()),
       showLastAIEdit: false,
-      ...(needsLayout && { pendingLayout: 'correctOverlap' as PendingLayout }),
-    });
+      ...(needsLayout && { pendingLayout: 'correctOverlap' as PendingLayout, layoutTrigger: s.layoutTrigger + 1 }),
+    }));
   },
 
   arrangeLocal: () => {
-    const { nodes, pendingLayout } = get();
-    console.log('[arrangeLocal] called, nodes:', nodes.length, 'current pendingLayout:', pendingLayout);
+    const { nodes } = get();
     if (nodes.length === 0) return;
     get().pushSnapshot();
-    set({ pendingLayout: 'fullArrange' });
-    console.log('[arrangeLocal] set pendingLayout to fullArrange, new state:', get().pendingLayout);
+    set((s) => ({ pendingLayout: 'fullArrange' as PendingLayout, layoutTrigger: s.layoutTrigger + 1 }));
   },
 
   // Undo/redo actions
