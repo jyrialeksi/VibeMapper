@@ -88,6 +88,11 @@ html, body, #root {
   transition: opacity 0.3s ease;
 }
 
+/* Crosshair cursor when add-card tool is active */
+.add-card-mode .react-flow__pane {
+  cursor: crosshair;
+}
+
 /* Smooth node position transitions during visibility-triggered rearrange */
 .layout-animating .react-flow__node {
   transition: transform 250ms ease-out !important;

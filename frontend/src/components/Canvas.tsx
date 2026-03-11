@@ -28,6 +28,7 @@ import { MobileCommentsPanel } from './panels/MobileCommentsPanel';
 import { VersionHistoryPanel } from './panels/VersionHistoryPanel';
 import { LayoutCorrector } from './LayoutCorrector';
 import { HighlightClearer } from './HighlightClearer';
+import { CardCursorOutline } from './CardCursorOutline';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useNavigate } from 'react-router-dom';
 import type { StoryCardData, CardType } from '../types';
@@ -427,7 +428,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
   }
 
   return (
-    <div className="w-full h-full relative">
+    <div className={`w-full h-full relative${toolMode === 'addCard' ? ' add-card-mode' : ''}`}>
       {isMobile ? (
         <MobileToolbar onImport={handleImport} onExport={handleExport} onExportMarkdown={handleExportMarkdown} onDeleteProject={onDeleteProject} />
       ) : (
@@ -464,6 +465,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         {!isMobile && selectedNodeId && !isVersionPanelOpen && !isAIEditing && activePanel !== 'cardEditor' && activePanel !== 'comments' && <NodeContextBar />}
         {isMobile && selectedNodeId && !mobileEditingNodeId && !isVersionPanelOpen && !isAIEditing && activePanel !== 'comments' && <NodeContextBar />}
       </ReactFlow>
+      {!isMobile && <CardCursorOutline />}
       {isAIEditing && (
         <div className={MODAL_OVERLAY}>
           <div className={MODAL_CONTENT}>
