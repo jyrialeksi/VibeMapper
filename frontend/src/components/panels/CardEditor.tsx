@@ -74,7 +74,7 @@ export function CardEditor() {
         />
 
         {/* Priority */}
-        {data.cardType !== 'annotation' && (
+        {data.cardType === 'story' && (
           <>
             <label className={FORM_LABEL}>Priority</label>
             <select

@@ -172,6 +172,39 @@ describe('Store actions', () => {
     expect(useMapStore.getState().canUndo).toBe(true);
   });
 
+  it('updateNodeData changes node type when cardType changes', () => {
+    useMapStore.setState({ nodes: [makeNode('n1', 0, 0, 'story')] });
+    expect(useMapStore.getState().nodes[0].type).toBe('storyCard');
+
+    useMapStore.getState().updateNodeData('n1', { cardType: 'activity' });
+    const updated = useMapStore.getState().nodes.find(n => n.id === 'n1');
+    expect(updated?.type).toBe('activity');
+    expect(updated?.data.cardType).toBe('activity');
+  });
+
+  it('updateNodeData changes node type for all card types', () => {
+    useMapStore.setState({ nodes: [makeNode('n1', 0, 0, 'activity')] });
+    expect(useMapStore.getState().nodes[0].type).toBe('activity');
+
+    // activity -> step
+    useMapStore.getState().updateNodeData('n1', { cardType: 'step' });
+    expect(useMapStore.getState().nodes[0].type).toBe('step');
+
+    // step -> story
+    useMapStore.getState().updateNodeData('n1', { cardType: 'story' });
+    expect(useMapStore.getState().nodes[0].type).toBe('storyCard');
+
+    // story -> annotation
+    useMapStore.getState().updateNodeData('n1', { cardType: 'annotation' });
+    expect(useMapStore.getState().nodes[0].type).toBe('annotation');
+  });
+
+  it('updateNodeData does not change node type when cardType is not in update', () => {
+    useMapStore.setState({ nodes: [makeNode('n1', 0, 0, 'story')] });
+    useMapStore.getState().updateNodeData('n1', { title: 'New Title' });
+    expect(useMapStore.getState().nodes[0].type).toBe('storyCard');
+  });
+
   it('setSelectedNodeId updates selection', () => {
     useMapStore.setState({ nodes: [makeNode('n1')] });
     useMapStore.getState().setSelectedNodeId('n1');

@@ -100,6 +100,67 @@ test.describe('Card editing', () => {
     expect(await page.locator('.react-flow__node').count()).toBe(0);
   });
 
+  test('change card type updates node rendering', async ({ page }) => {
+    await seedNodes(projectId, [
+      { id: 'story-1-1-1', type: 'storyCard', position: { x: 200, y: 400 }, data: { title: 'My Story', description: '', acceptanceCriteria: [], cardType: 'story', priority: 'must-have' } },
+    ]);
+
+    await page.goto(`/project/${projectId}`);
+    await waitForCanvas(page);
+    await page.waitForTimeout(500);
+
+    // Verify it renders as a storyCard node
+    await expect(page.locator('[data-testid="rf__node-story-1-1-1"]')).toHaveClass(/storyCard/);
+
+    // Double-click to open editor
+    await page.locator('.react-flow__node').first().dblclick();
+    await page.waitForTimeout(300);
+    await expect(page.locator('h3:has-text("Edit Card")')).toBeVisible({ timeout: 3000 });
+
+    // Change card type to activity
+    const cardTypeSelect = page.locator('label:has-text("Card Type") + select');
+    await cardTypeSelect.selectOption('activity');
+    await page.waitForTimeout(500);
+
+    // Node should now render as activity type
+    await expect(page.locator('[data-testid="rf__node-story-1-1-1"]')).toHaveClass(/activity/);
+  });
+
+  test('priority selector only shows for story cards', async ({ page }) => {
+    await seedNodes(projectId, [
+      { id: 'story-1-1-1', type: 'storyCard', position: { x: 200, y: 400 }, data: { title: 'My Story', description: '', acceptanceCriteria: [], cardType: 'story', priority: 'must-have' } },
+    ]);
+
+    await page.goto(`/project/${projectId}`);
+    await waitForCanvas(page);
+    await page.waitForTimeout(500);
+
+    // Double-click to open editor
+    await page.locator('.react-flow__node').first().dblclick();
+    await page.waitForTimeout(300);
+
+    // Priority should be visible for story
+    await expect(page.locator('label:has-text("Priority")')).toBeVisible();
+
+    // Change to activity
+    const cardTypeSelect = page.locator('label:has-text("Card Type") + select');
+    await cardTypeSelect.selectOption('activity');
+    await page.waitForTimeout(300);
+
+    // Priority should be hidden for activity
+    await expect(page.locator('label:has-text("Priority")')).toBeHidden();
+
+    // Change to step
+    await cardTypeSelect.selectOption('step');
+    await page.waitForTimeout(300);
+    await expect(page.locator('label:has-text("Priority")')).toBeHidden();
+
+    // Change back to story
+    await cardTypeSelect.selectOption('story');
+    await page.waitForTimeout(300);
+    await expect(page.locator('label:has-text("Priority")')).toBeVisible();
+  });
+
   test('add multiple card types via toolbar', async ({ page }) => {
     await page.goto(`/project/${projectId}`);
     await waitForCanvas(page);
