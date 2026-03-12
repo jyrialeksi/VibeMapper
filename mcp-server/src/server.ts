@@ -10,7 +10,7 @@ import { registerResources } from './resources/index.js';
 
 export function createMcpServer(apiClient: ApiClient): McpServer {
   const server = new McpServer({
-    name: 'user-story-mapper',
+    name: 'vibemapper',
     version: '1.0.0',
   });
 
