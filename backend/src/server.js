@@ -111,7 +111,12 @@ app.use(cors({
   origin: isProd ? false : 'http://localhost:5173',
   credentials: true,
 }));
-app.use(express.json({ limit: '2mb' }));
+// Skip body parsing for /mcp — the MCP SDK's StreamableHTTPServerTransport
+// needs the raw request stream; express.json() consumes it, causing 500 errors.
+app.use((req, res, next) => {
+  if (req.path.startsWith('/mcp')) return next();
+  express.json({ limit: '2mb' })(req, res, next);
+});
 
 // Rate limiters — disabled in dev mode to avoid issues with tests and HMR
 const noopLimiter = (_req, _res, next) => next();

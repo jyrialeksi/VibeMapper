@@ -22,6 +22,11 @@ const MCP_TOOLS = [
   { group: 'Status', tools: [
     { name: 'update_card_status', desc: 'Set status on story cards' },
   ]},
+  { group: 'Comments', tools: [
+    { name: 'list_comments', desc: 'List discussion comments on a card' },
+    { name: 'add_comment', desc: 'Add a comment to a card' },
+    { name: 'resolve_comments', desc: 'Resolve all comments on a card' },
+  ]},
   { group: 'High-level', tools: [
     { name: 'create_story_map', desc: 'Create project with full story map' },
   ]},
