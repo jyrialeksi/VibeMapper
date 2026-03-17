@@ -20,11 +20,13 @@ export function MobileAIButton() {
   const paidModels = models.filter(m => !m.isFree);
   const freeModels = models.filter(m => m.isFree);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!prompt.trim()) return;
-    generate(prompt, selectedNodeId);
-    setPrompt('');
-    setActivePanel('none');
+    const success = await generate(prompt, selectedNodeId);
+    if (success) {
+      setPrompt('');
+      setActivePanel('none');
+    }
   };
 
   return (
