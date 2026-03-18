@@ -172,9 +172,16 @@ Generate an MCP API token from the app's Settings page.
 # Build
 docker build -t vibemapper .
 
-# Run
+# Generate a fixed encryption key (do this once and keep it)
+openssl rand -hex 32
+```
+
+> **Important:** Use a fixed `ENCRYPTION_KEY` — don't regenerate it on every run. The key is used to encrypt your OpenRouter API key stored in the database. If the key changes, any saved API key becomes unreadable and you'll need to re-enter it in Settings.
+
+```bash
+# Run (replace <your-fixed-key> with the key you generated above)
 docker run -p 3001:3001 \
-  -e ENCRYPTION_KEY=$(openssl rand -hex 32) \
+  -e ENCRYPTION_KEY=<your-fixed-key> \
   -v usm-data:/app/backend/data \
   vibemapper
 ```
