@@ -103,6 +103,10 @@ describe('Canvas API endpoints', () => {
 
     vi.resetModules();
     vi.doMock('../db/database.js', () => ({ default: db }));
+    vi.doMock('../sse/connections.js', () => ({
+      addClient: vi.fn(),
+      broadcast: vi.fn(),
+    }));
 
     const canvasModule = await import('../routes/canvas.js');
 
@@ -259,6 +263,47 @@ describe('Canvas API endpoints', () => {
       .send({ label: 'test' });
 
     expect(res.status).toBe(404);
+  });
+
+  // --- SSE broadcast tests ---
+
+  it('PUT /:projectId broadcasts canvas_update for MCP saves (no excludeUserId)', async () => {
+    const { broadcast } = await import('../sse/connections.js');
+
+    await request(app)
+      .put('/api/canvas/proj-1')
+      .set('X-Source', 'mcp')
+      .send({
+        nodes: [{ id: 'n1' }],
+        edges: [],
+        viewport: { x: 0, y: 0, zoom: 1 },
+      });
+
+    expect(broadcast).toHaveBeenCalledWith('proj-1', 'canvas_update', { reason: 'external_update' }, undefined);
+  });
+
+  it('PUT /:projectId broadcasts canvas_update with excludeUserId for normal saves', async () => {
+    const { broadcast } = await import('../sse/connections.js');
+
+    await request(app)
+      .put('/api/canvas/proj-1')
+      .send({
+        nodes: [{ id: 'n1' }],
+        edges: [],
+        viewport: { x: 0, y: 0, zoom: 1 },
+      });
+
+    expect(broadcast).toHaveBeenCalledWith('proj-1', 'canvas_update', { reason: 'external_update' }, 'test-user');
+  });
+
+  it('PUT /:projectId does not broadcast for non-existent project', async () => {
+    const { broadcast } = await import('../sse/connections.js');
+
+    await request(app)
+      .put('/api/canvas/nonexistent')
+      .send({ nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } });
+
+    expect(broadcast).not.toHaveBeenCalled();
   });
 
   // --- Input validation tests ---

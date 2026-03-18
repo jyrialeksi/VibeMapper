@@ -136,6 +136,14 @@ describe('Store actions', () => {
     expect(useMapStore.getState().isDirty).toBe(false);
   });
 
+  it('loadCanvas sets isDirty false (prevents auto-save overwrite)', () => {
+    useMapStore.setState({ isDirty: true });
+    useMapStore.getState().loadCanvas(
+      [makeNode('n1')], [], { x: 0, y: 0, zoom: 1 }
+    );
+    expect(useMapStore.getState().isDirty).toBe(false);
+  });
+
   it('loadCanvas applies visibility settings', () => {
     useMapStore.getState().loadCanvas(
       [], [], { x: 0, y: 0, zoom: 1 },

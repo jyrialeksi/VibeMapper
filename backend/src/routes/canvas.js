@@ -144,6 +144,10 @@ router.put('/:projectId', requireProjectAccess('editor'), (req, res) => {
 
   const version = saveTransaction();
 
+  // Broadcast canvas_update so connected frontends can reload
+  const isMcpSource = req.headers['x-source'] === 'mcp';
+  broadcast(projectId, 'canvas_update', { reason: 'external_update' }, isMcpSource ? undefined : req.user.id);
+
   res.json({ success: true, version });
 });
 

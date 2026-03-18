@@ -52,6 +52,17 @@ describe('SSE connections', () => {
     expect(res.write).not.toHaveBeenCalled();
   });
 
+  it('broadcast without excludeUserId sends to all clients', () => {
+    const res1 = mockRes();
+    const res2 = mockRes();
+    addClient('proj-1', 'user-1', res1);
+    addClient('proj-1', 'user-2', res2);
+
+    broadcast('proj-1', 'canvas_update', { reason: 'external_update' });
+    expect(res1.write).toHaveBeenCalledWith(expect.stringContaining('event: canvas_update'));
+    expect(res2.write).toHaveBeenCalledWith(expect.stringContaining('event: canvas_update'));
+  });
+
   it('broadcast to nonexistent project is no-op', () => {
     // Should not throw
     broadcast('nonexistent', 'test', {});

@@ -213,6 +213,18 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
         } catch { /* ignore */ }
       });
 
+      es.addEventListener('canvas_update', () => {
+        // External change (e.g. MCP) — reload canvas from server
+        api.loadCanvas(projectId).then((state) => {
+          loadCanvas(state.nodes, state.edges, state.viewport, {
+            showDescriptions: state.showDescriptions,
+            showAcceptanceCriteria: state.showAcceptanceCriteria,
+          });
+        }).catch((err) => {
+          console.error('Failed to reload canvas after external update:', err);
+        });
+      });
+
       es.onerror = () => {
         // EventSource auto-reconnects; no action needed
       };
@@ -224,7 +236,7 @@ export function Canvas({ projectId, onDeleteProject }: CanvasProps) {
       cancelled = true;
       es?.close();
     };
-  }, [projectId, getToken, applyVisibility, incrementCommentCount, decrementCommentCount, setCommentCount]);
+  }, [projectId, getToken, applyVisibility, incrementCommentCount, decrementCommentCount, setCommentCount, loadCanvas]);
 
   const handlePaneClick = useCallback(
     (event: React.MouseEvent) => {

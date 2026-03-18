@@ -7,7 +7,7 @@ export interface ApiClient {
 
 export function createApiClient(baseUrl: string, token: string): ApiClient {
   async function request(method: string, path: string, body?: unknown): Promise<unknown> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', 'X-Source': 'mcp' };
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
