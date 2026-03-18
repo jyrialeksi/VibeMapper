@@ -1,12 +1,59 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
-import type { CanvasState } from '../utils/schemas.js';
+import type { CanvasState, CanvasNode, CanvasEdge } from '../utils/schemas.js';
+
+export interface FilterResult {
+  nodes: CanvasNode[];
+  edges: CanvasEdge[];
+  totalStories: number;
+  filteredStories: number;
+  filterDescription: string | null;
+}
+
+export function filterCanvas(
+  nodes: CanvasNode[],
+  edges: CanvasEdge[],
+  priorityFilter?: string[],
+  statusFilter?: string[]
+): FilterResult {
+  const totalStories = nodes.filter(n => n.data.cardType === 'story').length;
+
+  if (!priorityFilter && !statusFilter) {
+    return { nodes, edges, totalStories, filteredStories: totalStories, filterDescription: null };
+  }
+
+  const removedNodeIds = new Set<string>();
+  const filteredNodes = nodes.filter(n => {
+    if (n.data.cardType !== 'story') return true;
+    const priority = (n.data.priority as string) || 'must-have';
+    const status = (n.data.status as string) || 'not-started';
+    const matchesPriority = !priorityFilter || priorityFilter.includes(priority);
+    const matchesStatus = !statusFilter || statusFilter.includes(status);
+    const keep = matchesPriority && matchesStatus;
+    if (!keep) removedNodeIds.add(n.id);
+    return keep;
+  });
+
+  const filteredEdges = edges.filter(e =>
+    !removedNodeIds.has(e.source) && !removedNodeIds.has(e.target)
+  );
+
+  const filteredStories = filteredNodes.filter(n => n.data.cardType === 'story').length;
+
+  const parts: string[] = [];
+  if (priorityFilter) parts.push(`priority=${priorityFilter.join(',')}`);
+  if (statusFilter) parts.push(`status=${statusFilter.join(',')}`);
+  const filterDescription = parts.join(', ');
+
+  return { nodes: filteredNodes, edges: filteredEdges, totalStories, filteredStories, filterDescription };
+}
 
 function formatMapAsText(
   canvas: CanvasState,
   commentCounts?: Record<string, number>,
-  allComments?: Record<string, Array<{ content: string; user_name: string; created_at: string; is_system_message: number; resolved_at: string | null }>> | null
+  allComments?: Record<string, Array<{ content: string; user_name: string; created_at: string; is_system_message: number; resolved_at: string | null }>> | null,
+  filterInfo?: { totalStories: number; filteredStories: number; filterDescription: string | null }
 ): string {
   const { nodes, edges } = canvas;
 
@@ -22,7 +69,11 @@ function formatMapAsText(
   }
 
   const lines: string[] = [];
-  lines.push(`Story Map: ${activities.length} activities, ${steps.length} steps, ${stories.length} stories\n`);
+  if (filterInfo?.filterDescription) {
+    lines.push(`Story Map: ${activities.length} activities, ${steps.length} steps, ${filterInfo.filteredStories}/${filterInfo.totalStories} stories (filtered: ${filterInfo.filterDescription})\n`);
+  } else {
+    lines.push(`Story Map: ${activities.length} activities, ${steps.length} steps, ${stories.length} stories\n`);
+  }
 
   for (const act of activities) {
     lines.push(`## [${act.id}] ${act.data.title as string}`);
@@ -80,9 +131,22 @@ export function registerCanvasTools(server: McpServer, api: ApiClient) {
       project_id: z.string(),
       include_json: z.boolean().optional().describe('Include raw JSON nodes/edges (default: false)'),
       include_comments: z.boolean().optional().describe('Include full comment threads (default: false)'),
+      priority: z.array(z.enum(['must-have', 'should-have', 'could-have', 'wont-have']))
+        .optional()
+        .describe('Filter stories by priority. Only stories with these priorities are shown. If omitted, all priorities are included.'),
+      status: z.array(z.enum(['not-started', 'in-progress', 'blocked', 'testing', 'done']))
+        .optional()
+        .describe('Filter stories by status. Only stories with these statuses are shown. If omitted, all statuses are included. Stories without a status are treated as "not-started".'),
     },
     async (args: Record<string, unknown>) => {
       const canvas = (await api.get(`/api/canvas/${args.project_id}`)) as CanvasState;
+
+      // Apply priority/status filters
+      const priorityFilter = args.priority as string[] | undefined;
+      const statusFilter = args.status as string[] | undefined;
+      const filtered = filterCanvas(canvas.nodes, canvas.edges, priorityFilter, statusFilter);
+      canvas.nodes = filtered.nodes;
+      canvas.edges = filtered.edges;
 
       // Fetch comment counts
       const commentCounts = (await api.get(`/api/projects/${args.project_id}/comment-counts`)) as Record<string, number>;
@@ -93,7 +157,13 @@ export function registerCanvasTools(server: McpServer, api: ApiClient) {
         allComments = (await api.get(`/api/projects/${args.project_id}/comments`)) as typeof allComments;
       }
 
-      const text = formatMapAsText(canvas, commentCounts, allComments);
+      const filterInfo = filtered.filterDescription ? {
+        totalStories: filtered.totalStories,
+        filteredStories: filtered.filteredStories,
+        filterDescription: filtered.filterDescription,
+      } : undefined;
+
+      const text = formatMapAsText(canvas, commentCounts, allComments, filterInfo);
       const content: Array<{ type: 'text'; text: string }> = [
         { type: 'text' as const, text },
       ];
