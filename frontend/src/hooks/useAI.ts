@@ -79,8 +79,8 @@ export function useAI() {
     abortControllerRef.current?.abort();
   }, []);
 
-  const generate = async (prompt: string, selectedNodeId?: string | null) => {
-    if (!selectedModel || !prompt.trim()) return;
+  const generate = async (prompt: string, selectedNodeId?: string | null): Promise<boolean> => {
+    if (!selectedModel || !prompt.trim()) return false;
     setLoading(true);
     setError(null);
 
@@ -114,12 +114,14 @@ export function useAI() {
         mergeNodes(newNodes, newEdges);
         setPendingSaveLabel('AI Generation');
       }
+      return true;
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
         // User cancelled — no error needed
       } else {
         setError(err instanceof Error ? err.message : 'AI generation failed');
       }
+      return false;
     } finally {
       setLoading(false);
       setAIEditing(false);

@@ -13,10 +13,10 @@ export function AIPromptBox() {
   const selectedNodeId = useMapStore((s) => s.selectedNodeId);
   const { hasApiKey } = useAuth();
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!prompt.trim()) return;
-    generate(prompt, selectedNodeId);
-    setPrompt('');
+    const success = await generate(prompt, selectedNodeId);
+    if (success) setPrompt('');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
